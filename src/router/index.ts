@@ -1,71 +1,125 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth, hasStoredRole } from '@/composables/useAuth'
-import { redirectToIdpLogin } from '@{{org.git_org}}/{{info.slug}}_spa_utils'
+import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      redirect: '/{{ service.data_domains.controls[0] | lower }}s'
+      redirect: '/journeys'
     },
-    {% for item in service.data_domains.controls %}
-    // Control domain: {{ item }}
+    
+    // Control domain: Journey
     {
-      path: '/{{ item | lower }}s',
-      name: '{{ item }}s',
-      component: () => import('@/pages/{{ item }}sListPage.vue'),
+      path: '/journeys',
+      name: 'Journeys',
+      component: () => import('@/pages/JourneysListPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/{{ item | lower }}s/new',
-      name: '{{ item }}New',
-      component: () => import('@/pages/{{ item }}NewPage.vue'),
+      path: '/journeys/new',
+      name: 'JourneyNew',
+      component: () => import('@/pages/JourneyNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/{{ item | lower }}s/:id',
-      name: '{{ item }}Edit',
-      component: () => import('@/pages/{{ item }}EditPage.vue'),
+      path: '/journeys/:id',
+      name: 'JourneyEdit',
+      component: () => import('@/pages/JourneyEditPage.vue'),
       meta: { requiresAuth: true }
     },
-    {% endfor %}
-    {% for item in service.data_domains.creates %}
-    // Create domain: {{ item }}
+    
+    // Control domain: Rating
     {
-      path: '/{{ item | lower }}s',
-      name: '{{ item }}s',
-      component: () => import('@/pages/{{ item }}sListPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/{{ item | lower }}s/new',
-      name: '{{ item }}New',
-      component: () => import('@/pages/{{ item }}NewPage.vue'),
+      path: '/ratings',
+      name: 'Ratings',
+      component: () => import('@/pages/RatingsListPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/{{ item | lower }}s/:id',
-      name: '{{ item }}View',
-      component: () => import('@/pages/{{ item }}ViewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {% endfor %}
-    {% for item in service.data_domains.consumes %}
-    // Consume domain: {{ item }}
-    {
-      path: '/{{ item | lower }}s',
-      name: '{{ item }}s',
-      component: () => import('@/pages/{{ item }}sListPage.vue'),
+      path: '/ratings/new',
+      name: 'RatingNew',
+      component: () => import('@/pages/RatingNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/{{ item | lower }}s/:id',
-      name: '{{ item }}View',
-      component: () => import('@/pages/{{ item }}ViewPage.vue'),
+      path: '/ratings/:id',
+      name: 'RatingEdit',
+      component: () => import('@/pages/RatingEditPage.vue'),
       meta: { requiresAuth: true }
     },
-    {% endfor %}
+    
+    // Control domain: Note
+    {
+      path: '/notes',
+      name: 'Notes',
+      component: () => import('@/pages/NotesListPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/notes/new',
+      name: 'NoteNew',
+      component: () => import('@/pages/NoteNewPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/notes/:id',
+      name: 'NoteEdit',
+      component: () => import('@/pages/NoteEditPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    
+    
+    // Create domain: Event
+    {
+      path: '/events',
+      name: 'Events',
+      component: () => import('@/pages/EventsListPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/events/new',
+      name: 'EventNew',
+      component: () => import('@/pages/EventNewPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/events/:id',
+      name: 'EventView',
+      component: () => import('@/pages/EventViewPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    
+    
+    // Consume domain: Resource
+    {
+      path: '/resources',
+      name: 'Resources',
+      component: () => import('@/pages/ResourcesListPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/resources/:id',
+      name: 'ResourceView',
+      component: () => import('@/pages/ResourceViewPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    
+    // Consume domain: Path
+    {
+      path: '/paths',
+      name: 'Paths',
+      component: () => import('@/pages/PathsListPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/paths/:id',
+      name: 'PathView',
+      component: () => import('@/pages/PathViewPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    
     // Admin route
     {
       path: '/admin',
@@ -89,7 +143,7 @@ router.beforeEach((to, _from, next) => {
   const requiredRole = to.meta.requiresRole as string | undefined
   if (requiredRole && !hasStoredRole(requiredRole)) {
     // Redirect to default page if user doesn't have required role
-    next({ name: '{{ service.data_domains.controls[0] }}s' })
+    next({ name: 'Journeys' })
     return
   }
   
@@ -97,7 +151,7 @@ router.beforeEach((to, _from, next) => {
 })
 
 router.afterEach(() => {
-  document.title = '{{service.name | capitalize}}'
+  document.title = 'Mentee'
 })
 
 export default router
