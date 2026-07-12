@@ -1,19 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToLogin } from '@/utils/loginRedirect'
 import { api } from './client'
 
-vi.mock('@mentor-forge/mentorhub_spa_utils', () => ({
-  redirectToIdpLogin: vi.fn(),
+vi.mock('@/utils/loginRedirect', () => ({
+  redirectToLogin: vi.fn(),
+  getIdpLoginUri: vi.fn(() => 'http://127.0.0.1:8080/login.html'),
 }))
 
-// Mock fetch globally
 const mockFetch = vi.fn()
 global.fetch = mockFetch
 
 describe('API Client', () => {
   beforeEach(() => {
     mockFetch.mockClear()
-    vi.mocked(redirectToIdpLogin).mockClear()
+    vi.mocked(redirectToLogin).mockClear()
+    localStorage.clear()
   })
 
   afterEach(() => {
@@ -60,6 +61,7 @@ describe('API Client', () => {
     beforeEach(() => {
       localStorage.setItem('access_token', 'invalid-token')
       localStorage.setItem('token_expires_at', '2026-12-31T23:59:59Z')
+      localStorage.setItem('user_roles', JSON.stringify(['admin']))
     })
 
     it('should clear tokens and redirect on 401 error', async () => {
@@ -78,7 +80,8 @@ describe('API Client', () => {
 
       expect(localStorage.getItem('access_token')).toBeNull()
       expect(localStorage.getItem('token_expires_at')).toBeNull()
-      expect(redirectToIdpLogin).toHaveBeenCalledOnce()
+      expect(localStorage.getItem('user_roles')).toBeNull()
+      expect(redirectToLogin).toHaveBeenCalledOnce()
     })
   })
 })

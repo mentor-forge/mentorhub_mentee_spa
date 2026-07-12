@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { api, ApiError } from './client'
-import type { JourneyInput, JourneyUpdate } from './types'
+import type { JourneyUpdate } from './types'
 
-// Mock fetch globally
 const mockFetch = vi.fn()
 global.fetch = mockFetch
 
@@ -13,76 +12,15 @@ describe('API Client - Journey Endpoints', () => {
     localStorage.setItem('access_token', 'test-token')
   })
 
-  it('should get all journeys', async () => {
-    const mockJourneys = [
-      {
-        _id: '507f1f77bcf86cd799439011',
-        name: 'test-journey',
-        description: 'Test description',
-        status: 'active' as const,
-        created: {
-          from_ip: '127.0.0.1',
-          by_user: 'user1',
-          at_time: '2024-01-01T00:00:00Z',
-          correlation_id: 'corr-123'
-        },
-        saved: {
-          from_ip: '127.0.0.1',
-          by_user: 'user1',
-          at_time: '2024-01-01T00:00:00Z',
-          correlation_id: 'corr-123'
-        }
-      }
-    ]
-
-    const mockResponse = {
-      items: mockJourneys,
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
-    })
-
-    const result = await api.getJourneys()
-
-    expect(result).toEqual(mockResponse)
-    expect(mockFetch).toHaveBeenCalledWith('/api/journey', expect.any(Object))
-  })
-
-  it('should get journeys with name query', async () => {
-    const mockResponse = {
-      items: [],
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
-    })
-
-    await api.getJourneys({ name: 'test' })
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey?name=test',
-      expect.any(Object)
-    )
-  })
-
-  it('should get a single journey', async () => {
+  it('should get the authenticated user journey', async () => {
     const mockJourney = {
       _id: '507f1f77bcf86cd799439011',
-      name: 'test-journey',
+      profile_id: '507f1f77bcf86cd799439011',
       status: 'active' as const,
+      library: [],
+      now: [],
+      next: [],
+      later: [],
       created: {
         from_ip: '127.0.0.1',
         by_user: 'user1',
@@ -104,46 +42,19 @@ describe('API Client - Journey Endpoints', () => {
       json: async () => mockJourney
     })
 
-    const result = await api.getJourney('507f1f77bcf86cd799439011')
+    const result = await api.getMyJourney()
 
     expect(result).toEqual(mockJourney)
-  })
-
-  it('should create a journey', async () => {
-    const input: JourneyInput = {
-      name: 'new-journey',
-      description: 'New description',
-      status: 'active'
-    }
-
-    const mockResponse = { _id: '507f1f77bcf86cd799439011' }
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
-    })
-
-    const result = await api.createJourney(input)
-
-    expect(result).toEqual(mockResponse)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify(input)
-      })
-    )
+    expect(mockFetch).toHaveBeenCalledWith('/api/journey', expect.any(Object))
   })
 
   it('should update a journey', async () => {
-    const update: JourneyUpdate = { name: 'updated-name' }
+    const update: JourneyUpdate = { status: 'archived' }
 
     const mockJourney = {
       _id: '507f1f77bcf86cd799439011',
-      name: 'updated-name',
-      status: 'active' as const,
+      profile_id: '507f1f77bcf86cd799439011',
+      status: 'archived' as const,
       created: {
         from_ip: '127.0.0.1',
         by_user: 'user1',
@@ -185,7 +96,7 @@ describe('API Client - Journey Endpoints', () => {
       json: async () => ({ error: 'Resource not found' })
     })
 
-    await expect(api.getJourney('invalid-id')).rejects.toThrow(ApiError)
+    await expect(api.getMyJourney()).rejects.toThrow(ApiError)
   })
 
   it('should handle 401 errors', async () => {
@@ -196,12 +107,12 @@ describe('API Client - Journey Endpoints', () => {
       json: async () => ({ error: 'Unauthorized' })
     })
 
-    await expect(api.getJourneys()).rejects.toThrow('Unauthorized')
+    await expect(api.getMyJourney()).rejects.toThrow('Unauthorized')
   })
 
   it('should handle network errors', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
-    await expect(api.getJourneys()).rejects.toThrow('Network error')
+    await expect(api.getMyJourney()).rejects.toThrow('Network error')
   })
 })

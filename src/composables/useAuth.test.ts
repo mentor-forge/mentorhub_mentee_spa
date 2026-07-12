@@ -27,10 +27,27 @@ describe('useAuth', () => {
       localStorage.setItem('access_token', 'test-token')
       localStorage.setItem('token_expires_at', futureDate)
       localStorage.setItem('user_roles', JSON.stringify(['developer']))
-      const { useAuth } = await import('./useAuth')
+      const { useAuth, syncAuthFromStorage } = await import('./useAuth')
+      syncAuthFromStorage()
       const { isAuthenticated, roles } = useAuth()
       expect(isAuthenticated.value).toBe(true)
       expect(roles.value).toEqual(['developer'])
+    })
+  })
+
+  describe('syncAuthFromStorage', () => {
+    it('should hydrate reactive auth state from localStorage after bootstrap', async () => {
+      const { useAuth, syncAuthFromStorage } = await import('./useAuth')
+      const { isAuthenticated } = useAuth()
+      expect(isAuthenticated.value).toBe(false)
+
+      const futureDate = new Date(Date.now() + 100000).toISOString()
+      localStorage.setItem('access_token', 'bootstrapped-token')
+      localStorage.setItem('token_expires_at', futureDate)
+      localStorage.setItem('user_roles', JSON.stringify(['admin']))
+      syncAuthFromStorage()
+
+      expect(isAuthenticated.value).toBe(true)
     })
   })
 

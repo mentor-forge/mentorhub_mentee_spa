@@ -11,91 +11,50 @@ export interface Breadcrumb {
   correlation_id: string
 }
 
-
-// Journey Domain
-export interface Journey {
-  _id: string
-  name: string
-  description?: string
-  status?: 'active' | 'archived'
-  created: Breadcrumb
-  saved: Breadcrumb
+export interface JourneyLibraryItem {
+  resource_id?: string
+  started?: string
+  completed?: string
+  used?: number
+  rating?: number
 }
 
-export interface JourneyInput {
-  name: string
+export interface JourneyNowItem {
+  resource_id?: string
+  added?: string
+  started?: string
+  used?: number
+}
+
+export interface JourneyNextTopic {
+  name?: string
   description?: string
+  resources?: string[]
+}
+
+export interface JourneyNextModule {
+  name?: string
+  description?: string
+  topics?: JourneyNextTopic[]
+}
+
+export interface Journey {
+  _id: string
+  profile_id?: string
   status?: 'active' | 'archived'
+  library?: JourneyLibraryItem[]
+  now?: JourneyNowItem[]
+  next?: JourneyNextModule[]
+  later?: string[]
+  created: Breadcrumb
+  saved: Breadcrumb
 }
 
 export interface JourneyUpdate {
-  name?: string
-  description?: string
   status?: 'active' | 'archived'
+  later?: string[]
 }
 
-// Rating Domain
-export interface Rating {
-  _id: string
-  name: string
-  description?: string
-  status?: 'active' | 'archived'
-  created: Breadcrumb
-  saved: Breadcrumb
-}
-
-export interface RatingInput {
-  name: string
-  description?: string
-  status?: 'active' | 'archived'
-}
-
-export interface RatingUpdate {
-  name?: string
-  description?: string
-  status?: 'active' | 'archived'
-}
-
-// Note Domain
-export interface Note {
-  _id: string
-  name: string
-  description?: string
-  status?: 'active' | 'archived'
-  created: Breadcrumb
-  saved: Breadcrumb
-}
-
-export interface NoteInput {
-  name: string
-  description?: string
-  status?: 'active' | 'archived'
-}
-
-export interface NoteUpdate {
-  name?: string
-  description?: string
-  status?: 'active' | 'archived'
-}
-
-
-// Event Domain
-export interface Event {
-  _id: string
-  name: string
-  description?: string
-  status?: string
-  created: Breadcrumb
-}
-
-export interface EventInput {
-  name: string
-  description?: string
-  status?: string
-}
-
-
-// Resource Domain
 export interface Resource {
   _id: string
   name: string
@@ -103,7 +62,6 @@ export interface Resource {
   status?: string
 }
 
-// Path Domain
 export interface Path {
   _id: string
   name: string
@@ -111,8 +69,6 @@ export interface Path {
   status?: string
 }
 
-
-// Configuration
 export interface ConfigResponse {
   config_items: unknown[]
   versions: unknown[]
@@ -122,7 +78,6 @@ export interface ConfigResponse {
   }
 }
 
-// Infinite Scroll
 export interface InfiniteScrollParams {
   name?: string
   after_id?: string

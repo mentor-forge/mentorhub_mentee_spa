@@ -16,89 +16,24 @@
       temporary
     >
       <v-list density="compact" nav>
-        
-        <v-list-subheader>JOURNEY DOMAIN</v-list-subheader>
         <v-list-item
-          to="/journeys"
-          prepend-icon="mdi-view-list"
-          title="List Journeys"
-          data-automation-id="nav-journeys-list-link"
+          to="/journey"
+          prepend-icon="mdi-map-marker-path"
+          title="Journey"
+          data-automation-id="nav-journey-link"
         />
-        <v-list-item
-          to="/journeys/new"
-          prepend-icon="mdi-plus"
-          title="New Journey"
-          data-automation-id="nav-journeys-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        <v-list-subheader>RATING DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/ratings"
-          prepend-icon="mdi-view-list"
-          title="List Ratings"
-          data-automation-id="nav-ratings-list-link"
-        />
-        <v-list-item
-          to="/ratings/new"
-          prepend-icon="mdi-plus"
-          title="New Rating"
-          data-automation-id="nav-ratings-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        <v-list-subheader>NOTE DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/notes"
-          prepend-icon="mdi-view-list"
-          title="List Notes"
-          data-automation-id="nav-notes-list-link"
-        />
-        <v-list-item
-          to="/notes/new"
-          prepend-icon="mdi-plus"
-          title="New Note"
-          data-automation-id="nav-notes-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        
-        <v-list-subheader>EVENT DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/events"
-          prepend-icon="mdi-view-list"
-          title="List Events"
-          data-automation-id="nav-events-list-link"
-        />
-        <v-list-item
-          to="/events/new"
-          prepend-icon="mdi-plus"
-          title="New Event"
-          data-automation-id="nav-events-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        
-        <v-list-subheader>RESOURCE DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/resources"
-          prepend-icon="mdi-view-list"
-          title="List Resources"
-          data-automation-id="nav-resources-list-link"
-        />
-        
-        <v-list-subheader>PATH DOMAIN</v-list-subheader>
         <v-list-item
           to="/paths"
-          prepend-icon="mdi-view-list"
-          title="List Paths"
-          data-automation-id="nav-paths-list-link"
+          prepend-icon="mdi-routes"
+          title="Paths"
+          data-automation-id="nav-paths-link"
         />
-        
+        <v-list-item
+          to="/resources"
+          prepend-icon="mdi-book-open-variant"
+          title="Resources"
+          data-automation-id="nav-resources-link"
+        />
       </v-list>
 
       <template v-slot:append>
@@ -112,7 +47,7 @@
             data-automation-id="nav-admin-link"
           />
           <v-list-item
-            @click="handleLogout"
+            @click.stop="handleLogout"
             prepend-icon="mdi-logout"
             title="Logout"
             data-automation-id="nav-logout-link"
@@ -135,7 +70,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
@@ -145,26 +80,24 @@ const drawer = ref(false)
 
 const hasAdminRole = hasRole('admin')
 
-// Close temporary drawer when route changes (e.g. after clicking nav link)
 router.afterEach(() => {
   drawer.value = false
 })
 
 onMounted(async () => {
-  // Load config if user is already authenticated (e.g., on page reload)
   if (isAuthenticated.value) {
     try {
       await loadConfig()
     } catch (error) {
-      // Silently fail - config will be loaded on next login if needed
       console.warn('Failed to load config on mount:', error)
     }
   }
 })
 
 function handleLogout() {
+  const returnTo = `${window.location.origin}/`
   logout()
   drawer.value = false
-  redirectToIdpLogin(window.location.origin + '/')
+  redirectToLogin(returnTo)
 }
 </script>
