@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth, hasStoredRole } from '@/composables/useAuth'
-import { redirectToLogin } from '@/utils/loginRedirect'
+import { hasStoredRole, redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -56,7 +55,7 @@ router.beforeEach((to, _from, next) => {
   const { isAuthenticated } = useAuth()
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    redirectToLogin(window.location.origin + to.fullPath)
+    redirectToIdpLogin(window.location.origin + to.fullPath)
     next(false)
     return
   }

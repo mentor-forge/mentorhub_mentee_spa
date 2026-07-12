@@ -66,7 +66,7 @@ src/
   api/              # API client layer (types.ts, client.ts)
   components/       # App-specific UI components (admin components)
   pages/            # Route-level components (List, New, Edit/View pages)
-  composables/      # App-specific composables (useAuth, useConfig, useRoles wrapper)
+  composables/      # App-specific composables (useConfig, useRoles wrapper); auth from spa_utils
   stores/           # Pinia stores (UI state only)
   router/           # Vue Router configuration
   plugins/          # Vuetify plugin configuration
@@ -78,7 +78,7 @@ src/
 
 ### Authentication
 - JWT tokens stored in localStorage (`access_token`, `token_expires_at`)
-- `useAuth()` composable manages authentication state
+- Auth (`useAuth`, `redirectToIdpLogin`, `bootstrapAuthFromUrl`) from `@mentor-forge/mentorhub_spa_utils`; see `src/initAuth.ts`
 - Sign-in uses IdP / URL hash (`bootstrapAuthFromUrl` from spa_utils); APIs are not used as a login surface
 - Router guards protect routes requiring authentication
 
