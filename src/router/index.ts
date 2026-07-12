@@ -56,7 +56,9 @@ router.beforeEach((to, _from, next) => {
   const { isAuthenticated } = useAuth()
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
+    // Cancel in-app navigation; redirectToIdpLogin navigates away when VITE_IDP_LOGIN_URI is set.
     redirectToIdpLogin(window.location.origin + to.fullPath)
+    next(false)
     return
   }
 

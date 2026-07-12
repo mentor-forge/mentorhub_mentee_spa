@@ -1,9 +1,19 @@
 import { ref, computed } from 'vue'
 
-const accessToken = ref<string | null>(localStorage.getItem('access_token'))
-const tokenExpiresAt = ref<string | null>(localStorage.getItem('token_expires_at'))
-const storedRoles = localStorage.getItem('user_roles')
-const roles = ref<string[]>(storedRoles ? JSON.parse(storedRoles) : [])
+const accessToken = ref<string | null>(null)
+const tokenExpiresAt = ref<string | null>(null)
+const roles = ref<string[]>([])
+
+/** Re-read auth keys from localStorage into reactive state (call after bootstrapAuthFromUrl). */
+export function syncAuthFromStorage(): void {
+  accessToken.value = localStorage.getItem('access_token')
+  tokenExpiresAt.value = localStorage.getItem('token_expires_at')
+  const storedRoles = localStorage.getItem('user_roles')
+  roles.value = storedRoles ? JSON.parse(storedRoles) : []
+}
+
+// Hydrate on first module load (after initAuth runs if imported first from main.ts).
+syncAuthFromStorage()
 
 export function useAuth() {
   const isAuthenticated = computed(() => {
