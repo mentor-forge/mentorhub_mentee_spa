@@ -8,7 +8,8 @@ import type {
   InfiniteScrollParams,
   InfiniteScrollResponse
 } from './types'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { syncAuthFromStorage } from '@/composables/useAuth'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 const API_BASE = '/api'
 
@@ -54,7 +55,9 @@ async function request<T>(
     if (response.status === 401) {
       localStorage.removeItem('access_token')
       localStorage.removeItem('token_expires_at')
-      redirectToIdpLogin()
+      localStorage.removeItem('user_roles')
+      syncAuthFromStorage()
+      redirectToLogin()
     }
 
     throw new ApiError(

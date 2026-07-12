@@ -57,4 +57,15 @@ describe('Navigation Drawer', () => {
     cy.wait(500)
     cy.get('[data-automation-id="nav-paths-link"]').should('not.be.visible')
   })
+
+  it('should logout and redirect to IdP login', () => {
+    cy.visit('/journey')
+    cy.get('[data-automation-id="nav-drawer-toggle"]').click()
+    cy.get('[data-automation-id="nav-logout-link"]').scrollIntoView().click()
+
+    cy.origin('http://127.0.0.1:8080', () => {
+      cy.location('pathname', { timeout: 10000 }).should('eq', '/login.html')
+      cy.location('search').should('include', 'return_to=')
+    })
+  })
 })

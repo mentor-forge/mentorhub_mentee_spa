@@ -47,7 +47,7 @@
             data-automation-id="nav-admin-link"
           />
           <v-list-item
-            @click="handleLogout"
+            @click.stop="handleLogout"
             prepend-icon="mdi-logout"
             title="Logout"
             data-automation-id="nav-logout-link"
@@ -70,7 +70,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
@@ -95,8 +95,9 @@ onMounted(async () => {
 })
 
 function handleLogout() {
+  const returnTo = `${window.location.origin}/`
   logout()
   drawer.value = false
-  redirectToIdpLogin(window.location.origin + '/')
+  redirectToLogin(returnTo)
 }
 </script>

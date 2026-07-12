@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth, hasStoredRole } from '@/composables/useAuth'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -56,8 +56,7 @@ router.beforeEach((to, _from, next) => {
   const { isAuthenticated } = useAuth()
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    // Cancel in-app navigation; redirectToIdpLogin navigates away when VITE_IDP_LOGIN_URI is set.
-    redirectToIdpLogin(window.location.origin + to.fullPath)
+    redirectToLogin(window.location.origin + to.fullPath)
     next(false)
     return
   }
