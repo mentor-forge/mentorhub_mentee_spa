@@ -47,7 +47,7 @@
             </template>
             <template v-slot:item.status="{ item }">
               <v-chip size="small">
-                {{ item.status || 'N/A' }}
+                {{ (item as Path)?.status || 'N/A' }}
               </v-chip>
             </template>
           </v-data-table>

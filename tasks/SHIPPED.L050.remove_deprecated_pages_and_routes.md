@@ -1,6 +1,6 @@
 # L050 – Remove deprecated pages and routes
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Delete deprecated Event, Journey list/new, Note, and Rating page components and remove their router entries. Register `/journey` as the sole Journey route (pointing at `JourneyEditPage`) and make it the default landing page.
@@ -89,4 +89,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Deleted all 11 deprecated page components.
+- Updated `src/router/index.ts`: `/` → `/journey`, route name `Journey`, removed Event/Note/Rating/Journey list routes.
+- `npm run build` passed.

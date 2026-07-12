@@ -1,6 +1,6 @@
 # L090 – Update E2E and navigation tests
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L060_update_navigation_drawer, L070_repoint_journey_as_default_page, L080_cleanup_api_client_removed_domains  
 **Description**: Remove Cypress E2E tests for deprecated domains and rewrite navigation and Journey tests for the simplified drawer and token-scoped Journey page.
@@ -84,4 +84,9 @@ The agent must not update files outside this list unless `path.cy.ts` or `resour
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Deleted `event.cy.ts`, `note.cy.ts`, `rating.cy.ts`.
+- Rewrote `navigation.cy.ts` and `journey.cy.ts` for simplified nav and token-scoped Journey.
+- **Supporting fixes** (required for E2E pass, outside Outputs):
+  - `cypress.config.ts`: custom `signCypressJwt` task includes `profile_id` and persona claims (spa_utils 0.2.2 JWT lacked `profile_id`, causing API 401).
+  - `src/pages/PathsListPage.vue`, `src/pages/ResourcesListPage.vue`: optional chaining on `item.status` slot to avoid Vuetify 3 render errors.
+- `npm run cypress:run`: 18/18 passed (journey, navigation, path, resource specs).

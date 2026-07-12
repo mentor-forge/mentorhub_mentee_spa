@@ -1,6 +1,6 @@
 # L060 – Update navigation drawer
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L050_remove_deprecated_pages_and_routes  
 **Description**: Replace the multi-domain navigation drawer with a flat menu containing only Journey, Paths, Resources, and Admin (plus Logout).
@@ -76,4 +76,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Replaced multi-domain drawer with flat Journey, Paths, Resources links; Admin/Logout in append slot.
+- New automation ids: `nav-journey-link`, `nav-paths-link`, `nav-resources-link`.
+- Verified via navigation E2E (L090).

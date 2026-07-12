@@ -1,6 +1,6 @@
 # L070 – Repoint Journey as default page
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L050_remove_deprecated_pages_and_routes  
 **Description**: Adapt `JourneyEditPage` to be the token-scoped default Journey view at `/journey`, aligned with the updated Mentee API contract (get-or-create by `profile_id`, no list or create flows).
@@ -79,4 +79,7 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Confirmed `GET /api/journey` on running API (F-EA03 shipped).
+- Added `api.getMyJourney()`; removed list/create journey methods.
+- Aligned `Journey`/`JourneyUpdate` types with OpenAPI (`profile_id`, `library`, `now`, `next`, `later`; PATCH supports `status` only).
+- `JourneyEditPage` loads via `['journey']` query; shows status (auto-save), profile_id, scope counts, breadcrumbs; removed back-to-list.

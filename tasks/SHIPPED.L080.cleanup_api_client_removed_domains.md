@@ -1,6 +1,6 @@
 # L080 – Cleanup API client for removed domains
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L070_repoint_journey_as_default_page  
 **Description**: Remove Event, Note, and Rating types and client methods that supported deleted pages. Update Journey unit tests for the singleton Journey contract.
@@ -67,4 +67,7 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Removed Event, Note, Rating types and client methods (completed in L070 client/types update).
+- Deleted `Event.client.test.ts`, `Note.client.test.ts`, `Rating.client.test.ts`.
+- Rewrote `Journey.client.test.ts` for `getMyJourney` and `updateJourney`.
+- `npm run test`: 53 tests passed.
