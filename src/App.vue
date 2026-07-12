@@ -67,10 +67,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
+import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
-import { redirectToLogin } from '@/utils/loginRedirect'
 
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
@@ -98,6 +97,6 @@ function handleLogout() {
   const returnTo = `${window.location.origin}/`
   logout()
   drawer.value = false
-  redirectToLogin(returnTo)
+  redirectToIdpLogin(returnTo)
 }
 </script>
