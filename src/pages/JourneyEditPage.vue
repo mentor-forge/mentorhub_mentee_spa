@@ -2,13 +2,17 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="text-h4 mb-4">Journey</h1>
+        <h1 class="text-h4 mb-4" data-automation-id="journey-edit-heading">Journey</h1>
       </v-col>
     </v-row>
 
     <v-row v-if="isLoading">
       <v-col class="text-center">
-        <v-progress-circular indeterminate color="primary" />
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          data-automation-id="journey-edit-loading"
+        />
       </v-col>
     </v-row>
 
@@ -60,7 +64,12 @@
       </v-col>
     </v-row>
 
-    <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
+    <v-snackbar
+      :model-value="showError as unknown as boolean"
+      color="error"
+      :timeout="5000"
+      data-automation-id="journey-edit-error"
+    >
       {{ errorMessage }}
     </v-snackbar>
   </v-container>

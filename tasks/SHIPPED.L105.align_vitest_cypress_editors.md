@@ -1,6 +1,6 @@
 # L105 – Align Vitest and Cypress to typed-editor automation ids
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L104_adopt_datacard_path_resource_views  
 **Description**: Finish Vitest and Cypress coverage for spa_utils 0.5.2 adoption — stable `data-automation-id`s, enum selection, EnumArray autocomplete/add/remove/save workflows where present, and removal of assertions tied to replaced local controls/card chrome.
@@ -78,4 +78,9 @@ List every newly created test file in Execution Notes. Do not modify files outsi
 
 ## Execution Notes
 
-(Reserved for the execution agent.)
+- Added stable automation IDs for migrated-page headings, loading states, card displays, and error messages.
+- Reworked path/resource Cypress coverage around deterministic intercepted card data, covering search, card navigation, load-more, and typed read-only view editors. Removed obsolete optional DOM/card-chrome and absent local-control assertions.
+- Added `src/App.test.ts`, which verifies that `App` provides reactive runtime editor configuration and that missing or unknown enumerators resolve to empty options at the SPA boundary.
+- EnumArrayEditor: N/A — no mentee page declares an `enum_array` field or renders `EnumArrayEditor`; no test-only UI was introduced.
+- Verification passed: `npm run test` (45 tests), `npm run build`, `npm run container`, `npm run service`, and `npm run cypress:run` (19 tests).
+- `npm run test:coverage` was run optionally; all 45 tests pass, but the command exits nonzero on existing repository-wide API/composable branch/function coverage thresholds (`src/api/**` branches 71.42% vs. 75%; `src/composables/**` functions 88.88% vs. 90%, branches 54.76% vs. 60%).

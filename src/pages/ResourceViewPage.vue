@@ -2,13 +2,17 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="text-h4 mb-4">View Resource</h1>
+        <h1 class="text-h4 mb-4" data-automation-id="resource-view-heading">View Resource</h1>
       </v-col>
     </v-row>
 
     <v-row v-if="isLoading">
       <v-col class="text-center">
-        <v-progress-circular indeterminate color="primary" />
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          data-automation-id="resource-view-loading"
+        />
       </v-col>
     </v-row>
 
@@ -57,7 +61,12 @@
       </v-col>
     </v-row>
 
-    <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
+    <v-snackbar
+      :model-value="showError as unknown as boolean"
+      color="error"
+      :timeout="5000"
+      data-automation-id="resource-view-error"
+    >
       {{ errorMessage }}
     </v-snackbar>
   </v-container>

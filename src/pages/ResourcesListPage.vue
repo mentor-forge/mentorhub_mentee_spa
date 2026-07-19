@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="text-h4 mb-4">Resources</h1>
+        <h1 class="text-h4 mb-4" data-automation-id="resource-list-heading">Resources</h1>
       </v-col>
     </v-row>
 
@@ -17,7 +17,13 @@
       </v-col>
     </v-row>
 
-    <v-progress-linear v-if="isLoading" indeterminate color="primary" class="mb-4" />
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      class="mb-4"
+      data-automation-id="resource-list-loading"
+    />
 
     <CardGrid automation-id="resource-list-grid">
       <MhCard
@@ -38,8 +44,19 @@
           />
         </template>
 
-        <p class="text-body-2 mb-3">{{ resource.description || 'No description provided.' }}</p>
-        <v-chip size="small" variant="tonal">{{ resource.status || 'N/A' }}</v-chip>
+        <p
+          class="text-body-2 mb-3"
+          :data-automation-id="`resource-list-resource-${resource._id}-description-display`"
+        >
+          {{ resource.description || 'No description provided.' }}
+        </p>
+        <v-chip
+          size="small"
+          variant="tonal"
+          :data-automation-id="`resource-list-resource-${resource._id}-status-display`"
+        >
+          {{ resource.status || 'N/A' }}
+        </v-chip>
       </MhCard>
     </CardGrid>
 
@@ -55,7 +72,12 @@
       {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
     </v-btn>
 
-    <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
+    <v-snackbar
+      :model-value="showError as unknown as boolean"
+      color="error"
+      :timeout="5000"
+      data-automation-id="resource-list-error"
+    >
       Failed to load resources: {{ errorMessage }}
     </v-snackbar>
   </v-container>

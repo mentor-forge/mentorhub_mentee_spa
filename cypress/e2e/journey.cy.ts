@@ -6,7 +6,7 @@ describe('Journey Page', () => {
   it('should land on journey page from default route', () => {
     cy.visit('/')
     cy.url().should('include', '/journey')
-    cy.get('h1').contains('Journey').should('be.visible')
+    cy.get('[data-automation-id="journey-edit-heading"]').should('be.visible')
   })
 
   it('should load journey content from API', () => {
@@ -23,7 +23,7 @@ describe('Journey Page', () => {
     cy.get('[data-automation-id="nav-drawer-toggle"]').click()
     cy.get('[data-automation-id="nav-journey-link"]').click()
     cy.url().should('include', '/journey')
-    cy.get('h1').contains('Journey').should('be.visible')
+    cy.get('[data-automation-id="journey-edit-heading"]').should('be.visible')
   })
 
   it('should update journey status from runtime enum values via auto-save', () => {
@@ -36,7 +36,7 @@ describe('Journey Page', () => {
       const optionValue = isActive ? 'archived' : 'active'
 
       cy.wrap($select).click()
-      cy.get('.v-overlay-container').contains(optionLabel).click()
+      cy.contains('[role="option"]', optionLabel).click()
       cy.get('[data-automation-id="journey-edit-status-select"]').find('input').focus().blur()
 
       cy.wait('@updateJourney').its('request.body').should('deep.equal', { status: optionValue })

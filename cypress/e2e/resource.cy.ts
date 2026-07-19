@@ -1,62 +1,64 @@
 describe('Resource Domain', () => {
   const gridSelector = '[data-automation-id="resource-list-grid"]'
-  const cardSelector = `${gridSelector} [data-automation-id$="-card"]`
+  const firstCardSelector = '[data-automation-id="resource-list-resource-resource-1-card"]'
+  const secondCardSelector = '[data-automation-id="resource-list-resource-resource-2-card"]'
   const searchSelector = '[data-automation-id="resource-list-search"] input'
 
   beforeEach(() => {
     cy.login()
+    cy.intercept('GET', '**/api/resource*', (request) => {
+      const isNextPage = request.query.after_id === 'resource-1'
+      request.reply({
+        items: isNextPage
+          ? [{ _id: 'resource-2', name: 'Second Resource', description: 'Second description', status: 'active' }]
+          : [{ _id: 'resource-1', name: 'First Resource', description: 'First description', status: 'active' }],
+        limit: 20,
+        has_more: !isNextPage,
+        next_cursor: isNextPage ? null : 'resource-1',
+      })
+    }).as('getResources')
+    cy.intercept('GET', '**/api/resource/resource-1', {
+      _id: 'resource-1',
+      name: 'First Resource',
+      description: 'First description',
+      status: 'active',
+    }).as('getResource')
   })
 
   it('should display resources list page', () => {
     cy.visit('/resources')
-    cy.get('h1').contains('Resources').should('be.visible')
+    cy.get('[data-automation-id="resource-list-heading"]').should('be.visible')
     cy.get(gridSelector).should('exist')
+    cy.get(firstCardSelector).should('be.visible')
   })
 
   it('should search resources using card list controls', () => {
     cy.visit('/resources')
 
-    cy.get(gridSelector).should('exist')
-    cy.get(searchSelector).should('exist').type('nonexistent-search-term-xyz')
-    cy.wait(800)
-    cy.get(gridSelector).should('exist')
-    cy.get(searchSelector).clear()
-    cy.wait(800)
-    cy.get(gridSelector).should('exist')
+    cy.get(searchSelector).should('be.visible').type('first')
+    cy.wait('@getResources')
+    cy.get(firstCardSelector).should('be.visible')
   })
 
-  it('should expose card actions for loaded resources', () => {
+  it('should load more resource cards through the shared control', () => {
     cy.visit('/resources')
 
-    cy.get(gridSelector).should('exist')
-    cy.get('body').then(($body) => {
-      if ($body.find(cardSelector).length > 0) {
-        cy.get(cardSelector).first().within(() => {
-          cy.get('[data-automation-id$="-view-button"]').should('exist')
-        })
-      }
-    })
+    cy.get('[data-automation-id="resource-list-load-more"]').should('be.visible').click()
+    cy.wait('@getResources')
+    cy.get(secondCardSelector).should('be.visible')
   })
 
   it('should display a resource in read-only typed editors', () => {
     cy.visit('/resources')
 
-    cy.get(gridSelector).should('exist')
-    cy.get('body').then(($body) => {
-      if ($body.find(cardSelector).length > 0) {
-        cy.get(cardSelector).first().find('[data-automation-id$="-view-button"]').click()
-        cy.get('[data-automation-id="resource-view-grid"]').should('be.visible')
-        cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
-        cy.get('[data-automation-id="resource-view-name-display"]').should('be.visible')
-        cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
-        cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
-        cy.get('[data-automation-id="resource-view-back-to-list-button"]').should('be.visible')
-      }
-    })
-  })
-
-  it('should not have a new resource button (read-only)', () => {
-    cy.visit('/resources')
-    cy.get('button').contains('New Resource').should('not.exist')
+    cy.get('[data-automation-id="resource-list-resource-resource-1-view-button"]').click()
+    cy.wait('@getResource')
+    cy.get('[data-automation-id="resource-view-heading"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-grid"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-name-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-back-to-list-button"]').should('be.visible')
   })
 })
