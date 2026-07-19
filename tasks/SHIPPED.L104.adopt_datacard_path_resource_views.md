@@ -1,6 +1,6 @@
 # L104 – Adopt DataCard + typed editors on Path and Resource views
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: L103_adopt_datacard_journey_edit  
 **Description**: Convert Path and Resource view pages to `DataCard` + type-aligned editors (read-only where the API is view-only), including runtime `EnumEditor` for status and structured editors for any date-time / duration / enum_array fields that appear.
@@ -71,4 +71,8 @@ The agent must not change list-page layout again unless a broken selector requir
 
 ## Execution Notes
 
-(Reserved for the execution agent.)
+Plan: Verify the running OpenAPI field types and authenticated runtime-config enumerator contract; replace each existing read-only Path and Resource field with DataCard type editors; extend view navigation coverage with stable automation-id assertions; then run unit, build, container, and service-backed Cypress verification. No list-page changes are planned.
+
+Implemented: Both read-only views now use a DataCard within a CardGrid, with `WordEditor` for name, `SentenceEditor` for description, and read-only `EnumEditor` for status. The OpenAPI confirms these types; status uses the runtime `default_status` enumerator already provided from `/api/config` at app startup, with no hard-coded values. The two existing views do not display enum_array, date-time, or duration fields, so `EnumArrayEditor`, `DateTimeEditor`, and `DurationEditor` are N/A. No list pages changed.
+
+Testing: `npm run test` passed (7 files, 44 tests); `npm run build` passed; `npm run container` passed; `npm run service` started the containerized service; `npm run cypress:run` passed (21 tests across 4 specs). Cypress now asserts the Path and Resource DataCard editor and back-navigation automation IDs.

@@ -38,6 +38,23 @@ describe('Resource Domain', () => {
     })
   })
 
+  it('should display a resource in read-only typed editors', () => {
+    cy.visit('/resources')
+
+    cy.get(gridSelector).should('exist')
+    cy.get('body').then(($body) => {
+      if ($body.find(cardSelector).length > 0) {
+        cy.get(cardSelector).first().find('[data-automation-id$="-view-button"]').click()
+        cy.get('[data-automation-id="resource-view-grid"]').should('be.visible')
+        cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
+        cy.get('[data-automation-id="resource-view-name-display"]').should('be.visible')
+        cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
+        cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
+        cy.get('[data-automation-id="resource-view-back-to-list-button"]').should('be.visible')
+      }
+    })
+  })
+
   it('should not have a new resource button (read-only)', () => {
     cy.visit('/resources')
     cy.get('button').contains('New Resource').should('not.exist')

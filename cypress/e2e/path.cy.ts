@@ -38,6 +38,23 @@ describe('Path Domain', () => {
     })
   })
 
+  it('should display a path in read-only typed editors', () => {
+    cy.visit('/paths')
+
+    cy.get(gridSelector).should('exist')
+    cy.get('body').then(($body) => {
+      if ($body.find(cardSelector).length > 0) {
+        cy.get(cardSelector).first().find('[data-automation-id$="-view-button"]').click()
+        cy.get('[data-automation-id="path-view-grid"]').should('be.visible')
+        cy.get('[data-automation-id="path-view-card"]').should('be.visible')
+        cy.get('[data-automation-id="path-view-name-display"]').should('be.visible')
+        cy.get('[data-automation-id="path-view-description-display"]').should('be.visible')
+        cy.get('[data-automation-id="path-view-status-display"]').should('be.visible')
+        cy.get('[data-automation-id="path-view-back-to-list-button"]').should('be.visible')
+      }
+    })
+  })
+
   it('should not have a new path button (read-only)', () => {
     cy.visit('/paths')
     cy.get('button').contains('New Path').should('not.exist')
