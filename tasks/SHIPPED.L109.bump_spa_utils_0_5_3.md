@@ -1,6 +1,6 @@
 # L109 – Bump spa_utils to 0.5.3
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Bump `@mentor-forge/mentorhub_spa_utils` to **0.5.3** so the harvested equal-height responsive `CardGrid` (CSS Grid 1→8) is available for Paths and Resources list adoption.
@@ -60,4 +60,18 @@ The agent must not update files outside this list (no page or test migrations he
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Plan
+
+1. Refresh CodeArtifact credentials with `mh`, then update the exact shared-package pin and regenerate the lockfile through npm.
+2. Verify the clean dependency resolution and run the required unit, build, and container checks.
+3. Record the results, mark the task shipped, and rename this task file only if every required check succeeds.
+
+### Shipped
+
+- Updated `@mentor-forge/mentorhub_spa_utils` to the exact `0.5.3` release in `package.json` and `package-lock.json`; CodeArtifact resolved the package successfully.
+- `mh` — passed (CodeArtifact credentials refreshed).
+- `npm install @mentor-forge/mentorhub_spa_utils@0.5.3 --save-exact` — passed.
+- `npm ci` — passed (clean install resolved `0.5.3`).
+- `npm run test` — passed (9 files, 50 tests).
+- `npm run build` — passed.
+- `npm run container` — passed.
