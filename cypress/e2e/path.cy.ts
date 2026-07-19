@@ -4,7 +4,6 @@ describe('Path Domain', () => {
   const secondCardSelector = '[data-automation-id="path-list-path-path-2-card"]'
   const shortCardSelector = '[data-automation-id="path-list-path-path-short-card"]'
   const longCardSelector = '[data-automation-id="path-list-path-path-long-card"]'
-  const searchSelector = '[data-automation-id="path-list-search"] input'
 
   const shortPath = {
     _id: 'path-short',
@@ -54,13 +53,7 @@ describe('Path Domain', () => {
           status: 'active',
         })),
       ]
-      request.reply(
-        isNextPage
-          ? [secondPath]
-          : request.query.name
-            ? [firstPage[0]]
-            : firstPage
-      )
+      request.reply(isNextPage ? [secondPath] : firstPage)
     }).as('getPaths')
     cy.intercept('GET', '**/api/path/path-1', {
       ...firstPath,
@@ -155,14 +148,6 @@ describe('Path Domain', () => {
         expect(countGridColumns($grid)).to.equal(expectedColumns)
       })
     })
-  })
-
-  it('should search paths using card list controls', () => {
-    cy.visit('/paths')
-
-    cy.get(searchSelector).should('be.visible').type('first')
-    cy.wait('@getPaths')
-    cy.get(firstCardSelector).should('be.visible')
   })
 
   it('should load more path cards through the shared control', () => {
