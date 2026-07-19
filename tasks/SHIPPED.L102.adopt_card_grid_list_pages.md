@@ -1,6 +1,6 @@
 # L102 – Adopt CardGrid + MhCard on list pages
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: L101_provide_editor_config  
 **Description**: Convert Paths and Resources list UIs from table chrome to `CardGrid` + `MhCard` with title-bar actions, using spa_utils default responsive breakpoints.
@@ -65,4 +65,23 @@ The agent must not rewrite Journey edit/view pages in this task.
 
 ## Execution Notes
 
-(Reserved for the execution agent.)
+Plan:
+
+1. Replace each table shell with the spa_utils `CardGrid` defaults and one `MhCard` per existing infinite-scroll item, retaining the existing query, search, and load-more data flow.
+2. Put description and status in the card body, and route the title-bar view action to the existing detail route.
+3. Add stable grid, card, and view-action automation IDs and update both Cypress specs to assert against those contracts rather than table markup.
+4. Run unit, build, packaging, and Cypress verification; record results before shipping this task.
+
+Completed:
+
+- Replaced the Paths and Resources table shells with default-breakpoint `CardGrid` layouts, `MhCard` list items, title-bar view actions, descriptions, status chips, loading indicators, and the existing load-more actions.
+- Kept the existing `useInfiniteScroll` queries (`api.getPaths` / `api.getResources`) unchanged. The API client still uses the current cursor-based data source; no client rewrite was needed for the card UI.
+- Added stable grid, per-card, and per-card view-action automation IDs. Cypress now uses card-grid contracts rather than table selectors.
+
+Verification:
+
+- `npm run test` — passed (7 files, 44 tests).
+- `npm run build` — passed.
+- `npm run container` — passed.
+- `npm run service` — passed.
+- `npm run cypress:run` — passed (4 specs, 19 tests).

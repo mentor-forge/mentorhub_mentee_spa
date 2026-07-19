@@ -17,56 +17,43 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col>
-        <v-card>
-          <v-data-table
-            :headers="headers"
-            :items="(resources ?? []) as unknown as Resource[]"
-            :loading="isLoading as unknown as boolean"
-            @click:row="navigateToResource"
-            hover
-            :items-per-page="-1"
-            hide-default-footer
-          >
-            <template v-slot:header.name>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('name')">
-                Name
-                <v-icon v-if="sortByValue === 'name'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.status>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('status')">
-                Status
-                <v-icon v-if="sortByValue === 'status'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:item.status="{ item }">
-              <v-chip size="small">
-                {{ (item as Resource)?.status || 'N/A' }}
-              </v-chip>
-            </template>
-          </v-data-table>
-          
-          <!-- Load more button -->
-          <v-card-actions v-if="hasMoreValue">
-            <v-btn
-              @click="loadMore"
-              :loading="isFetchingNextPageValue"
-              color="primary"
-              block
-              data-automation-id="resource-list-load-more"
-            >
-              {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
+    <v-progress-linear v-if="isLoading" indeterminate color="primary" class="mb-4" />
+
+    <CardGrid automation-id="resource-list-grid">
+      <MhCard
+        v-for="resource in resources ?? []"
+        :key="resource._id"
+        title="Resource"
+        :name="resource.name"
+        :automation-id="`resource-list-resource-${resource._id}-card`"
+      >
+        <template #actions>
+          <v-btn
+            icon="mdi-eye"
+            variant="text"
+            size="small"
+            :data-automation-id="`resource-list-resource-${resource._id}-view-button`"
+            :aria-label="`View ${resource.name}`"
+            @click="navigateToResource(resource)"
+          />
+        </template>
+
+        <p class="text-body-2 mb-3">{{ resource.description || 'No description provided.' }}</p>
+        <v-chip size="small" variant="tonal">{{ resource.status || 'N/A' }}</v-chip>
+      </MhCard>
+    </CardGrid>
+
+    <v-btn
+      v-if="hasMoreValue"
+      class="mt-4"
+      :loading="isFetchingNextPageValue"
+      color="primary"
+      block
+      data-automation-id="resource-list-load-more"
+      @click="loadMore"
+    >
+      {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
+    </v-btn>
 
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
       Failed to load resources: {{ errorMessage }}
@@ -78,12 +65,12 @@
 /**
  * Resources List Page - Showcase of mentorhub_spa_utils simplicity
  * 
- * Building a list page with infinite scroll, search, and sorting
- * is as simple as calling useInfiniteScroll with your API function.
+ * This page retains the legacy infinite-scroll data source while presenting
+ * resources as responsive shared cards.
  */
 import { computed } from 'vue'
 import { api } from '@/api/client'
-import { ListPageSearch, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
+import { CardGrid, ListPageSearch, MhCard, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
 import { useRouter } from 'vue-router'
 import type { Resource } from '@/api/types'
 
@@ -100,10 +87,6 @@ const {
   errorMessage,
   searchQuery,
   debouncedSearch,
-  sortBy,
-  order,
-  setSortBy,
-  setOrder,
 } = useInfiniteScroll<Resource>({
   queryKey: ['resources'],
   queryFn: (params) => api.getResources(params),
@@ -111,31 +94,11 @@ const {
   limit: 20,
 })
 
-function navigateToResource(_event: unknown, { item }: { item: Resource }) {
-  router.push(`/resources/${item._id}`)
+function navigateToResource(resource: Resource) {
+  router.push(`/resources/${resource._id}`)
 }
 
-// Create computed properties for template use (TypeScript-friendly)
-const sortByValue = computed(() => sortBy.value)
-const orderValue = computed(() => order.value)
 const hasMoreValue = computed(() => hasMore.value)
 const isFetchingNextPageValue = computed(() => isFetchingNextPage.value)
-
-function handleSort(field: string) {
-  if (sortBy.value === field) {
-    // Toggle order if same field
-    setOrder(order.value === 'asc' ? 'desc' : 'asc')
-  } else {
-    // New field, default to ascending
-    setSortBy(field)
-    setOrder('asc')
-  }
-}
-
-const headers = [
-  { title: 'Name', key: 'name', sortable: false },
-  { title: 'Description', key: 'description', sortable: false },
-  { title: 'Status', key: 'status', sortable: false },
-]
 
 </script>
