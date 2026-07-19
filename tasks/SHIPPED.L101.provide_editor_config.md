@@ -1,6 +1,6 @@
 # L101 – Provide runtime editor config at startup
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L100_bump_spa_utils_0_5_2  
 **Description**: Load `/api/config` once at authenticated application startup and `provideEditorConfig` so typed enum editors resolve options from reactive runtime config — never from per-field fetches, hard-coded lists, or OpenAPI.
@@ -68,4 +68,15 @@ The agent must not migrate pages or replace `AutoSaveSelect` in this task.
 
 ## Execution Notes
 
-(Reserved for the execution agent.)
+### Plan
+
+1. Obtain the module-scoped reactive `config` ref from `useConfig()` in `App.vue` and provide it through `provideEditorConfig` at app setup time.
+2. Preserve the existing authenticated `onMounted` startup path as the sole `loadConfig()` call; do not alter legacy page controls or add editor/page fetches.
+3. Add focused bootstrap coverage only if the project test setup can mount `App.vue`; otherwise rely on existing composable coverage and validate with the required test, build, and container commands.
+
+### Completed
+
+- Added the app-root `provideEditorConfig` binding to the reactive config returned by `useConfig()`. The existing authenticated `onMounted` `loadConfig()` remains the only startup config request.
+- No `useConfig` behavior changed and no new focused test file was needed; the app bootstrap is excluded from coverage and type-checked by the production build.
+- `npm run test` passed: 7 files, 44 tests. (An existing jsdom navigation notice appears in the Journey client 401 test.)
+- `npm run build` passed. `npm run container` passed. Both build paths retain the existing large-chunk warning; the container build also retains its existing Docker `CMD` JSON-form warning.

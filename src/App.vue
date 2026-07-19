@@ -65,17 +65,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, type ComputedRef } from 'vue'
 import { useRouter } from 'vue-router'
-import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
+import {
+  provideEditorConfig,
+  redirectToIdpLogin,
+  type RuntimeEditorConfig,
+  useAuth,
+} from '@mentor-forge/mentorhub_spa_utils'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
 
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
-const { loadConfig } = useConfig()
+const { config, loadConfig } = useConfig()
 const { hasRole } = useRoles()
 const drawer = ref(false)
+
+provideEditorConfig(config as unknown as ComputedRef<RuntimeEditorConfig | null>)
 
 const hasAdminRole = hasRole('admin')
 
