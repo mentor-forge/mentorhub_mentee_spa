@@ -1,6 +1,6 @@
 # L108 – Prepare the responsive card-grid harvest
 
-**Status**: Pending
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: L107_refine_paths_card_layout  
 **Description**: Capture the validated, reusable layout behavior as a focused handoff for adoption by `mentorhub_spa_utils`, while keeping Paths-specific presentation local.
@@ -61,4 +61,18 @@ The agent must not edit files outside this repository's `tasks/` folder and must
 
 ## Execution Notes
 
-Reserved for the execution agent to record plan, validation performed, and follow-ups.
+### Plan
+1. Review L106/L107 shipped results, local `ResponsiveCardGrid`, shared `CardGrid`/`MhCard` contracts, and harvesting workflow in spa_utils README.
+2. Write `tasks/ISSUE.mentorhub_spa_utils.harvest_responsive_card_grid.md` scoped to reusable layout only (equal width/height, 1→8 cols, slot keys/`automationId`, collapsed contract); exclude Paths presentation.
+3. Require spa_utils CardGrid tests, `/demo/dashboard` demo, and README updates before publish; outline mentee SPA migration (publish → exact dep bump → restore package `CardGrid` → delete local prototype → rerun L106/L107 regressions).
+4. Record compatibility notes vs current VRow/VCol intrinsic-height / collapsed non-stretch contract so maintainers can choose an explicit API (replace defaults vs opt-in prop/mode).
+5. Mark this task Shipped and rename to `SHIPPED.L108.prepare_card_grid_harvest.md`. No runtime code changes.
+
+### What shipped
+- Created `tasks/ISSUE.mentorhub_spa_utils.harvest_responsive_card_grid.md` — spa_utils handoff covering reusable layout scope, Paths exclusions, tests/demo/README/publish gates, mentee migration steps, and compatibility options (replace defaults vs opt-in vs new export) vs current intrinsic-height CardGrid.
+
+### Validation
+- Confirmed handoff matches L106/L107 verified behavior (CSS Grid 1→8, equal width/height expanded, collapsed non-stretch, slot/`automationId` contract).
+- Confirmed shared behaviors are domain-independent; Paths presentation explicitly out of scope.
+- Confirmed handoff requires CardGrid unit tests, dashboard demo, README, publish, and downstream mentee migration + regression rerun.
+- No runtime code changes; no spa_utils edits; no build/packaging required.
