@@ -78,7 +78,7 @@ Each task file must contain the following sections under H1 and H2 headings.
 
 ## Naming Conventions
 - **Recommended filename pattern**:
-  - `STATUS.LNNN.short_task_name.md` where L is Feature/Defect, and NNN is a serial task number. When planning, create only PENDING status tasks. 
+  - `STATUS.LNNN.short_task_name.md` where L is Feature/Defect, and NNN is a serial task number. Increment task numbers by exactly one within a workflow (for example, `L100`, `L101`, `L102`), rather than reserving gaps of 10. When planning, create only PENDING status tasks. 
   - Examples:
     - `PENDING.F011.update_profile_openapi.md`
     - `PENDING.F012.add_profile_field_tests.md`
