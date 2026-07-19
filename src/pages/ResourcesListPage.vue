@@ -7,11 +7,20 @@
     </v-row>
 
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" md="4">
+        <v-select
+          v-model="searchField"
+          :items="searchFields"
+          label="Search field"
+          data-automation-id="resource-list-search-field-select"
+        />
+      </v-col>
+      <v-col cols="12" md="8">
         <ListPageSearch
           :searchable="true"
           :search-query="searchQuery"
           :debounced-search="debouncedSearch"
+          :label="`Search by ${selectedSearchFieldLabel}`"
           automation-id="resource-list-search"
         />
       </v-col>
@@ -84,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { api } from '@/api/client'
 import { CardGrid, ListPageSearch, MhCard } from '@mentor-forge/mentorhub_spa_utils'
 import { useOffsetList } from '@/composables/useOffsetList'
@@ -92,6 +101,21 @@ import { useRouter } from 'vue-router'
 import type { Resource } from '@/api/types'
 
 const router = useRouter()
+
+type ResourceSearchField = 'name' | 'description' | 'url' | 'interests' | 'technologies' | 'skill_level'
+
+const searchFields: Array<{ title: string; value: ResourceSearchField }> = [
+  { title: 'Name', value: 'name' },
+  { title: 'Description', value: 'description' },
+  { title: 'URL', value: 'url' },
+  { title: 'Interests', value: 'interests' },
+  { title: 'Technologies', value: 'technologies' },
+  { title: 'Skill level', value: 'skill_level' },
+]
+const searchField = ref<ResourceSearchField>('name')
+const selectedSearchFieldLabel = computed(
+  () => searchFields.find((field) => field.value === searchField.value)?.title ?? 'Name'
+)
 
 const {
   items: resources,
@@ -107,6 +131,7 @@ const {
   queryKey: ['resources'],
   queryFn: (params) => api.getResources(params),
   size: 20,
+  searchParam: searchField,
 })
 
 function navigateToResource(resource: Resource) {

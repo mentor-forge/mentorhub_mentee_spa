@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   plugins: [vue()],
   test: {
+    server: {
+      deps: {
+        inline: ['@mentor-forge/mentorhub_spa_utils'],
+      },
+    },
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],

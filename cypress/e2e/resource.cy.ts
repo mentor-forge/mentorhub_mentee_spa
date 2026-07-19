@@ -3,6 +3,7 @@ describe('Resource Domain', () => {
   const firstCardSelector = '[data-automation-id="resource-list-resource-resource-1-card"]'
   const secondCardSelector = '[data-automation-id="resource-list-resource-resource-2-card"]'
   const searchSelector = '[data-automation-id="resource-list-search"] input'
+  const searchFieldSelector = '[data-automation-id="resource-list-search-field-select"]'
 
   beforeEach(() => {
     cy.login()
@@ -17,10 +18,13 @@ describe('Resource Domain', () => {
           status: 'active',
         })),
       ]
+      const searchFields = ['name', 'description', 'url', 'interests', 'technologies', 'skill_level']
+      const hasSearchFilter = searchFields.some((field) => Boolean(request.query[field]))
+
       request.reply(
         isNextPage
           ? [{ _id: 'resource-2', name: 'Second Resource', description: 'Second description', status: 'active' }]
-          : request.query.name
+          : hasSearchFilter
             ? [firstPage[0]]
             : firstPage
       )
@@ -40,12 +44,33 @@ describe('Resource Domain', () => {
     cy.get(firstCardSelector).should('be.visible')
   })
 
-  it('should search resources using card list controls', () => {
+  it('should search resources by name', () => {
     cy.visit('/resources')
+    cy.wait('@getResources')
 
     cy.get(searchSelector).should('be.visible').type('first')
-    cy.wait('@getResources')
+    cy.wait('@getResources').its('request.query.name').should('eq', 'first')
     cy.get(firstCardSelector).should('be.visible')
+  })
+
+  ;[
+    { field: 'description', label: 'Description' },
+    { field: 'url', label: 'URL' },
+    { field: 'interests', label: 'Interests' },
+    { field: 'technologies', label: 'Technologies' },
+    { field: 'skill_level', label: 'Skill level' },
+  ].forEach(({ field, label }) => {
+    it(`should search resources by ${label}`, () => {
+      cy.visit('/resources')
+      cy.wait('@getResources')
+
+      cy.get(searchFieldSelector).click()
+      cy.contains('[role="option"]', label).click()
+      cy.wait('@getResources')
+      cy.get(searchSelector).should('be.visible').type('filter-value')
+      cy.wait('@getResources').its(`request.query.${field}`).should('eq', 'filter-value')
+      cy.get(firstCardSelector).should('be.visible')
+    })
   })
 
   it('should load more resource cards through the shared control', () => {
