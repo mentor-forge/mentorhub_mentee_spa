@@ -31,11 +31,13 @@ describe('Path Domain', () => {
     status: 'active',
   }
 
-  /** Count CSS Grid tracks from computed grid-template-columns. */
+  /** Count visual CSS Grid tracks from the first row of grid items. */
   function countGridColumns($grid: JQuery<HTMLElement>): number {
-    const value = window.getComputedStyle($grid[0]).gridTemplateColumns
-    if (!value || value === 'none') return 0
-    return value.split(' ').filter(Boolean).length
+    const items = $grid.children('.mh-card-grid__item').toArray()
+    if (items.length === 0) return 0
+
+    const firstRowTop = items[0].getBoundingClientRect().top
+    return items.filter((item) => Math.abs(item.getBoundingClientRect().top - firstRowTop) < 2).length
   }
 
   beforeEach(() => {
@@ -101,7 +103,7 @@ describe('Path Domain', () => {
       const columns = countGridColumns($grid)
       expect(columns).to.be.at.least(2)
 
-      const items = $grid.children('.responsive-card-grid__item').toArray()
+      const items = $grid.children('.mh-card-grid__item').toArray()
       const firstRowTop = items[0].getBoundingClientRect().top
       const firstRow = items.filter(
         (item) => Math.abs(item.getBoundingClientRect().top - firstRowTop) < 2

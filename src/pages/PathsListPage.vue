@@ -14,7 +14,7 @@
       data-automation-id="path-list-loading"
     />
 
-    <ResponsiveCardGrid automation-id="path-list-grid">
+    <CardGrid automation-id="path-list-grid">
       <MhCard
         v-for="path in paths ?? []"
         :key="path._id"
@@ -39,7 +39,7 @@
           {{ path.description || 'No description provided.' }}
         </p>
       </MhCard>
-    </ResponsiveCardGrid>
+    </CardGrid>
 
     <v-btn
       v-if="hasMoreValue"
@@ -67,8 +67,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { api } from '@/api/client'
-import { MhCard } from '@mentor-forge/mentorhub_spa_utils'
-import ResponsiveCardGrid from '@/components/ResponsiveCardGrid.vue'
+import { CardGrid, MhCard } from '@mentor-forge/mentorhub_spa_utils'
 import { useOffsetList } from '@/composables/useOffsetList'
 import { useRouter } from 'vue-router'
 import type { Path } from '@/api/types'

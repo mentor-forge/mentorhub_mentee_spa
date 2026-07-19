@@ -18,7 +18,7 @@
 
     <v-row v-else-if="path">
       <v-col cols="12">
-        <CardGrid automation-id="path-view-grid" cols="12" md="8">
+        <CardGrid automation-id="path-view-grid">
           <DataCard
             title="Path"
             name-field="name"

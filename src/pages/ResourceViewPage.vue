@@ -18,7 +18,7 @@
 
     <v-row v-else-if="resource">
       <v-col cols="12">
-        <CardGrid automation-id="resource-view-grid" cols="12" md="8">
+        <CardGrid automation-id="resource-view-grid">
           <DataCard
             title="Resource"
             name-field="name"
