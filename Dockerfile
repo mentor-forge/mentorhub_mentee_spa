@@ -1,4 +1,4 @@
-# Build stage (Node 24+; aligns with package.json engines and jsdom 29 / Cypress)
+# Build stage (Node 24+; aligns with package.json engines)
 FROM node:24-alpine AS build
 
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
@@ -11,10 +11,11 @@ ARG VITE_IDP_LOGIN_URI=http://127.0.0.1:8080/login.html
 ENV VITE_IDP_LOGIN_URI=$VITE_IDP_LOGIN_URI
 
 # CodeArtifact auth via BuildKit secret (CI or scripts/docker-build.sh); no git clone of spa_utils.
+# Omit devDependencies (Cypress/Vitest/etc.) so multi-arch CI does not run Cypress under QEMU.
 RUN --mount=type=secret,id=codeartifact_token \
     --mount=type=cache,target=/root/.npm \
     sh -c 'echo "//mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
-    if [ -f package-lock.json ]; then npm ci; else npm install; fi'
+    if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi'
 
 COPY . .
 RUN --mount=type=cache,target=/app/node_modules/.vite \
