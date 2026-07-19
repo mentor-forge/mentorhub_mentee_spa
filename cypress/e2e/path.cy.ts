@@ -7,15 +7,23 @@ describe('Path Domain', () => {
   beforeEach(() => {
     cy.login()
     cy.intercept('GET', '**/api/path*', (request) => {
-      const isNextPage = request.query.after_id === 'path-1'
-      request.reply({
-        items: isNextPage
+      const isNextPage = request.headers.offset === '20'
+      const firstPage = [
+        { _id: 'path-1', name: 'First Path', description: 'First description', status: 'active' },
+        ...Array.from({ length: 19 }, (_, index) => ({
+          _id: `path-filler-${index}`,
+          name: `Path ${index + 2}`,
+          description: 'Filler description',
+          status: 'active',
+        })),
+      ]
+      request.reply(
+        isNextPage
           ? [{ _id: 'path-2', name: 'Second Path', description: 'Second description', status: 'active' }]
-          : [{ _id: 'path-1', name: 'First Path', description: 'First description', status: 'active' }],
-        limit: 20,
-        has_more: !isNextPage,
-        next_cursor: isNextPage ? null : 'path-1',
-      })
+          : request.query.name
+            ? [firstPage[0]]
+            : firstPage
+      )
     }).as('getPaths')
     cy.intercept('GET', '**/api/path/path-1', {
       _id: 'path-1',

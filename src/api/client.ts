@@ -5,8 +5,7 @@ import type {
   Path,
   ConfigResponse,
   Error,
-  InfiniteScrollParams,
-  InfiniteScrollResponse
+  ListParams
 } from './types'
 import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
@@ -87,32 +86,40 @@ export const api = {
     })
   },
 
-  async getResources(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Resource>> {
+  async getResources(params?: ListParams): Promise<Resource[]> {
     const queryParams = new URLSearchParams()
     if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
+    if (params?.description) queryParams.append('description', params.description)
+    if (params?.status) queryParams.append('status', params.status)
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
     if (params?.order) queryParams.append('order', params.order)
 
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Resource>>(`/resource${query ? `?${query}` : ''}`)
+    return request<Resource[]>(`/resource${query ? `?${query}` : ''}`, {
+      headers: {
+        offset: String(params?.offset ?? 0),
+        size: String(params?.size ?? 20),
+      },
+    })
   },
 
   async getResource(resourceId: string): Promise<Resource> {
     return request<Resource>(`/resource/${resourceId}`)
   },
 
-  async getPaths(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Path>> {
+  async getPaths(params?: ListParams): Promise<Path[]> {
     const queryParams = new URLSearchParams()
     if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
     if (params?.order) queryParams.append('order', params.order)
 
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Path>>(`/path${query ? `?${query}` : ''}`)
+    return request<Path[]>(`/path${query ? `?${query}` : ''}`, {
+      headers: {
+        offset: String(params?.offset ?? 0),
+        size: String(params?.size ?? 20),
+      },
+    })
   },
 
   async getPath(pathId: string): Promise<Path> {

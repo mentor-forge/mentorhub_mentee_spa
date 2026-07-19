@@ -18,49 +18,49 @@
 
     <v-row v-else-if="journey">
       <v-col cols="12">
-        <CardGrid automation-id="journey-edit-grid" cols="12" md="6" lg="4">
-          <DataCard
-            title="Journey"
-            :model="journeyModel"
-            :on-save="updateField"
-            automation-id="journey-edit-card"
-          >
-            <EnumEditor
-              field="status"
-              enums="default_status"
-              label="Status"
-              automation-id="journey-edit-status-select"
-            />
-            <IdentifierEditor
-              field="profile_id"
-              label="Profile ID"
-              automation-id="journey-profile-id-field"
-              class="mt-4"
-            />
-          </DataCard>
+        <DataCard
+          title="Journey"
+          :model="journeyModel"
+          :on-save="updateField"
+          automation-id="journey-edit-card"
+        >
+          <EnumEditor
+            field="status"
+            enums="default_status"
+            label="Status"
+            automation-id="journey-edit-status-select"
+          />
+          <IdentifierEditor
+            field="profile_id"
+            label="Profile ID"
+            automation-id="journey-profile-id-field"
+            class="mt-4"
+          />
 
-          <MhCard title="Now" automation-id="journey-now-card">
-            <div data-automation-id="journey-now-count">{{ journey.now?.length ?? 0 }} resource(s)</div>
-          </MhCard>
-          <MhCard title="Next" automation-id="journey-next-card">
-            <div data-automation-id="journey-next-count">{{ journey.next?.length ?? 0 }} module(s)</div>
-          </MhCard>
-          <MhCard title="Library" automation-id="journey-library-card">
-            <div data-automation-id="journey-library-count">
-              {{ journey.library?.length ?? 0 }} completed resource(s)
-            </div>
-          </MhCard>
+          <v-divider class="my-6" />
 
-          <DataCard
-            title="Audit"
-            :model="journeyModel"
-            :on-save="updateField"
-            automation-id="journey-audit-card"
-          >
-            <BreadcrumbDisplay field="created" label="Created" automation-id="journey-created" />
-            <BreadcrumbDisplay field="saved" label="Last Saved" automation-id="journey-saved" class="mt-4" />
-          </DataCard>
-        </CardGrid>
+          <v-row>
+            <v-col cols="12" sm="4">
+              <div class="text-subtitle-1">Now</div>
+              <div data-automation-id="journey-now-count">{{ journey.now?.length ?? 0 }} resource(s)</div>
+            </v-col>
+            <v-col cols="12" sm="4">
+              <div class="text-subtitle-1">Next</div>
+              <div data-automation-id="journey-next-count">{{ journey.next?.length ?? 0 }} module(s)</div>
+            </v-col>
+            <v-col cols="12" sm="4">
+              <div class="text-subtitle-1">Library</div>
+              <div data-automation-id="journey-library-count">
+                {{ journey.library?.length ?? 0 }} completed resource(s)
+              </div>
+            </v-col>
+          </v-row>
+
+          <v-divider class="my-6" />
+
+          <BreadcrumbDisplay field="created" label="Created" automation-id="journey-created" />
+          <BreadcrumbDisplay field="saved" label="Last Saved" automation-id="journey-saved" class="mt-4" />
+        </DataCard>
       </v-col>
     </v-row>
 
@@ -81,11 +81,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import {
   BreadcrumbDisplay,
-  CardGrid,
   DataCard,
   EnumEditor,
   IdentifierEditor,
-  MhCard,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { JourneyUpdate } from '@/api/types'

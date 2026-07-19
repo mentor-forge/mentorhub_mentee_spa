@@ -84,21 +84,15 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Paths List Page - Showcase of mentorhub_spa_utils simplicity
- * 
- * This page retains the legacy infinite-scroll data source while presenting
- * paths as responsive shared cards.
- */
 import { computed } from 'vue'
 import { api } from '@/api/client'
-import { CardGrid, ListPageSearch, MhCard, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
+import { CardGrid, ListPageSearch, MhCard } from '@mentor-forge/mentorhub_spa_utils'
+import { useOffsetList } from '@/composables/useOffsetList'
 import { useRouter } from 'vue-router'
 import type { Path } from '@/api/types'
 
 const router = useRouter()
 
-// 🎯 All list functionality in one composable call
 const {
   items: paths,
   isLoading,
@@ -109,11 +103,10 @@ const {
   errorMessage,
   searchQuery,
   debouncedSearch,
-} = useInfiniteScroll<Path>({
+} = useOffsetList<Path>({
   queryKey: ['paths'],
   queryFn: (params) => api.getPaths(params),
-  getItemId: (item) => item._id,
-  limit: 20,
+  size: 20,
 })
 
 function navigateToPath(path: Path) {

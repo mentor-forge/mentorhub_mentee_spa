@@ -78,17 +78,12 @@ export interface ConfigResponse {
   }
 }
 
-export interface InfiniteScrollParams {
+export interface ListParams {
+  offset?: number
+  size?: number
   name?: string
-  after_id?: string
-  limit?: number
+  description?: string
+  status?: string
   sort_by?: string
   order?: 'asc' | 'desc'
-}
-
-export interface InfiniteScrollResponse<T> {
-  items: T[]
-  limit: number
-  has_more: boolean
-  next_cursor: string | null
 }

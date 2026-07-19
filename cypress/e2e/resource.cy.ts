@@ -7,15 +7,23 @@ describe('Resource Domain', () => {
   beforeEach(() => {
     cy.login()
     cy.intercept('GET', '**/api/resource*', (request) => {
-      const isNextPage = request.query.after_id === 'resource-1'
-      request.reply({
-        items: isNextPage
+      const isNextPage = request.headers.offset === '20'
+      const firstPage = [
+        { _id: 'resource-1', name: 'First Resource', description: 'First description', status: 'active' },
+        ...Array.from({ length: 19 }, (_, index) => ({
+          _id: `resource-filler-${index}`,
+          name: `Resource ${index + 2}`,
+          description: 'Filler description',
+          status: 'active',
+        })),
+      ]
+      request.reply(
+        isNextPage
           ? [{ _id: 'resource-2', name: 'Second Resource', description: 'Second description', status: 'active' }]
-          : [{ _id: 'resource-1', name: 'First Resource', description: 'First description', status: 'active' }],
-        limit: 20,
-        has_more: !isNextPage,
-        next_cursor: isNextPage ? null : 'resource-1',
-      })
+          : request.query.name
+            ? [firstPage[0]]
+            : firstPage
+      )
     }).as('getResources')
     cy.intercept('GET', '**/api/resource/resource-1', {
       _id: 'resource-1',
