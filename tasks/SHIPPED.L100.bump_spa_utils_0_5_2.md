@@ -1,6 +1,6 @@
 # L100 – Bump spa_utils to 0.5.2
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Bump `@mentor-forge/mentorhub_spa_utils` to **0.5.2** so CardGrid / MhCard / DataCard and type-aligned editors (including EnumEditor / EnumArrayEditor) are available for adoption.
@@ -59,4 +59,14 @@ The agent must not update files outside this list (no page or test migrations he
 
 ## Execution Notes
 
-(Reserved for the execution agent.)
+Plan:
+1. Refresh CodeArtifact credentials with `mh`, then install the exact `@mentor-forge/mentorhub_spa_utils@0.5.2` dependency to regenerate the lockfile.
+2. Confirm the manifest and lockfile resolve exactly `0.5.2`; make no application or page changes.
+3. Run `npm run test`, `npm run build`, and `npm run container`. If CodeArtifact cannot resolve `0.5.2`, mark this task Blocked, document the resolution error, and stop.
+
+Completed:
+- `mh` refreshed CodeArtifact credentials successfully.
+- `npm install @mentor-forge/mentorhub_spa_utils@0.5.2` resolved the package from CodeArtifact; `npm ci` then completed cleanly (364 packages).
+- `npm run test` passed: 7 test files, 44 tests.
+- `npm run build` passed (`vue-tsc` and Vite); Vite reported the existing large-chunk warning only.
+- `npm run container` passed on retry. The first attempt timed out fetching `node:24-alpine` from Docker Hub; the retry completed successfully. Docker reported pre-existing image-build advisories (three npm audit vulnerabilities and JSON-form CMD guidance) only.
