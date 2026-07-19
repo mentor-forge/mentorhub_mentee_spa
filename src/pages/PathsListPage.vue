@@ -6,17 +6,6 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col cols="12">
-        <ListPageSearch
-          :searchable="true"
-          :search-query="searchQuery"
-          :debounced-search="debouncedSearch"
-          automation-id="path-list-search"
-        />
-      </v-col>
-    </v-row>
-
     <v-progress-linear
       v-if="isLoading"
       indeterminate
@@ -78,7 +67,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { api } from '@/api/client'
-import { ListPageSearch, MhCard } from '@mentor-forge/mentorhub_spa_utils'
+import { MhCard } from '@mentor-forge/mentorhub_spa_utils'
 import ResponsiveCardGrid from '@/components/ResponsiveCardGrid.vue'
 import { useOffsetList } from '@/composables/useOffsetList'
 import { useRouter } from 'vue-router'
@@ -94,8 +83,6 @@ const {
   loadMore,
   showError,
   errorMessage,
-  searchQuery,
-  debouncedSearch,
 } = useOffsetList<Path>({
   queryKey: ['paths'],
   queryFn: (params) => api.getPaths(params),
