@@ -52,6 +52,10 @@ describe('API Client - Resource Endpoints', () => {
       name: 'test',
       description: 'guide',
       status: 'active,draft',
+      url: 'example.com',
+      interests: 'api,sre',
+      technologies: 'Python,React',
+      skill_level: 'Apprentice,Craftsperson',
       offset: 40,
       size: 10,
       sort_by: 'status',
@@ -59,7 +63,7 @@ describe('API Client - Resource Endpoints', () => {
     })
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource?name=test&description=guide&status=active%2Cdraft&sort_by=status&order=desc',
+      '/api/resource?name=test&description=guide&status=active%2Cdraft&url=example.com&interests=api%2Csre&technologies=Python%2CReact&skill_level=Apprentice%2CCraftsperson&sort_by=status&order=desc',
       expect.objectContaining({
         headers: expect.objectContaining({ offset: '40', size: '10' })
       })

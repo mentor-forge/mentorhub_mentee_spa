@@ -91,6 +91,10 @@ export const api = {
     if (params?.name) queryParams.append('name', params.name)
     if (params?.description) queryParams.append('description', params.description)
     if (params?.status) queryParams.append('status', params.status)
+    if (params?.url) queryParams.append('url', params.url)
+    if (params?.interests) queryParams.append('interests', params.interests)
+    if (params?.technologies) queryParams.append('technologies', params.technologies)
+    if (params?.skill_level) queryParams.append('skill_level', params.skill_level)
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
     if (params?.order) queryParams.append('order', params.order)
 

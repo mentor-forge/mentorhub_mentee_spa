@@ -60,6 +60,10 @@ export interface Resource {
   name: string
   description?: string
   status?: string
+  url?: string
+  interests?: string[]
+  technologies?: string[]
+  skill_level?: string
 }
 
 export interface Path {
@@ -84,6 +88,10 @@ export interface ListParams {
   name?: string
   description?: string
   status?: string
+  url?: string
+  interests?: string
+  technologies?: string
+  skill_level?: string
   sort_by?: string
   order?: 'asc' | 'desc'
 }

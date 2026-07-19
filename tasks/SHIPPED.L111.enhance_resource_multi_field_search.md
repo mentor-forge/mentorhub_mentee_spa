@@ -1,6 +1,6 @@
 # L111 – Enhance Resources list multi-field search
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: L110_adopt_shared_card_grid  
 **Description**: Extend Resources list search beyond name-only so users can search by text in description, url, interests, technologies, or skill_level, using documented API filters and the mentee API handoff for any missing params.
@@ -81,4 +81,16 @@ The agent must not edit sibling API repositories. If API work is still required,
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+Plan:
+
+1. Add an explicit Resources search-field selector while preserving the existing search automation ID.
+2. Parameterize `useOffsetList` with a selected resource filter field so Paths retain their existing name-only behavior.
+3. Forward all OpenAPI-confirmed filters through the client and type the corresponding Resource attributes.
+4. Cover serialized client filters and multi-field UI requests in Cypress, then run the required unit, build, container, service, and Cypress checks.
+
+Completed:
+
+- Confirmed the running OpenAPI documents `name`, `description`, `url`, `interests`, `technologies`, and `skill_level` filters for `GET /api/resource`.
+- Added a Resources field selector and mapped its selected field through `useOffsetList`; Paths retain their prior behavior.
+- Added client/type coverage for every confirmed resource filter and Cypress assertions for each selectable search dimension.
+- Passed `npm run test` (42 tests), `npm run build`, `npm run container`, `npm run service`, and `npm run cypress:run` (26 tests).
