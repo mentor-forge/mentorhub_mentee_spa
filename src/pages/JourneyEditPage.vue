@@ -13,96 +13,50 @@
     </v-row>
 
     <v-row v-else-if="journey">
-      <v-col cols="12" md="8">
-        <v-card>
-          <v-card-text>
-            <AutoSaveSelect
-              :model-value="journey.status || 'active'"
+      <v-col cols="12">
+        <CardGrid automation-id="journey-edit-grid" cols="12" md="6" lg="4">
+          <DataCard
+            title="Journey"
+            :model="journeyModel"
+            :on-save="updateField"
+            automation-id="journey-edit-card"
+          >
+            <EnumEditor
+              field="status"
+              enums="default_status"
               label="Status"
-              :items="statusOptions"
-              :on-save="(value: string) => updateField('status', value)"
               automation-id="journey-edit-status-select"
             />
-
-            <v-text-field
-              :model-value="journey.profile_id || ''"
+            <IdentifierEditor
+              field="profile_id"
               label="Profile ID"
-              readonly
-              variant="outlined"
-              density="compact"
+              automation-id="journey-profile-id-field"
               class="mt-4"
-              data-automation-id="journey-profile-id-field"
             />
+          </DataCard>
 
-            <v-divider class="my-6" />
+          <MhCard title="Now" automation-id="journey-now-card">
+            <div data-automation-id="journey-now-count">{{ journey.now?.length ?? 0 }} resource(s)</div>
+          </MhCard>
+          <MhCard title="Next" automation-id="journey-next-card">
+            <div data-automation-id="journey-next-count">{{ journey.next?.length ?? 0 }} module(s)</div>
+          </MhCard>
+          <MhCard title="Library" automation-id="journey-library-card">
+            <div data-automation-id="journey-library-count">
+              {{ journey.library?.length ?? 0 }} completed resource(s)
+            </div>
+          </MhCard>
 
-            <v-row>
-              <v-col cols="12" sm="4">
-                <v-card variant="outlined">
-                  <v-card-title class="text-subtitle-1">Now</v-card-title>
-                  <v-card-text data-automation-id="journey-now-count">
-                    {{ journey.now?.length ?? 0 }} resource(s)
-                  </v-card-text>
-                </v-card>
-              </v-col>
-              <v-col cols="12" sm="4">
-                <v-card variant="outlined">
-                  <v-card-title class="text-subtitle-1">Next</v-card-title>
-                  <v-card-text data-automation-id="journey-next-count">
-                    {{ journey.next?.length ?? 0 }} module(s)
-                  </v-card-text>
-                </v-card>
-              </v-col>
-              <v-col cols="12" sm="4">
-                <v-card variant="outlined">
-                  <v-card-title class="text-subtitle-1">Library</v-card-title>
-                  <v-card-text data-automation-id="journey-library-count">
-                    {{ journey.library?.length ?? 0 }} completed resource(s)
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-
-            <v-divider class="my-6" />
-
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  :model-value="formatDate(journey.created.at_time)"
-                  label="Created"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                />
-                <v-text-field
-                  :model-value="journey.created.by_user"
-                  label="Created By"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                  class="mt-2"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  :model-value="formatDate(journey.saved.at_time)"
-                  label="Last Saved"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                />
-                <v-text-field
-                  :model-value="journey.saved.by_user"
-                  label="Last Saved By"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                  class="mt-2"
-                />
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
+          <DataCard
+            title="Audit"
+            :model="journeyModel"
+            :on-save="updateField"
+            automation-id="journey-audit-card"
+          >
+            <BreadcrumbDisplay field="created" label="Created" automation-id="journey-created" />
+            <BreadcrumbDisplay field="saved" label="Last Saved" automation-id="journey-saved" class="mt-4" />
+          </DataCard>
+        </CardGrid>
       </v-col>
     </v-row>
 
@@ -113,10 +67,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
-import { AutoSaveSelect, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import {
+  BreadcrumbDisplay,
+  CardGrid,
+  DataCard,
+  EnumEditor,
+  IdentifierEditor,
+  MhCard,
+  useErrorHandler,
+} from '@mentor-forge/mentorhub_spa_utils'
 import type { JourneyUpdate } from '@/api/types'
 
 const queryClient = useQueryClient()
@@ -133,7 +95,7 @@ watch(queryError, (err) => {
 
 const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
-const statusOptions = ['active', 'archived']
+const journeyModel = computed(() => journey.value as unknown as Record<string, unknown>)
 
 const { mutateAsync: updateJourney } = useMutation({
   mutationFn: (data: JourneyUpdate) => {
@@ -151,7 +113,11 @@ const { mutateAsync: updateJourney } = useMutation({
   },
 })
 
-async function updateField(field: keyof JourneyUpdate, value: string) {
-  await updateJourney({ [field]: value })
+async function updateField(field: string, value: unknown) {
+  if (field !== 'status' || typeof value !== 'string') {
+    throw new Error(`Unsupported Journey field: ${field}`)
+  }
+
+  await updateJourney({ status: value as JourneyUpdate['status'] })
 }
 </script>

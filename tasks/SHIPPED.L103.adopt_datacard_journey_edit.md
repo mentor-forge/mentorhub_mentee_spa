@@ -1,6 +1,6 @@
 # L103 – Adopt DataCard + typed editors on Journey page
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L102_adopt_card_grid_list_pages  
 **Description**: Convert `JourneyEditPage` to `DataCard` + configurator-type editors; replace hard-coded status select with `EnumEditor` backed by runtime `/api/config` enumerators.
@@ -77,4 +77,8 @@ The agent must not rewrite Path/Resource view pages in this task.
 
 ## Execution Notes
 
-(Reserved for the execution agent.)
+- Replaced the Journey form card with `DataCard` + `EnumEditor` and `IdentifierEditor`, the audit fields with `BreadcrumbDisplay`, and the three summary cards with `MhCard` in a `CardGrid`.
+- Confirmed the running OpenAPI: `status` is the only editable enum field; `later` is an identifier array, not `enum_array`. No Journey page field is `enum_array`, so `EnumArrayEditor` is N/A. The date-time fields are nested, non-editable summary data, so no raw ISO input is exposed.
+- The runtime `/api/config` enumerator used by status is the case-sensitive `default_status`; no option list is hard-coded. `journey-edit-status-select` remains stable. The readonly `IdentifierEditor` renders the prior `journey-profile-id-field` base id as `journey-profile-id-field-display`; Cypress was updated for that documented display suffix.
+- Updated Cypress to select the runtime description labels, blur the enum editor to save, and assert the PATCH payload. The test toggles active/archived so it remains repeatable against an already-mutated service.
+- Passed: `npm run test` (44 tests), `npm run build`, `npm run container`, `npm run service`, and `npm run cypress:run` (19 tests across 4 specs).
