@@ -1,6 +1,6 @@
 # L107 – Refine the Paths card layout
 
-**Status**: Pending
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: L106_prototype_equal_height_card_grid  
 **Description**: Apply the local responsive grid prototype to Paths and simplify each card to the path name and description.
@@ -64,4 +64,25 @@ The agent must not edit `mentorhub_spa_utils`, `src/pages/ResourcesListPage.vue`
 
 ## Execution Notes
 
-Reserved for the execution agent to record plan, commands run, test results, and follow-ups.
+### Plan
+1. Update `PathsListPage.vue`: swap shared `CardGrid` for local `ResponsiveCardGrid`; keep `MhCard` + view action; set card `title` to `path.name` only (drop literal `"Path"` and `:name`); body = description only (remove status chip/automation); use `fluid` on `v-container` so the grid can grow past 4 columns toward 8.
+2. Update `cypress/e2e/path.cy.ts`: fixtures with varied name/description lengths; assert header = name (no `Path` prefix), body = description, no status automation; equal width/height within a row; column counts progress past 4 and reach (not exceed) 8 at 2560px; retain search/load-more/view navigation.
+3. Run `npm run test`, `npm run build`, note lint unavailable, then packaging (`container`, `service`, `cypress:run`).
+
+### What shipped
+- `PathsListPage.vue` now uses local `ResponsiveCardGrid` (not shared `CardGrid`), `v-container fluid` for wide layouts, `MhCard` title = `path.name` only, body = description only (status chip removed). Search/loading/error/load-more/view automation IDs unchanged.
+- `cypress/e2e/path.cy.ts` fixtures include short/long name+description cards; new assertions for header/body/no-status, equal row width/height, and column counts 1→8 (capped at 8 past 2560px).
+
+### Test results
+- `npm run test` — **pass** (9 files / 50 tests)
+- `npm run build` — **pass**
+- `npm run lint` — **unavailable** (no `lint` script in package.json)
+- `npm run container` — **pass** (image `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest`)
+- `npm run service` — **pass** (`mentorhub-mentee_spa-1` recreated/started)
+- `npm run cypress:run` — **pass** (22/22 across journey, navigation, path, resource; path spec 7/7)
+
+### Notes for L108
+- Paths validates the local grid end-to-end: equal-width/equal-height rows, 1→8 columns, collapsed contract unchanged from L106.
+- Paths-specific presentation (name-as-title, description-only body, no status chip, fluid page container, path automation IDs, view routing) must stay out of the shared harvest scope.
+- Shared harvest should cover: CSS Grid 1→8 breakpoints, slot flattening/`automationId`, expanded stretch + collapsed non-stretch MhCard overrides, demo/tests/README, then publish + bump this SPA and remove the local prototype.
+- Status chip automation `path-list-path-*-status-display` was removed from the list page only; Path view page still shows status.

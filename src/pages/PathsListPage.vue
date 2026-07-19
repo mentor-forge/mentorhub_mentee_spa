@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row>
       <v-col>
         <h1 class="text-h4 mb-4" data-automation-id="path-list-heading">Paths</h1>
@@ -25,12 +25,11 @@
       data-automation-id="path-list-loading"
     />
 
-    <CardGrid automation-id="path-list-grid">
+    <ResponsiveCardGrid automation-id="path-list-grid">
       <MhCard
         v-for="path in paths ?? []"
         :key="path._id"
-        title="Path"
-        :name="path.name"
+        :title="path.name"
         :automation-id="`path-list-path-${path._id}-card`"
       >
         <template #actions>
@@ -45,20 +44,13 @@
         </template>
 
         <p
-          class="text-body-2 mb-3"
+          class="text-body-2 mb-0"
           :data-automation-id="`path-list-path-${path._id}-description-display`"
         >
           {{ path.description || 'No description provided.' }}
         </p>
-        <v-chip
-          size="small"
-          variant="tonal"
-          :data-automation-id="`path-list-path-${path._id}-status-display`"
-        >
-          {{ path.status || 'N/A' }}
-        </v-chip>
       </MhCard>
-    </CardGrid>
+    </ResponsiveCardGrid>
 
     <v-btn
       v-if="hasMoreValue"
@@ -86,7 +78,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { api } from '@/api/client'
-import { CardGrid, ListPageSearch, MhCard } from '@mentor-forge/mentorhub_spa_utils'
+import { ListPageSearch, MhCard } from '@mentor-forge/mentorhub_spa_utils'
+import ResponsiveCardGrid from '@/components/ResponsiveCardGrid.vue'
 import { useOffsetList } from '@/composables/useOffsetList'
 import { useRouter } from 'vue-router'
 import type { Path } from '@/api/types'
