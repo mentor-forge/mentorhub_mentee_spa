@@ -1,6 +1,6 @@
 # L106 – Prototype an equal-height, wide-screen card grid
 
-**Status**: Pending
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: L105_align_vitest_cypress_editors  
 **Description**: Implement a local, reusable card-grid component that gives cards equal widths, stretches cards to the tallest content in each row, and scales responsively from one through eight columns.
@@ -60,4 +60,27 @@ The agent must not edit `mentorhub_spa_utils`, change any page to consume the co
 
 ## Execution Notes
 
-Reserved for the execution agent to record plan, commands run, test results, and follow-ups.
+### Plan
+1. Create `src/components/ResponsiveCardGrid.vue` as a harvest-ready local layout component mirroring `CardGrid`'s slot flattening / key-preserving render pattern, but using CSS Grid (not VRow/VCol) so column counts can progress through 1→8 (Vuetify's 12-col system cannot express 5/7/8 cleanly).
+2. Document fixed responsive breakpoints in the component: 1@0, 2@600, 3@960, 4@1280, 5@1600, 6@1920, 7@2240, 8@2560 (max). Props: `automationId` only (+ default slot).
+3. Equal-width via `1fr` tracks; equal-height expanded cards via grid stretch + scoped `:deep` overrides of `MhCard` intrinsic-height rules (`align-self`/`height`/`flex`) only inside this grid. Collapsed `.mh-card--collapsed` keeps title-bar height (`align-self: flex-start`).
+4. Add co-located Vitest tests for wrapper-per-card (incl. Fragment), `automationId`, layout classes/CSS contract (max 8 cols, stretch, equal-width), and collapsed-card non-stretch contract.
+5. Run `npm run test`, `npm run build`, note lint unavailable, then packaging (`container`, `service`, `cypress:run`).
+
+### What shipped
+- Created `src/components/ResponsiveCardGrid.vue` — CSS Grid layout, CardGrid-style VNode flattening, `automationId`, documented 1→8 column media queries, scoped MhCard height overrides for expanded vs collapsed cards.
+- Created `src/components/ResponsiveCardGrid.test.ts` — 8 Vitest cases covering slots/Fragment/null, automationId, domain-free class names, CSS equal-width/stretch/max-8 contract, and collapsed non-stretch contract.
+
+### Test results
+- `npm run test` — **pass** (9 files / 50 tests, including 8 new ResponsiveCardGrid tests)
+- `npm run build` — **pass**
+- `npm run lint` — **unavailable** (no `lint` script in package.json)
+- `npm run container` — **pass** (image `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest`)
+- `npm run service` — **pass after recovery**: initial `mh up mentee` failed because a leftover local Node process held `127.0.0.1:8394`; killed that listener, started `mentorhub-mentee_spa-1`, SPA returned HTTP 200
+- `npm run cypress:run` — **pass** (19/19 across journey, navigation, path, resource)
+
+### Notes for L107
+- Import `ResponsiveCardGrid` from `@/components/ResponsiveCardGrid.vue` (or relative) and replace shared `CardGrid` on `PathsListPage` only.
+- Documented wide-screen viewport for 8 columns is **2560px**; never exceeds 8.
+- Expanded cards stretch within a row; collapsed MhCards intentionally do **not** stretch (title-bar height).
+- Content-area width on Paths must allow the grid to grow past 4 columns (page/container constraint, not the grid component).
