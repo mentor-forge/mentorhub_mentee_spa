@@ -59,11 +59,50 @@ export interface Resource {
   _id: string
   name: string
   description?: string
-  status?: string
   url?: string
+  type?: string
+  cost?: string
+  skill_level?: string
   interests?: string[]
   technologies?: string[]
-  skill_level?: string
+  last_verified?: string
+  status?: string
+  created?: Breadcrumb
+  saved?: Breadcrumb
+}
+
+export interface ResourceAggregation {
+  _id: string
+  resource_id: string
+  note_count?: number
+  completions?: number
+  hits?: number
+  duration?: string
+  rating_count?: number
+  rating_sum: number
+  created: Breadcrumb
+  last_saved: Breadcrumb
+}
+
+export interface Note {
+  _id: string
+  resource_id: string
+  profile_id?: string
+  note?: string
+  status?: 'active' | 'archived'
+  created?: Breadcrumb
+  saved?: Breadcrumb
+}
+
+export interface ResourceDetail {
+  resource: Resource
+  aggregation: ResourceAggregation | null
+  notes: Note[]
+}
+
+export interface AggregationDetail {
+  aggregation: ResourceAggregation
+  notes: Note[]
 }
 
 export interface Path {

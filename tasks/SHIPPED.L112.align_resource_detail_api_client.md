@@ -1,6 +1,6 @@
 # L112 – Align Resource detail API types and client with OpenAPI
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L111_enhance_resource_multi_field_search  
 **Description**: Update TypeScript types and the API client so Resource detail, aggregation, and note shapes match the running Mentee API OpenAPI contract, including `ResourceDetail` for `GET /api/resource/{resource_id}` and a new client method for `GET /api/aggregation/{resource_id}`.
@@ -80,4 +80,8 @@ The agent must not update `ResourceViewPage.vue` or Cypress specs in this task (
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+Confirmed running OpenAPI at `localhost:8393` exposes `ResourceDetail`, `AggregationDetail`, and `GET /api/aggregation/{resource_id}`.
+
+Implemented full OpenAPI-aligned interfaces in `types.ts` and updated `getResource` / added `getAggregationDetail` in `client.ts`. Extended `Resource.client.test.ts` with composite detail and aggregation endpoint coverage.
+
+Testing: `npm run test` passed (43 tests); `npm run build` passed; `npm run container` passed.

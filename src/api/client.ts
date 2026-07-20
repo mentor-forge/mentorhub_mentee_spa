@@ -2,6 +2,8 @@ import type {
   Journey,
   JourneyUpdate,
   Resource,
+  ResourceDetail,
+  AggregationDetail,
   Path,
   ConfigResponse,
   Error,
@@ -107,8 +109,12 @@ export const api = {
     })
   },
 
-  async getResource(resourceId: string): Promise<Resource> {
-    return request<Resource>(`/resource/${resourceId}`)
+  async getResource(resourceId: string): Promise<ResourceDetail> {
+    return request<ResourceDetail>(`/resource/${resourceId}`)
+  },
+
+  async getAggregationDetail(resourceId: string): Promise<AggregationDetail> {
+    return request<AggregationDetail>(`/aggregation/${resourceId}`)
   },
 
   async getPaths(params?: ListParams): Promise<Path[]> {
