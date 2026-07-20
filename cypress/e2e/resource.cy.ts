@@ -5,9 +5,64 @@ describe('Resource Domain', () => {
   const searchSelector = '[data-automation-id="resource-list-search"] input'
   const searchFieldSelector = '[data-automation-id="resource-list-search-field-select"]'
 
+  const resourceDetailBody = {
+    resource: {
+      _id: 'resource-1',
+      name: 'First Resource',
+      description: 'First description',
+      status: 'active',
+      url: 'https://example.com/resource',
+      type: 'article',
+      cost: 'free',
+      skill_level: 'Apprentice',
+      interests: ['api'],
+      technologies: ['Python'],
+    },
+    aggregation: null,
+    notes: [],
+  }
+
+  const aggregationDetailBody = {
+    aggregation: {
+      _id: 'aggregation-1',
+      resource_id: 'resource-1',
+      note_count: 1,
+      completions: 5,
+      hits: 12,
+      duration: 'PT2H30M',
+      rating_count: 5,
+      rating_sum: 20,
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'system',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'abc',
+      },
+      last_saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'system',
+        at_time: '2024-01-02T00:00:00Z',
+        correlation_id: 'def',
+      },
+    },
+    notes: [
+      {
+        _id: 'note-1',
+        resource_id: 'resource-1',
+        note: 'Helpful resource for learning async patterns.',
+        status: 'active',
+      },
+    ],
+  }
+
   beforeEach(() => {
     cy.login()
     cy.intercept('GET', '**/api/resource*', (request) => {
+      if (request.url.match(/\/api\/resource\/[^/?]+$/)) {
+        request.reply(resourceDetailBody)
+        return
+      }
+
       const isNextPage = request.headers.offset === '20'
       const firstPage = [
         { _id: 'resource-1', name: 'First Resource', description: 'First description', status: 'active' },
@@ -29,12 +84,8 @@ describe('Resource Domain', () => {
             : firstPage
       )
     }).as('getResources')
-    cy.intercept('GET', '**/api/resource/resource-1', {
-      _id: 'resource-1',
-      name: 'First Resource',
-      description: 'First description',
-      status: 'active',
-    }).as('getResource')
+    cy.intercept('GET', '**/api/resource/resource-1', resourceDetailBody).as('getResource')
+    cy.intercept('GET', '**/api/aggregation/resource-1', aggregationDetailBody).as('getAggregation')
   })
 
   it('should display resources list page', () => {
@@ -87,11 +138,44 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-list-resource-resource-1-view-button"]').click()
     cy.wait('@getResource')
     cy.get('[data-automation-id="resource-view-heading"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-grid"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-name-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-back-to-list-button"]').should('be.visible')
+  })
+
+  it('should keep aggregation and notes sub-cards collapsed by default', () => {
+    cy.visit('/resources/resource-1')
+    cy.wait('@getResource')
+
+    cy.get('[data-automation-id="resource-view-aggregation-card"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-notes-card"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-aggregation-card"]').should('have.class', 'mh-card--collapsed')
+    cy.get('[data-automation-id="resource-view-notes-card"]').should('have.class', 'mh-card--collapsed')
+    cy.get('[data-automation-id="resource-view-aggregation-note-count-display"]').should('not.exist')
+    cy.get('[data-automation-id="resource-view-notes-list"]').should('not.exist')
+    cy.get('[data-automation-id="resource-view-notes-empty"]').should('not.exist')
+  })
+
+  it('should lazy-load aggregation metrics when the aggregation sub-card expands', () => {
+    cy.visit('/resources/resource-1')
+    cy.wait('@getResource')
+
+    cy.get('[data-automation-id="resource-view-aggregation-card-collapse-button"]').click()
+    cy.wait('@getAggregation')
+    cy.get('[data-automation-id="resource-view-aggregation-note-count-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-aggregation-completions-display"]').should('be.visible')
+  })
+
+  it('should lazy-load notes when the notes sub-card expands', () => {
+    cy.visit('/resources/resource-1')
+    cy.wait('@getResource')
+
+    cy.get('[data-automation-id="resource-view-notes-card-collapse-button"]').click()
+    cy.wait('@getAggregation')
+    cy.get('[data-automation-id="resource-view-notes-list"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-note-0-text-display"]')
+      .should('contain.text', 'Helpful resource for learning async patterns.')
   })
 })

@@ -1,6 +1,6 @@
 # L113 – Restructure Resource view with lazy-loaded aggregation and notes
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L112_align_resource_detail_api_client  
 **Description**: Redesign `ResourceViewPage` as a single top-level `DataCard` showing resource fields, with two nested sub-cards for aggregation metrics and notes. Sub-cards start collapsed; aggregation and notes load only when a sub-card is expanded.
@@ -110,4 +110,6 @@ The agent must not change `src/api/types.ts` or `src/api/client.ts` except for m
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+Restructured `ResourceViewPage` to a single top-level `DataCard` with all OpenAPI Resource fields via typed read-only editors (configurator enum keys: `resource_type`, `Costs`, `Skills`, `interests`, `technologies`, `resource_status`). Nested Aggregation and Notes sub-cards use `v-model:collapsed` default `true`. Lazy `getAggregationDetail` query enables when either sub-card expands; notes empty state renders only after aggregation detail loads (fixes premature “No notes yet” before fetch).
+
+Testing: `npm run test` passed (43 tests); `npm run build` passed; `npm run container` passed; `npm run cypress:run -- --spec cypress/e2e/resource.cy.ts` passed (12 tests). Full suite: 29 Cypress tests when dev server available on 8394.
