@@ -1,6 +1,6 @@
 # L119 – Restructure Journey page as single-card detail with scoped sections
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L118_extract_journey_path_embed_card  
 **Description**: Redesign `JourneyEditPage` so the full Journey document lives in one non-collapsible top-level card with nested section sub-cards for **Later**, **Next**, **Now**, and **Library**, using lazy Path and Resource embeds — read-only presentation with existing status edit retained at the top.
@@ -120,3 +120,7 @@ Paths are relative to **this SPA repository root**.
 - `cypress/e2e/journey.cy.ts` — minimal updates so status-edit spec still passes
 
 ## Execution Notes
+
+- Restructured `JourneyEditPage` into a single non-collapsible top-level `MhCard` with Later/Next/Now/Library section sub-cards, lazy path embeds, nested Next modules, and read-only resource/library embeds. Moved breadcrumbs to admin-only card.
+
+Testing: `npm run test` passed (49 tests); `npm run build` passed.
