@@ -34,83 +34,78 @@
             </v-btn>
           </template>
 
-          <WordEditor
-            field="name"
-            label="Name"
-            :editable="false"
-            automation-id="resource-view-name-display"
-          />
-          <SentenceEditor
-            field="description"
-            label="Description"
-            :editable="false"
-            automation-id="resource-view-description-display"
-            class="mt-4"
-          />
-          <UrlEditor
-            field="url"
-            label="URL"
-            :editable="false"
-            automation-id="resource-view-url-display"
-            class="mt-4"
-          />
-          <EnumEditor
-            field="type"
-            enums="resource_type"
-            label="Type"
-            :editable="false"
-            automation-id="resource-view-type-display"
-            class="mt-4"
-          />
-          <EnumEditor
-            field="cost"
-            enums="Costs"
-            label="Cost"
-            :editable="false"
-            automation-id="resource-view-cost-display"
-            class="mt-4"
-          />
-          <EnumEditor
-            field="skill_level"
-            enums="Skills"
-            label="Skill Level"
-            :editable="false"
-            automation-id="resource-view-skill-level-display"
-            class="mt-4"
-          />
-          <EnumArrayEditor
-            field="interests"
-            enums="interests"
-            label="Interests"
-            :editable="false"
-            automation-id="resource-view-interests-display"
-            class="mt-4"
-          />
-          <EnumArrayEditor
-            field="technologies"
-            enums="technologies"
-            label="Technologies"
-            :editable="false"
-            automation-id="resource-view-technologies-display"
-            class="mt-4"
-          />
-          <DateTimeEditor
-            field="last_verified"
-            label="Last Verified"
-            :editable="false"
-            automation-id="resource-view-last-verified-display"
-            class="mt-4"
-          />
-          <EnumEditor
-            field="status"
-            enums="resource_status"
-            label="Status"
-            :editable="false"
-            automation-id="resource-view-status-display"
-            class="mt-4"
-          />
-          <BreadcrumbDisplay field="created" label="Created" automation-id="resource-view-created" class="mt-4" />
-          <BreadcrumbDisplay field="saved" label="Last Saved" automation-id="resource-view-saved" class="mt-4" />
+          <v-row>
+            <v-col cols="12" md="6">
+              <WordEditor
+                field="name"
+                label="Name"
+                :editable="false"
+                automation-id="resource-view-name-display"
+              />
+              <SentenceEditor
+                field="description"
+                label="Description"
+                :editable="false"
+                automation-id="resource-view-description-display"
+                class="mt-4"
+              />
+              <UrlEditor
+                field="url"
+                label="URL"
+                :editable="false"
+                automation-id="resource-view-url-display"
+                class="mt-4"
+              />
+              <EnumEditor
+                field="type"
+                enums="resource_type"
+                label="Type"
+                :editable="false"
+                automation-id="resource-view-type-display"
+                class="mt-4"
+              />
+              <EnumEditor
+                field="cost"
+                enums="Costs"
+                label="Cost"
+                :editable="false"
+                automation-id="resource-view-cost-display"
+                class="mt-4"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <EnumEditor
+                field="skill_level"
+                enums="Skills"
+                label="Skill Level"
+                :editable="false"
+                automation-id="resource-view-skill-level-display"
+              />
+              <EnumArrayEditor
+                field="interests"
+                enums="interests"
+                label="Interests"
+                :editable="false"
+                automation-id="resource-view-interests-display"
+                class="mt-4"
+              />
+              <EnumArrayEditor
+                field="technologies"
+                enums="technologies"
+                label="Technologies"
+                :editable="false"
+                automation-id="resource-view-technologies-display"
+                class="mt-4"
+              />
+              <DateTimeEditor
+                field="last_verified"
+                label="Last Verified"
+                :editable="false"
+                automation-id="resource-view-last-verified-display"
+                class="mt-4"
+              />
+            </v-col>
+          </v-row>
 
           <DataCard
             title="Aggregation"
@@ -228,6 +223,30 @@
               </div>
             </div>
           </DataCard>
+
+          <DataCard
+            v-if="hasAdminRole"
+            title="Administration"
+            :model="resourceModel"
+            automation-id="resource-view-admin-card"
+            class="mt-4"
+          >
+            <EnumEditor
+              field="status"
+              enums="resource_status"
+              label="Status"
+              :editable="false"
+              automation-id="resource-view-status-display"
+            />
+            <v-row class="mt-4">
+              <v-col cols="12" md="6">
+                <BreadcrumbDisplay field="created" label="Created" automation-id="resource-view-created" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <BreadcrumbDisplay field="saved" label="Last Saved" automation-id="resource-view-saved" />
+              </v-col>
+            </v-row>
+          </DataCard>
         </DataCard>
       </v-col>
     </v-row>
@@ -261,9 +280,12 @@ import {
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
+import { useRoles } from '@/composables/useRoles'
 
 const routeLocation = useRoute()
 const router = useRouter()
+const { hasRole } = useRoles()
+const hasAdminRole = hasRole('admin')
 
 const resourceId = computed(() => routeLocation.params.id as string)
 

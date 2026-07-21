@@ -17,6 +17,18 @@ describe('Resource Domain', () => {
       skill_level: 'Apprentice',
       interests: ['api'],
       technologies: ['Python'],
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'admin-user',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'resource-created',
+      },
+      saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'admin-user',
+        at_time: '2024-01-02T00:00:00Z',
+        correlation_id: 'resource-saved',
+      },
     },
     aggregation: null,
     notes: [],
@@ -141,8 +153,21 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-name-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-created-from-ip-display"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-saved-from-ip-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-back-to-list-button"]').should('be.visible')
+  })
+
+  it('should hide administration card from non-admin users', () => {
+    cy.login(['mentee'])
+    cy.visit('/resources/resource-1')
+    cy.wait('@getResource')
+
+    cy.get('[data-automation-id="resource-view-admin-card"]').should('not.exist')
+    cy.get('[data-automation-id="resource-view-status-display"]').should('not.exist')
+    cy.get('[data-automation-id="resource-view-created-from-ip-display"]').should('not.exist')
   })
 
   it('should keep aggregation and notes sub-cards collapsed by default', () => {
