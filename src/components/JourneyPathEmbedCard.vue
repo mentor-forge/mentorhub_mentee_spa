@@ -58,7 +58,7 @@
         <MhCard
           v-for="(module, moduleIndex) in path.modules ?? []"
           :key="`module-${moduleIndex}`"
-          :title="module.name ?? 'Module'"
+          :title="levelCardTitle('Module', module.name)"
           collapsible
           v-model:collapsed="moduleCollapsed[moduleIndex]"
           :automation-id="`${automationIdPrefix}-module-${moduleIndex}-card`"
@@ -83,7 +83,7 @@
           <MhCard
             v-for="(topic, topicIndex) in module.topics ?? []"
             :key="`topic-${moduleIndex}-${topicIndex}`"
-            :title="topic.name ?? 'Topic'"
+            :title="levelCardTitle('Topic', topic.name)"
             collapsible
             v-model:collapsed="topicCollapsed[topicKey(moduleIndex, topicIndex)]"
             :automation-id="`${automationIdPrefix}-module-${moduleIndex}-topic-${topicIndex}-card`"
@@ -102,6 +102,7 @@
               :key="resource._id"
               :resource-id="resource._id"
               embed-mode
+              title-level="Resource"
               :automation-id-prefix="`${automationIdPrefix}-module-${moduleIndex}-topic-${topicIndex}-resource-${resourceIndex}`"
               :class="resourceIndex > 0 ? 'mt-4' : undefined"
             />
@@ -124,6 +125,7 @@ import {
 } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
 import ResourceViewCard from '@/components/ResourceViewCard.vue'
+import { levelCardTitle } from '@/utils/levelCardTitle'
 
 const props = withDefaults(
   defineProps<{
@@ -177,10 +179,7 @@ provideDataCardContext({
 
 const pathCardTitle = computed(() => {
   if (path.value?.name) {
-    return path.value.name
-  }
-  if (isLoading.value) {
-    return 'Loading…'
+    return levelCardTitle('Path', path.value.name)
   }
   return 'Path'
 })

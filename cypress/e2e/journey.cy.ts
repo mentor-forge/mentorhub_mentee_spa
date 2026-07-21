@@ -215,9 +215,9 @@ describe('Journey Page', () => {
     cy.wait('@getLaterPath')
 
     cy.get('[data-automation-id="journey-detail-later-card-collapse-button"]').click()
-    cy.get('[data-automation-id="journey-detail-later-path-0-card"]').should(
+    cy.get('[data-automation-id="journey-detail-later-path-0-card-title-display"]').should(
       'contain',
-      pathDetailBody.name
+      'Path:Later Path'
     )
     cy.get('[data-automation-id="journey-detail-later-path-0-card-collapse-button"]').click()
     cy.get('[data-automation-id="journey-detail-later-path-0-description-display"]').should('be.visible')

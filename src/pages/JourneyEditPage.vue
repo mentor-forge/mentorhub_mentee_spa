@@ -65,7 +65,7 @@
             <MhCard
               v-for="(module, moduleIndex) in journey.next ?? []"
               :key="`next-module-${moduleIndex}`"
-              :title="module.name ?? 'Module'"
+              :title="levelCardTitle('Module', module.name)"
               collapsible
               v-model:collapsed="nextModuleCollapsed[moduleIndex]"
               :automation-id="`journey-detail-next-module-${moduleIndex}-card`"
@@ -82,7 +82,7 @@
               <MhCard
                 v-for="(topic, topicIndex) in module.topics ?? []"
                 :key="`next-topic-${moduleIndex}-${topicIndex}`"
-                :title="topic.name ?? 'Topic'"
+                :title="levelCardTitle('Topic', topic.name)"
                 collapsible
                 v-model:collapsed="nextTopicCollapsed[nextTopicKey(moduleIndex, topicIndex)]"
                 :automation-id="`journey-detail-next-module-${moduleIndex}-topic-${topicIndex}-card`"
@@ -101,6 +101,7 @@
                   :key="`${resourceId}-${resourceIndex}`"
                   :resource-id="resourceId"
                   embed-mode
+                  title-level="Resource"
                   :automation-id-prefix="`journey-detail-next-module-${moduleIndex}-topic-${topicIndex}-resource-${resourceIndex}`"
                   :class="resourceIndex > 0 ? 'mt-4' : undefined"
                 >
@@ -267,6 +268,7 @@ import JourneyCompleteDialog from '@/components/JourneyCompleteDialog.vue'
 import JourneyPathEmbedCard from '@/components/JourneyPathEmbedCard.vue'
 import JourneyProfileHeader from '@/components/JourneyProfileHeader.vue'
 import ResourceViewCard from '@/components/ResourceViewCard.vue'
+import { levelCardTitle } from '@/utils/levelCardTitle'
 
 const queryClient = useQueryClient()
 

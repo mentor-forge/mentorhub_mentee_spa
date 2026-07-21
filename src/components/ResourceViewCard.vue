@@ -238,6 +238,7 @@ import {
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import ResourceCardModelSection from '@/components/ResourceCardModelSection.vue'
+import { levelCardTitle } from '@/utils/levelCardTitle'
 
 function durationPartsToTotalSeconds(parts: DurationParts): number {
   return parts.days * 86400 + parts.hours * 3600 + parts.minutes * 60 + parts.seconds
@@ -271,6 +272,7 @@ const props = withDefaults(
   defineProps<{
     resourceId: string
     embedMode?: boolean
+    titleLevel?: string
     automationIdPrefix?: string
   }>(),
   {
@@ -303,6 +305,9 @@ provideDataCardContext({
 const resourceCardTitle = computed(() => {
   const name = resourceDetail.value?.resource?.name
   if (props.embedMode) {
+    if (props.titleLevel) {
+      return levelCardTitle(props.titleLevel, name)
+    }
     return name ?? 'Resource'
   }
   return name ? `Resource ${name}` : 'Resource'
