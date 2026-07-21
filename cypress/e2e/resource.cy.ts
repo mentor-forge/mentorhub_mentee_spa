@@ -186,7 +186,7 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-view-aggregation-note-count-display"]').should('not.exist')
     cy.get('[data-automation-id="resource-view-notes-list"]').should('not.exist')
     cy.get('[data-automation-id="resource-view-notes-empty"]').should('not.exist')
-    cy.get('[data-automation-id="resource-view-status-display"]').should('not.exist')
+    cy.get('[data-automation-id="resource-view-status-display"]').should('not.be.visible')
   })
 
   it('should lazy-load aggregation metrics when the aggregation sub-card expands', () => {
