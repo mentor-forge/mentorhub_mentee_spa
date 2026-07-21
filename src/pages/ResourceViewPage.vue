@@ -19,8 +19,7 @@
     <v-row v-else-if="resourceDetail?.resource">
       <v-col cols="12">
         <MhCard
-          title="Resource"
-          :name="resourceDisplayName"
+          :title="resourceCardTitle"
           automation-id="resource-view-card"
         >
           <template #actions>
@@ -35,24 +34,17 @@
 
           <v-row>
             <v-col cols="12" md="6">
-              <WordEditor
-                field="name"
-                label="Name"
+              <UrlEditor
+                field="url"
+                label="URL"
                 :editable="false"
-                automation-id="resource-view-name-display"
+                automation-id="resource-view-url-display"
               />
               <SentenceEditor
                 field="description"
                 label="Description"
                 :editable="false"
                 automation-id="resource-view-description-display"
-                class="mt-4"
-              />
-              <UrlEditor
-                field="url"
-                label="URL"
-                :editable="false"
-                automation-id="resource-view-url-display"
                 class="mt-4"
               />
               <EnumEditor
@@ -122,59 +114,57 @@
               />
             </div>
             <template v-else-if="aggregationDetail?.aggregation">
-              <CountEditor
-                field="note_count"
-                label="Note Count"
-                :editable="false"
-                automation-id="resource-view-aggregation-note-count-display"
-              />
-              <CountEditor
-                field="completions"
-                label="Completions"
-                :editable="false"
-                automation-id="resource-view-aggregation-completions-display"
-                class="mt-4"
-              />
-              <CountEditor
-                field="hits"
-                label="Hits"
-                :editable="false"
-                automation-id="resource-view-aggregation-hits-display"
-                class="mt-4"
-              />
-              <DurationEditor
-                field="duration"
-                label="Total Duration"
-                :editable="false"
-                automation-id="resource-view-aggregation-duration-display"
-                class="mt-4"
-              />
-              <CountEditor
-                field="rating_count"
-                label="Rating Count"
-                :editable="false"
-                automation-id="resource-view-aggregation-rating-count-display"
-                class="mt-4"
-              />
-              <CountEditor
-                field="rating_sum"
-                label="Rating Sum"
-                :editable="false"
-                automation-id="resource-view-aggregation-rating-sum-display"
-                class="mt-4"
-              />
-              <BreadcrumbDisplay
-                field="created"
-                label="Created"
-                automation-id="resource-view-aggregation-created"
-                class="mt-4"
-              />
-              <BreadcrumbDisplay
-                field="last_saved"
-                label="Last Saved"
-                automation-id="resource-view-aggregation-last-saved"
-                class="mt-4"
-              />
+              <v-row>
+                <v-col cols="12" md="6">
+                  <div data-automation-id="resource-view-aggregation-average-rating-display">
+                    <div class="text-caption text-medium-emphasis mb-1">Average Rating</div>
+                    <v-rating
+                      :model-value="aggregationAverageRating ?? 0"
+                      readonly
+                      half-increments
+                      length="4"
+                      density="comfortable"
+                      color="primary"
+                    />
+                  </div>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <CountEditor
+                    field="hits"
+                    label="Hits"
+                    :editable="false"
+                    automation-id="resource-view-aggregation-hits-display"
+                  />
+                </v-col>
+              </v-row>
+              <v-row class="mt-4">
+                <v-col cols="12" md="6">
+                  <CountEditor
+                    field="completions"
+                    label="Completions"
+                    :editable="false"
+                    automation-id="resource-view-aggregation-completions-display"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <DurationEditor
+                    field="duration"
+                    label="Total Duration"
+                    :editable="false"
+                    automation-id="resource-view-aggregation-duration-display"
+                  />
+                </v-col>
+              </v-row>
+              <v-row class="mt-4">
+                <v-col cols="12" md="6">
+                  <CountEditor
+                    field="note_count"
+                    label="Note Count"
+                    :editable="false"
+                    automation-id="resource-view-aggregation-note-count-display"
+                  />
+                </v-col>
+              </v-row>
             </template>
           </DataCard>
 
@@ -227,6 +217,7 @@
             v-if="hasAdminRole"
             title="Administration"
             :model="resourceModel"
+            v-model:collapsed="adminCollapsed"
             automation-id="resource-view-admin-card"
             class="mt-4"
           >
@@ -277,7 +268,6 @@ import {
   provideDataCardContext,
   SentenceEditor,
   UrlEditor,
-  WordEditor,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
@@ -292,6 +282,7 @@ const resourceId = computed(() => routeLocation.params.id as string)
 
 const aggregationCollapsed = ref(true)
 const notesCollapsed = ref(true)
+const adminCollapsed = ref(true)
 
 const shouldLoadAggregationDetail = computed(
   () => !aggregationCollapsed.value || !notesCollapsed.value
@@ -321,9 +312,16 @@ provideDataCardContext({
   onSave: async () => {},
 })
 
-const resourceDisplayName = computed(() => {
-  const name = resourceDetail.value?.resource?.name
-  return name === undefined || name === null ? undefined : String(name)
+const resourceCardTitle = computed(
+  () => resourceDetail.value?.resource?.name ?? 'Resource'
+)
+
+const aggregationAverageRating = computed(() => {
+  const aggregation = aggregationDetail.value?.aggregation
+  if (!aggregation?.rating_count || aggregation.rating_count <= 0) {
+    return undefined
+  }
+  return Math.round((aggregation.rating_sum / aggregation.rating_count) * 10) / 10
 })
 
 const aggregationModel = computed(
