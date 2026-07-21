@@ -188,13 +188,6 @@
           >
             {{ note.note ?? '—' }}
           </div>
-          <div
-            v-if="note.status"
-            class="text-caption text-medium-emphasis mt-1"
-            :data-automation-id="`${automationIdPrefix}-note-${index}-status-display`"
-          >
-            {{ note.status }}
-          </div>
         </div>
       </div>
     </DataCard>
