@@ -20,17 +20,17 @@
 
     <v-row>
       <v-col cols="12" md="6">
+        <MarkdownEditor
+          field="description"
+          label="Description"
+          :editable="false"
+          :automation-id="`${automationIdPrefix}-description-display`"
+        />
         <UrlEditor
           field="url"
           label="URL"
           :editable="false"
           :automation-id="`${automationIdPrefix}-url-display`"
-        />
-        <SentenceEditor
-          field="description"
-          label="Description"
-          :editable="false"
-          :automation-id="`${automationIdPrefix}-description-display`"
           class="mt-4"
         />
         <EnumEditor
@@ -240,9 +240,9 @@ import {
   DurationEditor,
   EnumArrayEditor,
   EnumEditor,
+  MarkdownEditor,
   MhCard,
   provideDataCardContext,
-  SentenceEditor,
   UrlEditor,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
