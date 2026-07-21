@@ -139,7 +139,7 @@ describe('Journey Page', () => {
   it('should land on journey page from default route', () => {
     cy.visit('/')
     cy.url().should('include', '/journey')
-    cy.get('[data-automation-id="journey-edit-heading"]').should('be.visible')
+    cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
   })
 
   it('should load journey detail sections from API', () => {
@@ -174,7 +174,7 @@ describe('Journey Page', () => {
     cy.get('[data-automation-id="nav-drawer-toggle"]').click()
     cy.get('[data-automation-id="nav-journey-link"]').click()
     cy.url().should('include', '/journey')
-    cy.get('[data-automation-id="journey-edit-heading"]').should('be.visible')
+    cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
   })
 
   it('should update journey status from runtime enum values via auto-save', () => {
