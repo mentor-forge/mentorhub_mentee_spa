@@ -151,6 +151,7 @@ describe('Resource Domain', () => {
     cy.wait('@getResource')
     cy.get('[data-automation-id="resource-view-heading"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-card-collapse-button"]').should('not.exist')
     cy.get('[data-automation-id="resource-view-name-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')

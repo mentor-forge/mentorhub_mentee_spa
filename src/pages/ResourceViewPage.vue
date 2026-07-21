@@ -18,10 +18,9 @@
 
     <v-row v-else-if="resourceDetail?.resource">
       <v-col cols="12">
-        <DataCard
+        <MhCard
           title="Resource"
-          name-field="name"
-          :model="resourceModel"
+          :name="resourceDisplayName"
           automation-id="resource-view-card"
         >
           <template #actions>
@@ -247,7 +246,7 @@
               </v-col>
             </v-row>
           </DataCard>
-        </DataCard>
+        </MhCard>
       </v-col>
     </v-row>
 
@@ -274,6 +273,8 @@ import {
   DurationEditor,
   EnumArrayEditor,
   EnumEditor,
+  MhCard,
+  provideDataCardContext,
   SentenceEditor,
   UrlEditor,
   WordEditor,
@@ -314,6 +315,16 @@ const {
 const resourceModel = computed(
   () => resourceDetail.value?.resource as unknown as Record<string, unknown>
 )
+
+provideDataCardContext({
+  model: () => resourceModel.value,
+  onSave: async () => {},
+})
+
+const resourceDisplayName = computed(() => {
+  const name = resourceDetail.value?.resource?.name
+  return name === undefined || name === null ? undefined : String(name)
+})
 
 const aggregationModel = computed(
   () => (aggregationDetail.value?.aggregation ?? {}) as unknown as Record<string, unknown>
