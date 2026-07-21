@@ -1,6 +1,6 @@
 # L118 – Extract embeddable JourneyPathEmbedCard with lazy Path detail load
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L117_align_journey_mutation_api_client  
 **Description**: Create a reusable read-only Path embed card for the Journey **Later** section — lazy-loads `PathDetail` via `getPath` when expanded, nested module/topic/resource layout matching `PathViewPage`, without page-level chrome.
@@ -82,3 +82,7 @@ Paths are relative to **this SPA repository root**.
 - `src/components/JourneyPathEmbedCard.vue` — lazy read-only path embed card (new)
 
 ## Execution Notes
+
+- Added `JourneyPathEmbedCard.vue` with lazy `getPath` on expand, PathViewPage-parity body, `#actions` and `#module-actions` slots, and embedded read-only `ResourceViewCard` entries.
+
+Testing: `npm run test` passed (49 tests); `npm run build` passed.
