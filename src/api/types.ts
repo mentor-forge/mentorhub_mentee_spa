@@ -55,6 +55,12 @@ export interface JourneyUpdate {
   later?: string[]
 }
 
+export interface JourneyCompleteInput {
+  rating?: number
+  note?: string
+  duration?: string
+}
+
 export interface Resource {
   _id: string
   name: string

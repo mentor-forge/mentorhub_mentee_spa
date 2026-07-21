@@ -1,5 +1,6 @@
 import type {
   Journey,
+  JourneyCompleteInput,
   JourneyUpdate,
   Resource,
   ResourceDetail,
@@ -87,6 +88,37 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(data),
     })
+  },
+
+  async advanceJourneyResource(resourceId: string): Promise<Journey> {
+    return request<Journey>(`/journey/advance/${resourceId}`, {
+      method: 'PATCH',
+    })
+  },
+
+  async completeJourneyResource(
+    resourceId: string,
+    data?: JourneyCompleteInput
+  ): Promise<Journey> {
+    return request<Journey>(`/journey/complete/${resourceId}`, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    })
+  },
+
+  async promoteJourneyPath(pathId: string): Promise<Journey> {
+    return request<Journey>(`/journey/promote/path/${pathId}`, {
+      method: 'PATCH',
+    })
+  },
+
+  async promoteJourneyModule(pathId: string, moduleName: string): Promise<Journey> {
+    return request<Journey>(
+      `/journey/promote/module/${pathId}/${encodeURIComponent(moduleName)}`,
+      {
+        method: 'PATCH',
+      }
+    )
   },
 
   async getResources(params?: ListParams): Promise<Resource[]> {

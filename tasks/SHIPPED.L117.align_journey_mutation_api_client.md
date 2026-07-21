@@ -1,6 +1,6 @@
 # L117 – Align Journey mutation API client and types
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L116_restructure_path_view_nested_cards  
 **Description**: Extend `src/api/client.ts` and `src/api/types.ts` with Journey mutation methods backed by the running Mentee API OpenAPI — resource advance (next → now), resource complete (now → library), path promotion (later → next), and module promotion (single module from a later Path → next).
