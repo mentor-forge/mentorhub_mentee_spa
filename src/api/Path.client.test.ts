@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { api } from './client'
+import type { PathDetail } from './types'
 
 // Mock fetch globally
 const mockFetch = vi.fn()
@@ -58,21 +59,53 @@ describe('API Client - Path Endpoints', () => {
     )
   })
 
-  it('should get a single path', async () => {
-    const mockPath = {
+  it('should get a single path detail with nested modules, topics, and resource summaries', async () => {
+    const mockPathDetail: PathDetail = {
       _id: '507f1f77bcf86cd799439011',
-      name: 'test-path'
+      name: 'test-path',
+      description: 'A learning path',
+      technologies: ['Python', 'TypeScript'],
+      interests: ['api', 'data'],
+      modules: [
+        {
+          name: 'Module One',
+          description: 'First module',
+          topics: [
+            {
+              name: 'Topic Alpha',
+              description: 'First topic',
+              resources: [
+                {
+                  _id: '507f1f77bcf86cd799439012',
+                  name: 'resource-one',
+                  description: 'First resource',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      status: 'active',
     }
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockPath
+      json: async () => mockPathDetail
     })
 
     const result = await api.getPath('507f1f77bcf86cd799439011')
 
-    expect(result).toEqual(mockPath)
+    expect(result).toEqual(mockPathDetail)
+    expect(result.modules?.[0]?.topics?.[0]?.resources?.[0]).toEqual({
+      _id: '507f1f77bcf86cd799439012',
+      name: 'resource-one',
+      description: 'First resource',
+    })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/path/507f1f77bcf86cd799439011',
+      expect.any(Object)
+    )
   })
 })

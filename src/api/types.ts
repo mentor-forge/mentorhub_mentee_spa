@@ -112,6 +112,40 @@ export interface Path {
   status?: string
 }
 
+/** Minimal Resource projection embedded in Path detail responses. */
+export interface PathResourceSummary {
+  _id: string
+  name?: string
+  description?: string
+}
+
+/** Topic within a Path module, with enriched resource summaries. */
+export interface PathTopicDetail {
+  name?: string
+  description?: string
+  resources?: PathResourceSummary[]
+}
+
+/** Module within a Path detail document. */
+export interface PathModuleDetail {
+  name?: string
+  description?: string
+  topics?: PathTopicDetail[]
+}
+
+/** Full Path document from GET /api/path/{path_id} (read-only detail). */
+export interface PathDetail {
+  _id: string
+  name: string
+  description?: string
+  technologies?: string[]
+  interests?: string[]
+  modules?: PathModuleDetail[]
+  status?: string
+  created?: Breadcrumb
+  saved?: Breadcrumb
+}
+
 export interface ConfigResponse {
   config_items: unknown[]
   versions: unknown[]
