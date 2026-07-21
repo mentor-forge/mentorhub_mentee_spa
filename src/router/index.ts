@@ -69,8 +69,4 @@ router.beforeEach((to, _from, next) => {
   next()
 })
 
-router.afterEach(() => {
-  document.title = 'Mentee'
-})
-
 export default router

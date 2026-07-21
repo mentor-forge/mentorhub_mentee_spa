@@ -152,6 +152,7 @@ describe('Journey Page', () => {
     cy.get('[data-automation-id="journey-profile-goal-0-display"]').should('contain', 'Learn Python')
     cy.get('[data-automation-id="journey-profile-interests-display"]').should('be.visible')
     cy.get('[data-automation-id="journey-profile-notes-display"]').should('contain', 'Working toward first internship.')
+    cy.get('[data-automation-id="app-bar-title"]').should('contain', 'Jane Mentee:Mentee')
     cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
     cy.get('[data-automation-id="journey-detail-card-collapse-button"]').should('not.exist')
     cy.get('[data-automation-id="journey-edit-status-select"]').should('not.be.visible')
