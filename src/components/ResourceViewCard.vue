@@ -300,9 +300,13 @@ provideDataCardContext({
   onSave: async () => {},
 })
 
-const resourceCardTitle = computed(
-  () => resourceDetail.value?.resource?.name ?? 'Resource'
-)
+const resourceCardTitle = computed(() => {
+  const name = resourceDetail.value?.resource?.name
+  if (props.embedMode) {
+    return name ?? 'Resource'
+  }
+  return name ? `Resource ${name}` : 'Resource'
+})
 
 const aggregationModel = computed(() => {
   const aggregation = resourceDetail.value?.aggregation

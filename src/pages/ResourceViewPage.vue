@@ -1,12 +1,6 @@
 <template>
   <v-container>
     <v-row>
-      <v-col>
-        <h1 class="text-h4 mb-4" data-automation-id="resource-view-heading">View Resource</h1>
-      </v-col>
-    </v-row>
-
-    <v-row>
       <v-col cols="12">
         <ResourceViewCard :resource-id="resourceId">
           <template #actions>

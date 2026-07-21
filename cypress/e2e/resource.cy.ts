@@ -143,10 +143,9 @@ describe('Resource Domain', () => {
 
     cy.get('[data-automation-id="resource-list-resource-resource-1-view-button"]').click()
     cy.wait('@getResource')
-    cy.get('[data-automation-id="resource-view-heading"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card-collapse-button"]').should('not.exist')
-    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'First Resource')
+    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'Resource First Resource')
     cy.get('[data-automation-id="resource-view-description-display"]').should('contain.text', 'First description')
     cy.get('[data-automation-id="resource-view-url-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
@@ -171,7 +170,10 @@ describe('Resource Domain', () => {
     cy.visit('/resources/resource-1')
     cy.wait('@getResourceWithLongFields')
 
-    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'Intro to Async Patterns')
+    cy.get('[data-automation-id="resource-view-card-title-display"]').should(
+      'contain.text',
+      'Resource Intro to Async Patterns'
+    )
     cy.get('[data-automation-id="resource-view-description-display"]').should('contain.text', longDescription)
   })
 

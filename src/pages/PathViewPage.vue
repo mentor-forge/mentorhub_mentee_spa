@@ -1,11 +1,5 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col>
-        <h1 class="text-h4 mb-4" data-automation-id="path-view-heading">View Path</h1>
-      </v-col>
-    </v-row>
-
     <v-row v-if="isLoading">
       <v-col class="text-center">
         <v-progress-circular
@@ -216,7 +210,9 @@ provideDataCardContext({
   onSave: async () => {},
 })
 
-const pathCardTitle = computed(() => path.value?.name ?? 'Path')
+const pathCardTitle = computed(() =>
+  path.value?.name ? `Path ${path.value.name}` : 'Path'
+)
 
 const errorRef = ref<Error | null>(null)
 watch(queryError, (err) => {

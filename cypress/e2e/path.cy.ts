@@ -251,10 +251,9 @@ describe('Path Domain', () => {
 
     cy.get('[data-automation-id="path-list-path-path-1-view-button"]').click()
     cy.wait('@getPath')
-    cy.get('[data-automation-id="path-view-heading"]').should('be.visible')
     cy.get('[data-automation-id="path-view-card"]').should('be.visible')
     cy.get('[data-automation-id="path-view-card-collapse-button"]').should('not.exist')
-    cy.get('[data-automation-id="path-view-card-title-display"]').should('contain.text', 'First Path')
+    cy.get('[data-automation-id="path-view-card-title-display"]').should('contain.text', 'Path First Path')
     cy.get('[data-automation-id="path-view-description-display"]').should('be.visible')
     cy.get('[data-automation-id="path-view-technologies-display"]').should('be.visible')
     cy.get('[data-automation-id="path-view-interests-display"]').should('be.visible')
