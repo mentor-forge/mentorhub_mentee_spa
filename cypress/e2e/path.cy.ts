@@ -85,6 +85,39 @@ describe('Path Domain', () => {
     notes: [],
   }
 
+  const aggregationDetailBody = {
+    aggregation: {
+      _id: 'aggregation-1',
+      resource_id: 'resource-1',
+      note_count: 1,
+      completions: 5,
+      hits: 12,
+      duration: 'PT2H30M',
+      rating_count: 5,
+      rating_sum: 20,
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'system',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'abc',
+      },
+      last_saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'system',
+        at_time: '2024-01-02T00:00:00Z',
+        correlation_id: 'def',
+      },
+    },
+    notes: [
+      {
+        _id: 'note-1',
+        resource_id: 'resource-1',
+        note: 'Helpful resource for learning async patterns.',
+        status: 'active',
+      },
+    ],
+  }
+
   /** Count visual CSS Grid tracks from the first row of grid items. */
   function countGridColumns($grid: JQuery<HTMLElement>): number {
     const items = $grid.children('.mh-card-grid__item').toArray()
@@ -118,6 +151,7 @@ describe('Path Domain', () => {
     }).as('getPaths')
     cy.intercept('GET', '**/api/path/path-1', pathDetailBody).as('getPath')
     cy.intercept('GET', '**/api/resource/resource-1', resourceDetailBody).as('getResource')
+    cy.intercept('GET', '**/api/aggregation/resource-1', aggregationDetailBody).as('getAggregation')
   })
 
   it('should display paths list page', () => {
@@ -236,8 +270,6 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-view-modules-card"]').should('have.class', 'mh-card--collapsed')
     cy.get('[data-automation-id="path-view-module-0-card"]').should('have.class', 'mh-card--collapsed')
     cy.get('[data-automation-id="path-view-module-0-description-display"]').should('not.be.visible')
-    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-card"]').should('not.exist')
-    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-notes-card"]').should('not.exist')
     cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-admin-card"]').should('not.exist')
     cy.get('button[data-automation-id*="add"]').should('not.exist')
     cy.get('button[data-automation-id*="delete"]').should('not.exist')
@@ -263,6 +295,20 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-card-collapse-button"]').click()
     cy.wait('@getResource')
     cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-url-display"]').should('be.visible')
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-card"]').should(
+      'have.class',
+      'mh-card--collapsed'
+    )
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-notes-card"]').should(
+      'have.class',
+      'mh-card--collapsed'
+    )
+
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-card-collapse-button"]').click()
+    cy.wait('@getAggregation')
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-hits-display"]').should(
+      'be.visible'
+    )
   })
 
   it('should show administration fields only in the collapsed admin sub-card', () => {
