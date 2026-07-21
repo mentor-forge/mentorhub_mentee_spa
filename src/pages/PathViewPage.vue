@@ -61,50 +61,59 @@
             </v-col>
           </v-row>
 
-          <MhCard
-            v-for="(module, moduleIndex) in path.modules ?? []"
-            :key="`module-${moduleIndex}`"
-            :title="module.name ?? 'Module'"
-            collapsible
-            v-model:collapsed="moduleCollapsed[moduleIndex]"
-            :automation-id="`path-view-module-${moduleIndex}-card`"
+          <DataCard
+            v-if="(path.modules?.length ?? 0) > 0"
+            title="Modules"
+            :model="modulesPlaceholderModel"
+            v-model:collapsed="modulesCollapsed"
+            automation-id="path-view-modules-card"
             class="mt-6"
           >
-            <div
-              v-if="module.description"
-              class="text-body-1 mb-4"
-              :data-automation-id="`path-view-module-${moduleIndex}-description-display`"
-            >
-              {{ module.description }}
-            </div>
-
             <MhCard
-              v-for="(topic, topicIndex) in module.topics ?? []"
-              :key="`topic-${moduleIndex}-${topicIndex}`"
-              :title="topic.name ?? 'Topic'"
+              v-for="(module, moduleIndex) in path.modules ?? []"
+              :key="`module-${moduleIndex}`"
+              :title="module.name ?? 'Module'"
               collapsible
-              v-model:collapsed="topicCollapsed[topicKey(moduleIndex, topicIndex)]"
-              :automation-id="`path-view-module-${moduleIndex}-topic-${topicIndex}-card`"
-              :class="topicIndex > 0 ? 'mt-4' : undefined"
+              v-model:collapsed="moduleCollapsed[moduleIndex]"
+              :automation-id="`path-view-module-${moduleIndex}-card`"
+              :class="moduleIndex > 0 ? 'mt-4' : undefined"
             >
               <div
-                v-if="topic.description"
+                v-if="module.description"
                 class="text-body-1 mb-4"
-                :data-automation-id="`path-view-module-${moduleIndex}-topic-${topicIndex}-description-display`"
+                :data-automation-id="`path-view-module-${moduleIndex}-description-display`"
               >
-                {{ topic.description }}
+                {{ module.description }}
               </div>
 
-              <ResourceViewCard
-                v-for="(resource, resourceIndex) in topic.resources ?? []"
-                :key="resource._id"
-                :resource-id="resource._id"
-                embed-mode
-                :automation-id-prefix="`path-view-module-${moduleIndex}-topic-${topicIndex}-resource-${resourceIndex}`"
-                :class="resourceIndex > 0 ? 'mt-4' : undefined"
-              />
+              <MhCard
+                v-for="(topic, topicIndex) in module.topics ?? []"
+                :key="`topic-${moduleIndex}-${topicIndex}`"
+                :title="topic.name ?? 'Topic'"
+                collapsible
+                v-model:collapsed="topicCollapsed[topicKey(moduleIndex, topicIndex)]"
+                :automation-id="`path-view-module-${moduleIndex}-topic-${topicIndex}-card`"
+                :class="topicIndex > 0 ? 'mt-4' : undefined"
+              >
+                <div
+                  v-if="topic.description"
+                  class="text-body-1 mb-4"
+                  :data-automation-id="`path-view-module-${moduleIndex}-topic-${topicIndex}-description-display`"
+                >
+                  {{ topic.description }}
+                </div>
+
+                <ResourceViewCard
+                  v-for="(resource, resourceIndex) in topic.resources ?? []"
+                  :key="resource._id"
+                  :resource-id="resource._id"
+                  embed-mode
+                  :automation-id-prefix="`path-view-module-${moduleIndex}-topic-${topicIndex}-resource-${resourceIndex}`"
+                  :class="resourceIndex > 0 ? 'mt-4' : undefined"
+                />
+              </MhCard>
             </MhCard>
-          </MhCard>
+          </DataCard>
 
           <DataCard
             v-if="hasAdminRole"
@@ -171,6 +180,7 @@ const hasAdminRole = hasRole('admin')
 const pathId = computed(() => routeLocation.params.id as string)
 
 const adminCollapsed = ref(true)
+const modulesCollapsed = ref(true)
 const moduleCollapsed = ref<boolean[]>([])
 const topicCollapsed = ref<Record<string, boolean>>({})
 
@@ -199,6 +209,7 @@ watch(
 )
 
 const pathModel = computed(() => path.value as unknown as Record<string, unknown>)
+const modulesPlaceholderModel = computed(() => ({}))
 
 provideDataCardContext({
   model: () => pathModel.value,

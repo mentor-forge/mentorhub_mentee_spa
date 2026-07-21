@@ -84,6 +84,7 @@
       </v-col>
     </v-row>
 
+    <template v-if="!embedMode">
     <DataCard
       title="Aggregation"
       :model="aggregationModel"
@@ -223,6 +224,7 @@
         </v-col>
       </v-row>
     </DataCard>
+    </template>
   </MhCard>
 
   <v-snackbar
@@ -278,7 +280,9 @@ const notesCollapsed = ref(true)
 const adminCollapsed = ref(true)
 
 const shouldLoadAggregationDetail = computed(
-  () => !aggregationCollapsed.value || !notesCollapsed.value
+  () =>
+    !props.embedMode &&
+    (!aggregationCollapsed.value || !notesCollapsed.value)
 )
 
 const { data: resourceDetail, isLoading, error: queryError } = useQuery({
