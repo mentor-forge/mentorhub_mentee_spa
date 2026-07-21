@@ -38,8 +38,7 @@
       <MhCard
         v-for="resource in resources ?? []"
         :key="resource._id"
-        title="Resource"
-        :name="resource.name"
+        :title="resource.name"
         :automation-id="`resource-list-resource-${resource._id}-card`"
       >
         <template #actions>
@@ -54,18 +53,11 @@
         </template>
 
         <p
-          class="text-body-2 mb-3"
+          class="text-body-2 mb-0"
           :data-automation-id="`resource-list-resource-${resource._id}-description-display`"
         >
           {{ resource.description || 'No description provided.' }}
         </p>
-        <v-chip
-          size="small"
-          variant="tonal"
-          :data-automation-id="`resource-list-resource-${resource._id}-status-display`"
-        >
-          {{ resource.status || 'N/A' }}
-        </v-chip>
       </MhCard>
     </CardGrid>
 
