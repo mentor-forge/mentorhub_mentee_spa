@@ -1,6 +1,6 @@
 # L121 – E2E coverage for Journey detail page sections and mutations
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L120_journey_scope_action_buttons  
 **Description**: Extend `cypress/e2e/journey.cy.ts` with fixtures and assertions for the restructured Journey detail layout, lazy section expansion, and all Journey mutation flows (Promote Path, Promote Module, Advance, Done).
