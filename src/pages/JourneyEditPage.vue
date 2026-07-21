@@ -19,71 +19,40 @@
     <v-row v-else-if="journey">
       <v-col cols="12">
         <MhCard title="Journey" automation-id="journey-detail-card">
-          <DataCard
-            title="Profile"
-            :model="journeyModel"
-            :on-save="updateField"
-            automation-id="journey-detail-profile-card"
-          >
-            <EnumEditor
-              field="status"
-              enums="default_status"
-              label="Status"
-              automation-id="journey-edit-status-select"
-            />
-            <IdentifierEditor
-              field="profile_id"
-              label="Profile ID"
-              automation-id="journey-profile-id-field"
-              class="mt-4"
-            />
-          </DataCard>
+          <JourneyProfileHeader v-if="journey.profile" :profile="journey.profile" />
 
           <DataCard
-            title="Later"
-            :model="laterPlaceholderModel"
-            v-model:collapsed="laterCollapsed"
-            automation-id="journey-detail-later-card"
+            title="Now"
+            :model="nowPlaceholderModel"
+            v-model:collapsed="nowCollapsed"
+            automation-id="journey-detail-now-card"
             class="mt-6"
           >
             <div
-              v-if="(journey.later?.length ?? 0) === 0"
-              data-automation-id="journey-detail-later-empty"
+              v-if="(journey.now?.length ?? 0) === 0"
+              data-automation-id="journey-detail-now-empty"
             >
-              No paths in Later.
+              No resources in Now.
             </div>
-            <JourneyPathEmbedCard
-              v-for="(pathId, pathIndex) in journey.later ?? []"
-              :key="pathId"
-              :path-id="pathId"
-              :automation-id-prefix="`journey-detail-later-path-${pathIndex}`"
-              :class="pathIndex > 0 ? 'mt-4' : undefined"
+            <ResourceViewCard
+              v-for="(item, index) in journey.now ?? []"
+              :key="`${item.resource_id ?? index}-${index}`"
+              :resource-id="resolveResourceId(item.resource_id)"
+              embed-mode
+              :automation-id-prefix="`journey-detail-now-resource-${index}`"
+              :class="index > 0 ? 'mt-4' : undefined"
             >
               <template #actions>
                 <v-btn
                   variant="text"
                   color="primary"
-                  :loading="promotingPathId === pathId"
-                  :data-automation-id="`journey-later-${pathIndex}-promote-path-button`"
-                  @click="promotePath(pathId)"
+                  :data-automation-id="`journey-now-${index}-done-button`"
+                  @click="openCompleteDialog(resolveResourceId(item.resource_id))"
                 >
-                  Promote Path
+                  Done
                 </v-btn>
               </template>
-              <template #module-actions="{ module, moduleIndex }">
-                <v-btn
-                  v-if="module.name"
-                  variant="text"
-                  color="primary"
-                  :disabled="isModuleInNext(module.name)"
-                  :loading="promotingModuleKey === modulePromoteKey(pathId, module.name)"
-                  :data-automation-id="`journey-later-${pathIndex}-module-${moduleIndex}-promote-button`"
-                  @click="promoteModule(pathId, module.name!)"
-                >
-                  Promote Module
-                </v-btn>
-              </template>
-            </JourneyPathEmbedCard>
+            </ResourceViewCard>
           </DataCard>
 
           <DataCard
@@ -158,37 +127,50 @@
           </DataCard>
 
           <DataCard
-            title="Now"
-            :model="nowPlaceholderModel"
-            v-model:collapsed="nowCollapsed"
-            automation-id="journey-detail-now-card"
+            title="Later"
+            :model="laterPlaceholderModel"
+            v-model:collapsed="laterCollapsed"
+            automation-id="journey-detail-later-card"
             class="mt-6"
           >
             <div
-              v-if="(journey.now?.length ?? 0) === 0"
-              data-automation-id="journey-detail-now-empty"
+              v-if="(journey.later?.length ?? 0) === 0"
+              data-automation-id="journey-detail-later-empty"
             >
-              No resources in Now.
+              No paths in Later.
             </div>
-            <ResourceViewCard
-              v-for="(item, index) in journey.now ?? []"
-              :key="`${item.resource_id ?? index}-${index}`"
-              :resource-id="resolveResourceId(item.resource_id)"
-              embed-mode
-              :automation-id-prefix="`journey-detail-now-resource-${index}`"
-              :class="index > 0 ? 'mt-4' : undefined"
+            <JourneyPathEmbedCard
+              v-for="(pathId, pathIndex) in journey.later ?? []"
+              :key="pathId"
+              :path-id="pathId"
+              :automation-id-prefix="`journey-detail-later-path-${pathIndex}`"
+              :class="pathIndex > 0 ? 'mt-4' : undefined"
             >
               <template #actions>
                 <v-btn
                   variant="text"
                   color="primary"
-                  :data-automation-id="`journey-now-${index}-done-button`"
-                  @click="openCompleteDialog(resolveResourceId(item.resource_id))"
+                  :loading="promotingPathId === pathId"
+                  :data-automation-id="`journey-later-${pathIndex}-promote-path-button`"
+                  @click="promotePath(pathId)"
                 >
-                  Done
+                  Promote Path
                 </v-btn>
               </template>
-            </ResourceViewCard>
+              <template #module-actions="{ module, moduleIndex }">
+                <v-btn
+                  v-if="module.name"
+                  variant="text"
+                  color="primary"
+                  :disabled="isModuleInNext(module.name)"
+                  :loading="promotingModuleKey === modulePromoteKey(pathId, module.name)"
+                  :data-automation-id="`journey-later-${pathIndex}-module-${moduleIndex}-promote-button`"
+                  @click="promoteModule(pathId, module.name!)"
+                >
+                  Promote Module
+                </v-btn>
+              </template>
+            </JourneyPathEmbedCard>
           </DataCard>
 
           <DataCard
@@ -231,14 +213,20 @@
           </DataCard>
 
           <DataCard
-            v-if="hasAdminRole"
             title="Administration"
             :model="journeyModel"
+            :on-save="updateField"
             v-model:collapsed="adminCollapsed"
             automation-id="journey-detail-admin-card"
             class="mt-6"
           >
-            <v-row>
+            <EnumEditor
+              field="status"
+              enums="default_status"
+              label="Status"
+              automation-id="journey-edit-status-select"
+            />
+            <v-row class="mt-4">
               <v-col cols="12" md="6">
                 <BreadcrumbDisplay field="created" label="Created" automation-id="journey-created" />
               </v-col>
@@ -277,19 +265,16 @@ import {
   BreadcrumbDisplay,
   DataCard,
   EnumEditor,
-  IdentifierEditor,
   MhCard,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { JourneyCompleteInput, JourneyLibraryItem, JourneyUpdate } from '@/api/types'
-import { useRoles } from '@/composables/useRoles'
 import JourneyCompleteDialog from '@/components/JourneyCompleteDialog.vue'
 import JourneyPathEmbedCard from '@/components/JourneyPathEmbedCard.vue'
+import JourneyProfileHeader from '@/components/JourneyProfileHeader.vue'
 import ResourceViewCard from '@/components/ResourceViewCard.vue'
 
 const queryClient = useQueryClient()
-const { hasRole } = useRoles()
-const hasAdminRole = hasRole('admin')
 
 const laterCollapsed = ref(true)
 const nextCollapsed = ref(true)

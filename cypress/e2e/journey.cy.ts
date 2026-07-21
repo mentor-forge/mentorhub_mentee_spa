@@ -4,6 +4,15 @@ describe('Journey Page', () => {
   const journeyBody = {
     _id: journeyId,
     profile_id: journeyId,
+    profile: {
+      _id: journeyId,
+      full_name: 'Jane Mentee',
+      email: 'jane@example.com',
+      goals: ['Learn Python', 'Build a portfolio'],
+      interests: ['api'],
+      description: 'Working toward first internship.',
+      status: 'active',
+    },
     status: 'active',
     later: ['path-later-1'],
     next: [
@@ -95,20 +104,6 @@ describe('Journey Page', () => {
       technologies: ['Python'],
       last_verified: '2024-01-01T00:00:00Z',
     },
-    aggregation: null,
-    notes: [],
-  }
-
-  const nowResourceDetailBody = {
-    ...resourceDetailBody,
-    resource: {
-      ...resourceDetailBody.resource,
-      _id: 'resource-now-1',
-      name: 'Now Resource',
-    },
-  }
-
-  const aggregationDetailBody = {
     aggregation: {
       _id: 'agg-1',
       resource_id: 'resource-next-1',
@@ -122,6 +117,15 @@ describe('Journey Page', () => {
       last_saved: journeyBody.saved,
     },
     notes: [],
+  }
+
+  const nowResourceDetailBody = {
+    ...resourceDetailBody,
+    resource: {
+      ...resourceDetailBody.resource,
+      _id: 'resource-now-1',
+      name: 'Now Resource',
+    },
   }
 
   function stubJourney(body = journeyBody) {
@@ -143,14 +147,26 @@ describe('Journey Page', () => {
     cy.visit('/journey')
     cy.wait('@getJourney')
 
-    cy.get('[data-automation-id="journey-edit-status-select"]').should('be.visible')
-    cy.get('[data-automation-id="journey-profile-id-field-display"]').should('be.visible')
+    cy.get('[data-automation-id="journey-profile-full-name-display"]').should('contain', 'Jane Mentee')
+    cy.get('[data-automation-id="journey-profile-email-display"]').should('contain', 'jane@example.com')
+    cy.get('[data-automation-id="journey-profile-goal-0-display"]').should('contain', 'Learn Python')
+    cy.get('[data-automation-id="journey-profile-interests-display"]').should('be.visible')
+    cy.get('[data-automation-id="journey-profile-notes-display"]').should('contain', 'Working toward first internship.')
     cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
     cy.get('[data-automation-id="journey-detail-card-collapse-button"]').should('not.exist')
-    cy.get('[data-automation-id="journey-detail-later-card"]').should('be.visible')
-    cy.get('[data-automation-id="journey-detail-next-card"]').should('be.visible')
-    cy.get('[data-automation-id="journey-detail-now-card"]').should('be.visible')
-    cy.get('[data-automation-id="journey-detail-library-card"]').should('be.visible')
+    cy.get('[data-automation-id="journey-edit-status-select"]').should('not.be.visible')
+
+    const sectionCardIds = [
+      'journey-detail-now-card',
+      'journey-detail-next-card',
+      'journey-detail-later-card',
+      'journey-detail-library-card',
+      'journey-detail-admin-card',
+    ]
+    cy.get(sectionCardIds.map((id) => `[data-automation-id="${id}"]`).join(',')).then(($cards) => {
+      const order = [...$cards].map((el) => el.getAttribute('data-automation-id'))
+      expect(order).to.deep.equal(sectionCardIds)
+    })
   })
 
   it('should navigate to journey from drawer', () => {
@@ -175,6 +191,7 @@ describe('Journey Page', () => {
     cy.visit('/journey')
     cy.wait('@getJourney')
 
+    cy.get('[data-automation-id="journey-detail-admin-card-collapse-button"]').click()
     cy.get('[data-automation-id="journey-edit-status-select"]').then(($select) => {
       const isActive = $select.text().includes('Not Deleted')
       const optionLabel = isActive ? 'Soft Delete Indicator' : 'Not Deleted'
@@ -194,20 +211,23 @@ describe('Journey Page', () => {
     cy.intercept('GET', '**/api/path/path-later-1', pathDetailBody).as('getLaterPath')
     cy.visit('/journey')
     cy.wait('@getJourney')
+    cy.wait('@getLaterPath')
 
     cy.get('[data-automation-id="journey-detail-later-card-collapse-button"]').click()
+    cy.get('[data-automation-id="journey-detail-later-path-0-card"]').should(
+      'contain',
+      pathDetailBody.name
+    )
     cy.get('[data-automation-id="journey-detail-later-path-0-card-collapse-button"]').click()
-    cy.wait('@getLaterPath')
     cy.get('[data-automation-id="journey-detail-later-path-0-description-display"]').should('be.visible')
     cy.get('[data-automation-id="journey-later-0-promote-path-button"]').should('be.visible')
     cy.get('button[data-automation-id*="add"]').should('not.exist')
     cy.get('button[data-automation-id*="delete"]').should('not.exist')
   })
 
-  it('should expand next resource embed and lazy-load aggregation', () => {
+  it('should expand next resource embed and show aggregation from resource detail', () => {
     stubJourney()
     cy.intercept('GET', '**/api/resource/resource-next-1', resourceDetailBody).as('getResource')
-    cy.intercept('GET', '**/api/aggregation/resource-next-1', aggregationDetailBody).as('getAggregation')
     cy.visit('/journey')
     cy.wait('@getJourney')
 
@@ -220,11 +240,6 @@ describe('Journey Page', () => {
     cy.get(
       '[data-automation-id="journey-detail-next-module-0-topic-0-resource-0-advance-button"]'
     ).should('be.visible')
-
-    cy.get(
-      '[data-automation-id="journey-detail-next-module-0-topic-0-resource-0-aggregation-card-collapse-button"]'
-    ).click()
-    cy.wait('@getAggregation')
     cy.get(
       '[data-automation-id="journey-detail-next-module-0-topic-0-resource-0-aggregation-hits-display"]'
     ).should('be.visible')
@@ -271,10 +286,10 @@ describe('Journey Page', () => {
     }).as('promoteModule')
     cy.visit('/journey')
     cy.wait('@getJourney')
+    cy.wait('@getLaterPath')
 
     cy.get('[data-automation-id="journey-detail-later-card-collapse-button"]').click()
     cy.get('[data-automation-id="journey-detail-later-path-0-card-collapse-button"]').click()
-    cy.wait('@getLaterPath')
     cy.get('[data-automation-id="journey-detail-later-path-0-modules-card-collapse-button"]').click()
     cy.get('[data-automation-id="journey-detail-later-path-0-module-0-card-collapse-button"]').click()
     cy.get('[data-automation-id="journey-later-0-module-0-promote-button"]').click()

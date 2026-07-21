@@ -81,11 +81,6 @@ describe('Path Domain', () => {
       interests: ['api'],
       technologies: ['Python'],
     },
-    aggregation: null,
-    notes: [],
-  }
-
-  const aggregationDetailBody = {
     aggregation: {
       _id: 'aggregation-1',
       resource_id: 'resource-1',
@@ -151,7 +146,6 @@ describe('Path Domain', () => {
     }).as('getPaths')
     cy.intercept('GET', '**/api/path/path-1', pathDetailBody).as('getPath')
     cy.intercept('GET', '**/api/resource/resource-1', resourceDetailBody).as('getResource')
-    cy.intercept('GET', '**/api/aggregation/resource-1', aggregationDetailBody).as('getAggregation')
   })
 
   it('should display paths list page', () => {
@@ -295,18 +289,16 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-card-collapse-button"]').click()
     cy.wait('@getResource')
     cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-url-display"]').should('be.visible')
-    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-card"]').should(
-      'have.class',
-      'mh-card--collapsed'
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-heading"]').should(
+      'be.visible'
     )
-    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-notes-card"]').should(
-      'have.class',
-      'mh-card--collapsed'
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-notes-heading"]').should(
+      'be.visible'
     )
-
-    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-card-collapse-button"]').click()
-    cy.wait('@getAggregation')
     cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-aggregation-hits-display"]').should(
+      'be.visible'
+    )
+    cy.get('[data-automation-id="path-view-module-0-topic-0-resource-0-notes-list"]').should(
       'be.visible'
     )
   })

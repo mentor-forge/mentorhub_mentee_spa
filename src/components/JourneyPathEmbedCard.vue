@@ -9,7 +9,7 @@
       <slot name="actions" />
     </template>
 
-    <div v-if="isLoading" class="text-center py-4">
+    <div v-if="!cardCollapsed && isLoading" class="text-center py-4">
       <v-progress-circular
         indeterminate
         color="primary"
@@ -17,7 +17,7 @@
       />
     </div>
 
-    <template v-else-if="path">
+    <template v-else-if="!cardCollapsed && path">
       <SentenceEditor
         field="description"
         label="Description"
@@ -147,12 +147,9 @@ function topicKey(moduleIndex: number, topicIndex: number): string {
   return `${moduleIndex}-${topicIndex}`
 }
 
-const shouldLoadPath = computed(() => !cardCollapsed.value)
-
 const { data: path, isLoading } = useQuery({
   queryKey: ['path', pathId],
   queryFn: () => api.getPath(pathId.value),
-  enabled: shouldLoadPath,
 })
 
 watch(
@@ -178,5 +175,13 @@ provideDataCardContext({
   onSave: async () => {},
 })
 
-const pathCardTitle = computed(() => path.value?.name ?? 'Path')
+const pathCardTitle = computed(() => {
+  if (path.value?.name) {
+    return path.value.name
+  }
+  if (isLoading.value) {
+    return 'Loading…'
+  }
+  return 'Path'
+})
 </script>
