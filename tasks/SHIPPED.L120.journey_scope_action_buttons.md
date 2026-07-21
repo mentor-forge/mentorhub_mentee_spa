@@ -1,6 +1,6 @@
 # L120 – Journey scope action buttons and complete-resource dialog
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: L119_restructure_journey_detail_page  
 **Description**: Wire Journey mutation buttons on card title rows — Promote Path and Promote Module (later → next), Advance resource (next → now), Done (now → library with rating/notes dialog) — backed by L117 API client methods and journey query invalidation.
@@ -101,3 +101,8 @@ Paths are relative to **this SPA repository root**.
 - Optional Vitest: `src/components/JourneyCompleteDialog.test.ts` or page-level test file (only if added)
 
 ## Execution Notes
+
+- Wired Promote Path, Promote Module, Advance, and Done actions with journey query invalidation.
+- Added `JourneyCompleteDialog.vue` for rating and notes on complete.
+
+Testing: `npm run test` passed (49 tests); `npm run build` passed.

@@ -58,7 +58,32 @@
               :path-id="pathId"
               :automation-id-prefix="`journey-detail-later-path-${pathIndex}`"
               :class="pathIndex > 0 ? 'mt-4' : undefined"
-            />
+            >
+              <template #actions>
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  :loading="promotingPathId === pathId"
+                  :data-automation-id="`journey-later-${pathIndex}-promote-path-button`"
+                  @click="promotePath(pathId)"
+                >
+                  Promote Path
+                </v-btn>
+              </template>
+              <template #module-actions="{ module, moduleIndex }">
+                <v-btn
+                  v-if="module.name"
+                  variant="text"
+                  color="primary"
+                  :disabled="isModuleInNext(module.name)"
+                  :loading="promotingModuleKey === modulePromoteKey(pathId, module.name)"
+                  :data-automation-id="`journey-later-${pathIndex}-module-${moduleIndex}-promote-button`"
+                  @click="promoteModule(pathId, module.name!)"
+                >
+                  Promote Module
+                </v-btn>
+              </template>
+            </JourneyPathEmbedCard>
           </DataCard>
 
           <DataCard
@@ -115,7 +140,19 @@
                   embed-mode
                   :automation-id-prefix="`journey-detail-next-module-${moduleIndex}-topic-${topicIndex}-resource-${resourceIndex}`"
                   :class="resourceIndex > 0 ? 'mt-4' : undefined"
-                />
+                >
+                  <template #actions>
+                    <v-btn
+                      variant="text"
+                      color="primary"
+                      :loading="advancingResourceId === resourceId"
+                      :data-automation-id="`journey-detail-next-module-${moduleIndex}-topic-${topicIndex}-resource-${resourceIndex}-advance-button`"
+                      @click="advanceResource(resourceId)"
+                    >
+                      Advance
+                    </v-btn>
+                  </template>
+                </ResourceViewCard>
               </MhCard>
             </MhCard>
           </DataCard>
@@ -140,7 +177,18 @@
               embed-mode
               :automation-id-prefix="`journey-detail-now-resource-${index}`"
               :class="index > 0 ? 'mt-4' : undefined"
-            />
+            >
+              <template #actions>
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  :data-automation-id="`journey-now-${index}-done-button`"
+                  @click="openCompleteDialog(resolveResourceId(item.resource_id))"
+                >
+                  Done
+                </v-btn>
+              </template>
+            </ResourceViewCard>
           </DataCard>
 
           <DataCard
@@ -203,6 +251,13 @@
       </v-col>
     </v-row>
 
+    <JourneyCompleteDialog
+      v-model="completeDialogOpen"
+      :resource-id="completeResourceId"
+      :loading="isCompleting"
+      @confirm="submitComplete"
+    />
+
     <v-snackbar
       :model-value="showError as unknown as boolean"
       color="error"
@@ -226,8 +281,9 @@ import {
   MhCard,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
-import type { JourneyLibraryItem, JourneyUpdate } from '@/api/types'
+import type { JourneyCompleteInput, JourneyLibraryItem, JourneyUpdate } from '@/api/types'
 import { useRoles } from '@/composables/useRoles'
+import JourneyCompleteDialog from '@/components/JourneyCompleteDialog.vue'
 import JourneyPathEmbedCard from '@/components/JourneyPathEmbedCard.vue'
 import ResourceViewCard from '@/components/ResourceViewCard.vue'
 
@@ -244,6 +300,13 @@ const nextModuleCollapsed = ref<boolean[]>([])
 const nextTopicCollapsed = ref<Record<string, boolean>>({})
 const libraryItemCollapsed = ref<boolean[]>([])
 
+const promotingPathId = ref<string | null>(null)
+const promotingModuleKey = ref<string | null>(null)
+const advancingResourceId = ref<string | null>(null)
+const completeDialogOpen = ref(false)
+const completeResourceId = ref('')
+const isCompleting = ref(false)
+
 const laterPlaceholderModel = computed(() => ({}))
 const nextPlaceholderModel = computed(() => ({}))
 const nowPlaceholderModel = computed(() => ({}))
@@ -259,6 +322,87 @@ function resolveResourceId(resourceId: string | undefined): string {
 
 function libraryItemTitle(item: JourneyLibraryItem): string {
   return item.resource_id ? `Resource ${item.resource_id}` : 'Completed Resource'
+}
+
+function modulePromoteKey(pathId: string, moduleName: string): string {
+  return `${pathId}:${moduleName}`
+}
+
+function isModuleInNext(moduleName: string): boolean {
+  const names = new Set(
+    (journey.value?.next ?? [])
+      .map((module) => module.name)
+      .filter((name): name is string => Boolean(name))
+  )
+  return names.has(moduleName)
+}
+
+function invalidateJourney() {
+  queryClient.invalidateQueries({ queryKey: ['journey'] })
+  errorRef.value = null
+}
+
+function handleMutationError(error: Error) {
+  errorRef.value = error
+}
+
+async function promotePath(pathId: string) {
+  promotingPathId.value = pathId
+  try {
+    await api.promoteJourneyPath(pathId)
+    invalidateJourney()
+  } catch (error) {
+    handleMutationError(error as Error)
+  } finally {
+    promotingPathId.value = null
+  }
+}
+
+async function promoteModule(pathId: string, moduleName: string) {
+  const key = modulePromoteKey(pathId, moduleName)
+  promotingModuleKey.value = key
+  try {
+    await api.promoteJourneyModule(pathId, moduleName)
+    invalidateJourney()
+  } catch (error) {
+    handleMutationError(error as Error)
+  } finally {
+    promotingModuleKey.value = null
+  }
+}
+
+async function advanceResource(resourceId: string) {
+  advancingResourceId.value = resourceId
+  try {
+    await api.advanceJourneyResource(resourceId)
+    invalidateJourney()
+  } catch (error) {
+    handleMutationError(error as Error)
+  } finally {
+    advancingResourceId.value = null
+  }
+}
+
+function openCompleteDialog(resourceId: string) {
+  completeResourceId.value = resourceId
+  completeDialogOpen.value = true
+}
+
+async function submitComplete(input: JourneyCompleteInput) {
+  if (!completeResourceId.value) {
+    return
+  }
+
+  isCompleting.value = true
+  try {
+    await api.completeJourneyResource(completeResourceId.value, input)
+    completeDialogOpen.value = false
+    invalidateJourney()
+  } catch (error) {
+    handleMutationError(error as Error)
+  } finally {
+    isCompleting.value = false
+  }
 }
 
 const { data: journey, isLoading, error: queryError } = useQuery({
