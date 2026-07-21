@@ -153,14 +153,32 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card-collapse-button"]').should('not.exist')
     cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'First Resource')
+    cy.get('[data-automation-id="resource-view-description-display"]').should('contain.text', 'First description')
     cy.get('[data-automation-id="resource-view-url-display"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-description-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card-collapse-button"]').click()
     cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-created-from-ip-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-saved-from-ip-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-back-to-list-button"]').should('be.visible')
+  })
+
+  it('should render resource names with spaces and long descriptions from the OpenAPI contract', () => {
+    const longDescription = 'A'.repeat(500)
+    cy.intercept('GET', '**/api/resource/resource-1', {
+      ...resourceDetailBody,
+      resource: {
+        ...resourceDetailBody.resource,
+        name: 'Intro to Async Patterns',
+        description: longDescription,
+      },
+    }).as('getResourceWithLongFields')
+
+    cy.visit('/resources/resource-1')
+    cy.wait('@getResourceWithLongFields')
+
+    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'Intro to Async Patterns')
+    cy.get('[data-automation-id="resource-view-description-display"]').should('contain.text', longDescription)
   })
 
   it('should hide administration card from non-admin users', () => {
