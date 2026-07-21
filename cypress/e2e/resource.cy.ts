@@ -30,11 +30,6 @@ describe('Resource Domain', () => {
         correlation_id: 'resource-saved',
       },
     },
-    aggregation: null,
-    notes: [],
-  }
-
-  const aggregationDetailBody = {
     aggregation: {
       _id: 'aggregation-1',
       resource_id: 'resource-1',
@@ -97,7 +92,6 @@ describe('Resource Domain', () => {
       )
     }).as('getResources')
     cy.intercept('GET', '**/api/resource/resource-1', resourceDetailBody).as('getResource')
-    cy.intercept('GET', '**/api/aggregation/resource-1', aggregationDetailBody).as('getAggregation')
   })
 
   it('should display resources list page', () => {
@@ -149,10 +143,9 @@ describe('Resource Domain', () => {
 
     cy.get('[data-automation-id="resource-list-resource-resource-1-view-button"]').click()
     cy.wait('@getResource')
-    cy.get('[data-automation-id="resource-view-heading"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card-collapse-button"]').should('not.exist')
-    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'First Resource')
+    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'Resource First Resource')
     cy.get('[data-automation-id="resource-view-description-display"]').should('contain.text', 'First description')
     cy.get('[data-automation-id="resource-view-url-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
@@ -177,7 +170,10 @@ describe('Resource Domain', () => {
     cy.visit('/resources/resource-1')
     cy.wait('@getResourceWithLongFields')
 
-    cy.get('[data-automation-id="resource-view-card-title-display"]').should('contain.text', 'Intro to Async Patterns')
+    cy.get('[data-automation-id="resource-view-card-title-display"]').should(
+      'contain.text',
+      'Resource Intro to Async Patterns'
+    )
     cy.get('[data-automation-id="resource-view-description-display"]').should('contain.text', longDescription)
   })
 
@@ -191,43 +187,31 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-view-created-from-ip-display"]').should('not.exist')
   })
 
-  it('should keep aggregation, notes, and administration sub-cards collapsed by default', () => {
+  it('should show aggregation and notes sections on the resource card', () => {
     cy.visit('/resources/resource-1')
     cy.wait('@getResource')
 
-    cy.get('[data-automation-id="resource-view-aggregation-card"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-notes-card"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-aggregation-card"]').should('have.class', 'mh-card--collapsed')
-    cy.get('[data-automation-id="resource-view-notes-card"]').should('have.class', 'mh-card--collapsed')
-    cy.get('[data-automation-id="resource-view-admin-card"]').should('have.class', 'mh-card--collapsed')
-    cy.get('[data-automation-id="resource-view-aggregation-note-count-display"]').should('not.exist')
-    cy.get('[data-automation-id="resource-view-notes-list"]').should('not.exist')
-    cy.get('[data-automation-id="resource-view-notes-empty"]').should('not.exist')
-    cy.get('[data-automation-id="resource-view-status-display"]').should('not.be.visible')
-  })
-
-  it('should lazy-load aggregation metrics when the aggregation sub-card expands', () => {
-    cy.visit('/resources/resource-1')
-    cy.wait('@getResource')
-
-    cy.get('[data-automation-id="resource-view-aggregation-card-collapse-button"]').click()
-    cy.wait('@getAggregation')
+    cy.get('[data-automation-id="resource-view-aggregation-heading"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-notes-heading"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-aggregation-average-rating-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-aggregation-average-rating-display"] .v-rating').should('be.visible')
     cy.get('[data-automation-id="resource-view-aggregation-hits-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-aggregation-completions-display"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-aggregation-duration-display"]').should('be.visible')
-  })
-
-  it('should lazy-load notes when the notes sub-card expands', () => {
-    cy.visit('/resources/resource-1')
-    cy.wait('@getResource')
-
-    cy.get('[data-automation-id="resource-view-notes-card-collapse-button"]').click()
-    cy.wait('@getAggregation')
+    cy.get('[data-automation-id="resource-view-aggregation-duration-display"]')
+      .should('be.visible')
+      .and('contain.text', 'Average Duration')
+      .and('contain.text', '30 minutes')
     cy.get('[data-automation-id="resource-view-notes-list"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-note-0-text-display"]')
       .should('contain.text', 'Helpful resource for learning async patterns.')
+  })
+
+  it('should keep the administration sub-card collapsed by default', () => {
+    cy.visit('/resources/resource-1')
+    cy.wait('@getResource')
+
+    cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-admin-card"]').should('have.class', 'mh-card--collapsed')
+    cy.get('[data-automation-id="resource-view-status-display"]').should('not.be.visible')
   })
 })

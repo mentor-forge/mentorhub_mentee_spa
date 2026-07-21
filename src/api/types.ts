@@ -41,6 +41,7 @@ export interface JourneyNextModule {
 export interface Journey {
   _id: string
   profile_id?: string
+  profile?: Profile
   status?: 'active' | 'archived'
   library?: JourneyLibraryItem[]
   now?: JourneyNowItem[]
@@ -53,6 +54,25 @@ export interface Journey {
 export interface JourneyUpdate {
   status?: 'active' | 'archived'
   later?: string[]
+}
+
+export interface JourneyCompleteInput {
+  rating?: number
+  note?: string
+  duration?: string
+}
+
+export interface Profile {
+  _id: string
+  name?: string
+  full_name?: string
+  email?: string
+  description?: string
+  goals?: string[]
+  interests?: string[]
+  status?: string
+  created?: Breadcrumb
+  saved?: Breadcrumb
 }
 
 export interface Resource {

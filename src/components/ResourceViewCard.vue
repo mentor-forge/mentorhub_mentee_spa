@@ -84,113 +84,99 @@
       </v-col>
     </v-row>
 
-    <DataCard
-      title="Aggregation"
-      :model="aggregationModel"
-      v-model:collapsed="aggregationCollapsed"
-      :automation-id="`${automationIdPrefix}-aggregation-card`"
-      class="mt-6"
+    <h2
+      class="text-h6 mt-6 mb-4"
+      :data-automation-id="`${automationIdPrefix}-aggregation-heading`"
     >
-      <div v-if="isAggregationLoading" class="text-center py-4">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="24"
-          :data-automation-id="`${automationIdPrefix}-aggregation-loading`"
-        />
-      </div>
-      <template v-else-if="aggregationDetail?.aggregation">
-        <v-row>
-          <v-col cols="12" md="6">
-            <div :data-automation-id="`${automationIdPrefix}-aggregation-average-rating-display`">
-              <div class="text-caption text-medium-emphasis mb-1">Average Rating</div>
-              <v-rating
-                :model-value="aggregationAverageRating ?? 0"
-                readonly
-                half-increments
-                length="4"
-                density="comfortable"
-                color="primary"
-              />
-            </div>
-          </v-col>
-          <v-col cols="12" md="6">
-            <CountEditor
-              field="hits"
-              label="Hits"
-              :editable="false"
-              :automation-id="`${automationIdPrefix}-aggregation-hits-display`"
-            />
-          </v-col>
-        </v-row>
-        <v-row class="mt-4">
-          <v-col cols="12" md="6">
-            <CountEditor
-              field="completions"
-              label="Completions"
-              :editable="false"
-              :automation-id="`${automationIdPrefix}-aggregation-completions-display`"
-            />
-          </v-col>
-          <v-col cols="12" md="6">
-            <DurationEditor
-              field="duration"
-              label="Total Duration"
-              :editable="false"
-              :automation-id="`${automationIdPrefix}-aggregation-duration-display`"
-            />
-          </v-col>
-        </v-row>
-        <v-row class="mt-4">
-          <v-col cols="12" md="6">
-            <CountEditor
-              field="note_count"
-              label="Note Count"
-              :editable="false"
-              :automation-id="`${automationIdPrefix}-aggregation-note-count-display`"
-            />
-          </v-col>
-        </v-row>
-      </template>
-    </DataCard>
+      Aggregation
+    </h2>
 
-    <DataCard
-      title="Notes"
-      :model="notesPlaceholderModel"
-      v-model:collapsed="notesCollapsed"
-      :automation-id="`${automationIdPrefix}-notes-card`"
-      class="mt-4"
+    <ResourceCardModelSection
+      v-if="resourceDetail.aggregation"
+      :model="aggregationModel"
     >
-      <div v-if="isAggregationLoading" class="text-center py-4">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="24"
-          :data-automation-id="`${automationIdPrefix}-notes-loading`"
-        />
-      </div>
-      <div
-        v-else-if="aggregationDetail && aggregationDetail.notes.length === 0"
-        :data-automation-id="`${automationIdPrefix}-notes-empty`"
-      >
-        No notes yet.
-      </div>
-      <div v-else-if="aggregationDetail?.notes?.length" :data-automation-id="`${automationIdPrefix}-notes-list`">
-        <div
-          v-for="(note, index) in aggregationDetail.notes"
-          :key="note._id"
-          class="mb-4"
-          :data-automation-id="`${automationIdPrefix}-note-${index}`"
-        >
-          <div
-            class="text-body-2"
-            :data-automation-id="`${automationIdPrefix}-note-${index}-text-display`"
-          >
-            {{ note.note ?? '—' }}
+      <v-row>
+        <v-col cols="12" md="6">
+          <div :data-automation-id="`${automationIdPrefix}-aggregation-average-rating-display`">
+            <div class="text-caption text-medium-emphasis mb-1">Average Rating</div>
+            <v-rating
+              :model-value="aggregationAverageRating ?? 0"
+              readonly
+              half-increments
+              length="4"
+              density="comfortable"
+              color="primary"
+            />
           </div>
+        </v-col>
+        <v-col cols="12" md="6">
+          <CountEditor
+            field="hits"
+            label="Hits"
+            :editable="false"
+            :automation-id="`${automationIdPrefix}-aggregation-hits-display`"
+          />
+        </v-col>
+      </v-row>
+      <v-row class="mt-4">
+        <v-col cols="12" md="6">
+          <CountEditor
+            field="completions"
+            label="Completions"
+            :editable="false"
+            :automation-id="`${automationIdPrefix}-aggregation-completions-display`"
+          />
+        </v-col>
+        <v-col cols="12" md="6">
+          <DurationEditor
+            field="average_duration"
+            label="Average Duration"
+            :editable="false"
+            :automation-id="`${automationIdPrefix}-aggregation-duration-display`"
+          />
+        </v-col>
+      </v-row>
+    </ResourceCardModelSection>
+    <div
+      v-else
+      class="text-body-2"
+      :data-automation-id="`${automationIdPrefix}-aggregation-empty`"
+    >
+      No aggregation metrics yet.
+    </div>
+
+    <h2
+      class="text-h6 mt-6 mb-4"
+      :data-automation-id="`${automationIdPrefix}-notes-heading`"
+    >
+      Notes
+    </h2>
+
+    <div
+      v-if="resourceDetail.notes.length === 0"
+      class="text-body-2"
+      :data-automation-id="`${automationIdPrefix}-notes-empty`"
+    >
+      No notes yet.
+    </div>
+    <div
+      v-else
+      :data-automation-id="`${automationIdPrefix}-notes-list`"
+    >
+      <div
+        v-for="(note, index) in resourceDetail.notes"
+        :key="note._id"
+        class="mb-4"
+        :data-automation-id="`${automationIdPrefix}-note-${index}`"
+      >
+        <div
+          class="text-body-2"
+          :data-automation-id="`${automationIdPrefix}-note-${index}-text-display`"
+        >
+          {{ note.note ?? '—' }}
         </div>
       </div>
-    </DataCard>
+    </div>
 
     <DataCard
       v-if="!embedMode && hasAdminRole"
@@ -198,7 +184,7 @@
       :model="resourceModel"
       v-model:collapsed="adminCollapsed"
       :automation-id="`${automationIdPrefix}-admin-card`"
-      class="mt-4"
+      class="mt-6"
     >
       <EnumEditor
         field="status"
@@ -245,14 +231,48 @@ import {
   provideDataCardContext,
   UrlEditor,
   useErrorHandler,
+  formatDurationIso,
+  parseDurationIso,
+  type DurationParts,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
+import ResourceCardModelSection from '@/components/ResourceCardModelSection.vue'
+import { levelCardTitle } from '@/utils/levelCardTitle'
+
+function durationPartsToTotalSeconds(parts: DurationParts): number {
+  return parts.days * 86400 + parts.hours * 3600 + parts.minutes * 60 + parts.seconds
+}
+
+function totalSecondsToDurationParts(totalSeconds: number): DurationParts {
+  const days = Math.floor(totalSeconds / 86400)
+  let remainder = totalSeconds % 86400
+  const hours = Math.floor(remainder / 3600)
+  remainder %= 3600
+  const minutes = Math.floor(remainder / 60)
+  const seconds = remainder % 60
+  return { days, hours, minutes, seconds }
+}
+
+function averageDurationIso(
+  duration: string | undefined,
+  completions: number | undefined
+): string | undefined {
+  if (!duration || !completions || completions <= 0) {
+    return undefined
+  }
+  const totalSeconds = durationPartsToTotalSeconds(parseDurationIso(duration))
+  if (totalSeconds <= 0) {
+    return undefined
+  }
+  return formatDurationIso(totalSecondsToDurationParts(Math.round(totalSeconds / completions)))
+}
 
 const props = withDefaults(
   defineProps<{
     resourceId: string
     embedMode?: boolean
+    titleLevel?: string
     automationIdPrefix?: string
   }>(),
   {
@@ -266,27 +286,11 @@ const hasAdminRole = hasRole('admin')
 
 const resourceId = toRef(props, 'resourceId')
 const cardCollapsed = ref(props.embedMode)
-const aggregationCollapsed = ref(true)
-const notesCollapsed = ref(true)
 const adminCollapsed = ref(true)
-
-const shouldLoadAggregationDetail = computed(
-  () => !aggregationCollapsed.value || !notesCollapsed.value
-)
 
 const { data: resourceDetail, isLoading, error: queryError } = useQuery({
   queryKey: ['resource', resourceId],
   queryFn: () => api.getResource(resourceId.value),
-})
-
-const {
-  data: aggregationDetail,
-  isLoading: isAggregationLoading,
-  error: aggregationQueryError,
-} = useQuery({
-  queryKey: ['aggregation', resourceId],
-  queryFn: () => api.getAggregationDetail(resourceId.value),
-  enabled: shouldLoadAggregationDetail,
 })
 
 const resourceModel = computed(
@@ -298,32 +302,39 @@ provideDataCardContext({
   onSave: async () => {},
 })
 
-const resourceCardTitle = computed(
-  () => resourceDetail.value?.resource?.name ?? 'Resource'
-)
+const resourceCardTitle = computed(() => {
+  const name = resourceDetail.value?.resource?.name
+  if (props.embedMode) {
+    if (props.titleLevel) {
+      return levelCardTitle(props.titleLevel, name)
+    }
+    return name ?? 'Resource'
+  }
+  return name ? `Resource ${name}` : 'Resource'
+})
+
+const aggregationModel = computed(() => {
+  const aggregation = resourceDetail.value?.aggregation
+  if (!aggregation) {
+    return {}
+  }
+  return {
+    ...aggregation,
+    average_duration: averageDurationIso(aggregation.duration, aggregation.completions),
+  } as unknown as Record<string, unknown>
+})
 
 const aggregationAverageRating = computed(() => {
-  const aggregation = aggregationDetail.value?.aggregation
+  const aggregation = resourceDetail.value?.aggregation
   if (!aggregation?.rating_count || aggregation.rating_count <= 0) {
     return undefined
   }
   return Math.round((aggregation.rating_sum / aggregation.rating_count) * 10) / 10
 })
 
-const aggregationModel = computed(
-  () => (aggregationDetail.value?.aggregation ?? {}) as unknown as Record<string, unknown>
-)
-
-const notesPlaceholderModel = computed(() => ({}))
-
 const errorRef = ref<Error | null>(null)
 watch(queryError, (err) => {
   errorRef.value = err
-}, { immediate: true })
-watch(aggregationQueryError, (err) => {
-  if (err) {
-    errorRef.value = err
-  }
 }, { immediate: true })
 
 const { showError, errorMessage } = useErrorHandler(errorRef as any)

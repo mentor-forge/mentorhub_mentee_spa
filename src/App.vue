@@ -7,7 +7,7 @@
         data-automation-id="nav-drawer-toggle"
         aria-label="Open navigation drawer"
       />
-      <v-app-bar-title>Mentee</v-app-bar-title>
+      <v-app-bar-title data-automation-id="app-bar-title">{{ appBarTitle }}</v-app-bar-title>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -65,14 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, type ComputedRef } from 'vue'
+import { ref, onMounted, watch, type ComputedRef } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
 import {
   provideEditorConfig,
   redirectToIdpLogin,
   type RuntimeEditorConfig,
   useAuth,
 } from '@mentor-forge/mentorhub_spa_utils'
+import { api } from '@/api/client'
+import { useAppTitle } from '@/composables/useAppTitle'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
 
@@ -80,7 +83,28 @@ const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
 const { config, loadConfig } = useConfig()
 const { hasRole } = useRoles()
+const { appBarTitle, setAppBarTitle, resetAppBarTitle } = useAppTitle()
 const drawer = ref(false)
+
+const { data: journey } = useQuery({
+  queryKey: ['journey'],
+  queryFn: () => api.getMyJourney(),
+  enabled: isAuthenticated,
+})
+
+watch(
+  journey,
+  (journeyDoc) => {
+    setAppBarTitle(journeyDoc?.profile?.full_name)
+  },
+  { immediate: true }
+)
+
+watch(isAuthenticated, (authenticated) => {
+  if (!authenticated) {
+    resetAppBarTitle()
+  }
+})
 
 provideEditorConfig(config as unknown as ComputedRef<RuntimeEditorConfig | null>)
 
@@ -102,6 +126,7 @@ onMounted(async () => {
 
 function handleLogout() {
   const returnTo = `${window.location.origin}/`
+  resetAppBarTitle()
   logout()
   drawer.value = false
   redirectToIdpLogin(returnTo)
