@@ -5,6 +5,7 @@ import type {
   ResourceDetail,
   AggregationDetail,
   Path,
+  PathDetail,
   ConfigResponse,
   Error,
   ListParams
@@ -132,8 +133,8 @@ export const api = {
     })
   },
 
-  async getPath(pathId: string): Promise<Path> {
-    return request<Path>(`/path/${pathId}`)
+  async getPath(pathId: string): Promise<PathDetail> {
+    return request<PathDetail>(`/path/${pathId}`)
   },
 }
 
