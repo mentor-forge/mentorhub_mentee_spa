@@ -87,5 +87,11 @@ The agent must not update files outside this list.
 
 **Branch:** `F-W08-bump-spa-utils-0.5.6`
 
+**Follow-up fix (script load order)**
+- Vite hoists the app module into `<head>` while runtime scripts were in `<body>`; `readRuntimeIdpLoginUri()` returned undefined and redirects fell back to `127.0.0.1`.
+- `vite.config.ts`: `injectRuntimeConfig` plugin (`order: 'pre'`) injects runtime scripts at the start of `<head>`, before the app module.
+- `nginx.conf.template`: `Cache-Control: no-store` for `/runtime-config.js`.
+- Verified served `index.html` order: runtime scripts → app module; `runtime-config.js` contains MagicDNS `IDP_LOGIN_URI`.
+
 **Follow-up tasks**
 - L123 — integration test with `mh up mentee`
