@@ -21,4 +21,5 @@ export CODEARTIFACT_TOKEN="${TOKEN}"
 
 DOCKER_BUILDKIT=1 docker build \
   --secret id=codeartifact_token,env=CODEARTIFACT_TOKEN \
-  -t ghcr.io/mentor-forge/mentorhub_mentee_spa:latest .
+  -t ghcr.io/mentor-forge/mentorhub_mentee_spa:latest \
+  .
