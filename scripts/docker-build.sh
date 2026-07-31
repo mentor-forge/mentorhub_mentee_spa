@@ -1,10 +1,8 @@
 #!/usr/bin/env sh
 # Local Docker build with CodeArtifact npm auth (run `mh` first, or set AWS SSO profile).
-# Build context is the mentor-forge parent folder so file:../mentorhub_spa_utils resolves in the Dockerfile.
 set -e
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-parent=$(cd "$root/.." && pwd)
 cd "$root"
 
 domain="${CODEARTIFACT_DOMAIN:-mentor-forge}"
@@ -21,11 +19,7 @@ TOKEN=$(aws codeartifact get-authorization-token \
 
 export CODEARTIFACT_TOKEN="${TOKEN}"
 
-echo "Building mentorhub_spa_utils (file: dependency for local container)..."
-( cd "$parent/mentorhub_spa_utils" && npm run build )
-
 DOCKER_BUILDKIT=1 docker build \
   --secret id=codeartifact_token,env=CODEARTIFACT_TOKEN \
-  -f "$root/Dockerfile" \
   -t ghcr.io/mentor-forge/mentorhub_mentee_spa:latest \
-  "$parent"
+  .
