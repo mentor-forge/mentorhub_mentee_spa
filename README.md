@@ -72,7 +72,7 @@ src/
   plugins/          # Vuetify plugin configuration
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This SPA uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. The dependency is pinned to the exact version **`1.0.0`** in `package.json` — no caret range. Run `mh` for CodeArtifact credentials before installing. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation.
 
 ## Key Implementation Patterns
 
@@ -96,10 +96,15 @@ src/
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
-- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
-- **Utilities**: `formatDate`, `validationRules`
+This SPA uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Cards**: `CardGrid`, `MhCard`, `DataCard`
+- **Editors**: `SentenceEditor`, `MarkdownEditor`, `UrlEditor`, `CountEditor`, `DateTimeEditor`, `DurationEditor`, `EnumEditor`, `EnumArrayEditor`
+- **Components**: `ListPageSearch`
+- **Composables**: `useErrorHandler`, `useRoles`, `useAuth`, `provideEditorConfig`
+
+`AutoSaveField` and `AutoSaveSelect` remain exported but are legacy — prefer the type-aligned editors above with `DataCard`.
+
+The infinite-scroll list APIs (`useInfiniteScroll`, `InfiniteScroll*` types) were **removed in spa_utils 1.0.0**, and the cursor fields `after_id`, `has_more`, and `next_cursor` do not appear in this SPA's API contracts. List pages here use the local `src/composables/useOffsetList.ts` (TanStack `useInfiniteQuery` over offset/size request headers).
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
@@ -131,7 +136,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, compose `DataCard` with the type-aligned editors (`SentenceEditor`, `EnumEditor`, …) from `spa_utils`. For list pages, use `CardGrid`/`MhCard` with `ListPageSearch` over the local `useOffsetList`.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

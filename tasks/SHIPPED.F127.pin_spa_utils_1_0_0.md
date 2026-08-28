@@ -1,6 +1,6 @@
 # F127 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.0`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: _(none — first task in this wave)_  
 **Description**: This repo owns the Mentee SPA **1.0.0 pin** (issue F-ES10). Replace the caret range `^0.5.7` with an exact **`1.0.0`** pin, refresh the lockfile from CodeArtifact, and fix any residual compile or test breakage. Do **not** adopt `PageFrame` (F129), do not change routes or delete pages (F128), and do not touch the `/mentee/` base path (F130–F131).
@@ -84,4 +84,87 @@ Do not change `src/App.vue` chrome, `src/router/index.ts`, `vite.config.ts`, `ng
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+
+1. Confirm the external prerequisite (`mh`, then `npm view` reports `1.0.0`).
+2. Run the removal-check grep **before** touching anything, to confirm the pin is a clean bump.
+3. Replace `"^0.5.7"` with `"1.0.0"` in `package.json`, then `npm install --include=dev` to refresh `package-lock.json` from CodeArtifact.
+4. Verify the three spa_utils Cypress subpaths and the `visitPath` option still exist in the 1.0.0 artifact before deciding whether `cypress.config.ts` / `cypress/support/e2e.ts` need edits.
+5. Run `npm run test` and `npm run build` (the type gate); fix only genuine 1.0.0 breakage.
+6. Update `README.md` for the pinned version and the removed infinite-scroll helpers.
+7. Packaging verification: `npm run container`, `npm run service`, `npm run cypress:run`; then the dev-server smoke check separately (never concurrent with `npm run service` — both bind host port 8394).
+
+### Commands run
+
+```sh
+mh && npm view @mentor-forge/mentorhub_spa_utils version   # -> 1.0.0
+rg -n "useInfiniteScroll|InfiniteScroll|after_id|has_more|next_cursor" src/ cypress/ tests/
+npm install --include=dev
+npm ls @mentor-forge/mentorhub_spa_utils                    # -> 1.0.0
+npm run test
+npm run test:coverage
+npm run build
+npm run container
+npm run service
+npx cypress install && npx cypress verify
+npm run cypress:run
+npm run api                                                 # frees 8394 for the dev check
+npx vite                                                    # backgrounded, curled, killed
+mh up mentee                                                # stack restored
+npm run lint                                                # -> Missing script: "lint"
+```
+
+### Results
+
+**Pin.** `package.json` now carries the exact pin `"@mentor-forge/mentorhub_spa_utils": "1.0.0"` (no caret). `package-lock.json` resolves `1.0.0` from the CodeArtifact registry
+(`.../mentorhub_spa_utils-1.0.0.tgz`, integrity `sha512-oxrDdKmiNmVRKfDGfWQX9rGn+umXe9uElnD+DfS4kNvFv6RPPAl6Vfx849alIgYgGl8amjdowMvLFdbr8H7kMQ==`).
+`npm ls @mentor-forge/mentorhub_spa_utils` reports `1.0.0`, and the on-disk `node_modules` copy reports `1.0.0`.
+
+**Removal-check grep.** `rg -n "useInfiniteScroll|InfiniteScroll|after_id|has_more|next_cursor" src/ cypress/ tests/` → **no matches** (exit 1). Clean, exactly as the task anticipated. The two list pages continue to use the local `src/composables/useOffsetList.ts` (TanStack `useInfiniteQuery` over offset/size request headers), which 1.0.0 does not touch.
+
+**Cypress subpath verification.** All three subpaths survive unchanged in the 1.0.0 `exports` map, so **no edits were needed** to `cypress.config.ts` or `cypress/support/e2e.ts`:
+
+| Import | 1.0.0 `exports` target | Symbol verified |
+|--------|------------------------|-----------------|
+| `.../cypress/jwtDefaults` | `./cypress/config/jwtDefaults.ts` | `e2eDefaultJwtSecret()` |
+| `.../cypress/registerJwtSignTask` | `./cypress/plugins/registerJwtSignTask.ts` | `registerJwtSignTask(on)` |
+| `.../cypress/registerAuthCommands` | `./cypress/support/registerAuthCommands.ts` | `registerAuthCommands(options)`, `RegisterAuthCommandsOptions.visitPath?: string` (defaults to `'/'`) |
+
+**`npm run test`** — **PASS**: 10 test files, **54 tests passed, 0 failed**. No source edits were required; 1.0.0 broke nothing in this repo.
+
+**`npm run build`** — **PASS**: `vue-tsc` clean (zero TS errors), `vite build` succeeded, 656 modules transformed. The only output is the pre-existing >500 kB chunk-size advisory. This is the type gate for the repo.
+
+**`npm run container`** — **PASS**: image `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest` built (multi-stage build installed `1.0.0` from CodeArtifact via the build secret).
+
+**`npm run service`** — **PASS**: mongodb, mongodb_api, mongodb_spa, mentee_api, mentee_spa, and welcome all started. The SPA answered `200` at `http://localhost:8394/`, `/runtime-config.js` was injected correctly with `IDP_LOGIN_URI`, and the nginx `/api/` proxy answered `401` unauthenticated (expected).
+
+**`npm run cypress:run`** — **PASS**: **39 of 39 tests passed across all 4 specs**, at the un-prefixed origin.
+
+| Spec | Tests | Passing |
+|------|-------|---------|
+| `journey.cy.ts` | 10 | 10 |
+| `navigation.cy.ts` | 7 | 7 |
+| `path.cy.ts` | 9 | 9 |
+| `resource.cy.ts` | 13 | 13 |
+
+**Dev-server smoke check** — partially verified, non-interactively. Run after `npm run api` (never alongside `npm run service`). Vite started clean and served `/` → `200`, transformed `/src/main.ts` and `/src/App.vue` → `200`, and resolved the re-optimized `@mentor-forge_mentorhub_spa_utils.js` prebundle → `200` with no Vite errors. Vite logged `Re-optimizing dependencies because lockfile has changed`, confirming it picked up the new pin. Note that the dev server binds **IPv6 loopback only** (`[::1]:8394`), so `curl 127.0.0.1:8394` fails while `curl "http://[::1]:8394/"` succeeds — a probing gotcha, not a defect. The *interactive* half of the smoke check (live IdP login round-trip, `{full_name}:Mentee` app-bar title, drawer open) was not driven by hand in this automated run; the equivalent paths are covered by `navigation.cy.ts`, which passed.
+
+### Files changed
+
+- `package.json` — exact `1.0.0` pin replacing `^0.5.7`
+- `package-lock.json` — resolved `1.0.0` from CodeArtifact
+- `README.md` — names the exact `1.0.0` pin; refreshed the "Reusable Components and Composables" list to match what this SPA actually imports (cards + type-aligned editors), noted `AutoSaveField` / `AutoSaveSelect` as legacy, and stated explicitly that the infinite-scroll APIs were removed in 1.0.0 and that list pages use the local `useOffsetList`
+
+No `src/**`, `cypress/**`, `vite.config.ts`, `nginx.conf.template`, `Dockerfile`, `vitest.config.ts`, `src/api/client.ts`, or `src/router/index.ts` changes were needed or made. No `PageFrame` adoption, no route or page deletions, no base-path work.
+
+### Follow-ups
+
+1. **Missing `npm run lint` (required by the F-ES10 acceptance criteria).** Confirmed absent — `npm run lint` fails with `Missing script: "lint"`. Per this task's instructions no lint script was added here; `npm run build` (`vue-tsc`) is the current type gate. The SPA standards list `npm run lint` as a standard developer command, so a follow-up task should add ESLint + Prettier (or equivalent) and wire the script.
+
+2. **Coverage thresholds in `vitest.config.ts` fail — pre-existing, not caused by the pin.** `npm run test` is `vitest run` *without* coverage, so it passes and does not exercise the thresholds. Running `npm run test:coverage` fails them:
+   - `src/composables/**`: 61.02% lines / 58.33% branches / 84.61% functions (thresholds 90 / 60 / 90)
+   - `src/components/**`: 0% lines and statements (threshold 90)
+
+   **Verified pre-existing by direct comparison:** I stashed the pin, reinstalled `0.5.7`, and re-ran `npm run test:coverage` — the failing percentages were **byte-identical** on both versions, then restored the pin. The cause is structural: the repo has no component test files at all (`src/components/*.vue` are all 0%), `src/composables/useOffsetList.ts` and `useAuth.ts` are untested, and the coverage `exclude` list does not exclude `cypress/**`, so E2E specs are counted at 0%. Worth its own task; out of scope for the pin.
+
+3. Note for downstream tasks: **`buildJourneyUrl` is exported from the package root** in 1.0.0 with signature `buildJourneyUrl(journey: JourneyPrefix, path?: string): string`, where `JourneyPrefix` is `'discovery' | 'customer' | 'admin' | 'mentor' | 'mentee'`. `resolveAlbOrigin(location?)` and the `JOURNEY_APP_PATHS` catalog are exported alongside it. F128 depends on this.
