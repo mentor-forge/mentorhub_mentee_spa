@@ -1,6 +1,6 @@
 # F129 – Adopt spa_utils `PageFrame` and delete the local chrome
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F128_retire_list_pages_and_lock_routes`  
 **Description**: Replace this SPA's local app bar, navigation drawer, and logout handler with the imported `PageFrame`, keeping the dynamic `{full_name}:Mentee` title by binding it to `pageTitle`. Route paths keep the shape F128 locked; the `/mentee/` base path is F130.
@@ -99,4 +99,10 @@ Do not change `src/router/index.ts`, `src/composables/**`, `src/pages/**`, `src/
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+- **Plan**: Adopted `PageFrame` from `@mentor-forge/mentorhub_spa_utils` in `src/App.vue`. Bound `:page-title="appBarTitle"`. Removed local `v-app-bar`, `v-navigation-drawer`, `drawer` ref, `handleLogout`, and unused imports. Removed outer `<v-container fluid>` wrapper since all pages provide their own `<v-container>`. Updated `src/App.test.ts` with `PageFrame` stub. Updated `app-bar-title` to `page-frame-title` in `cypress/e2e/journey.cy.ts`. Updated `README.md`.
+- **Known limitation recorded**: `PageFrame`'s built-in logout returns to `${window.location.origin}/` (root origin) rather than `/mentee/`. This is compiled into spa_utils 1.0.0; noted as follow-up for spa_utils.
+- **Admin page note**: `/admin` is not reachable from in-app navigation (direct-URL, admin-gated route; spa_utils Settings row targets `/admin/settings` in Admin journey).
+- **Gutter verification**: Kept pages (`JourneyEditPage`, `PathViewPage`, `ResourceViewPage`, `AdminPage`) define their own `<v-container>`, maintaining standard page margins.
+- **Test results**:
+  - `npm run test` -> 10 test files passed, 47 tests passed.
+  - `npm run build` -> `vue-tsc && vite build` built cleanly with no errors.

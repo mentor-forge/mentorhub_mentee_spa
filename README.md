@@ -105,8 +105,9 @@ This SPA uses components and composables from `@mentor-forge/mentorhub_spa_utils
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
 ### Component Architecture
+- **Navigation Shell**: `PageFrame` from `@mentor-forge/mentorhub_spa_utils@1.0.0` provides the single app bar, role-gated hamburger drawer, profile link, and logout. Local nav configuration is disallowed. The dynamic title `{full_name}:Mentee` is bound reactively via `:page-title="appBarTitle"`.
 - **Pages**: Own routing, data fetching, and mutations. Pass data + callbacks to components.
-- **Components**: App-specific components (admin components). Reusable components come from `spa_utils`.
+- **Components**: App-specific components (admin components, ResourceViewCard). Reusable components come from `spa_utils`.
 - **Composables**: App-specific logic (authentication, config). Reusable composables come from `spa_utils`.
 - **Stores**: UI-only state (loading, error messages, etc.)
 
@@ -140,7 +141,7 @@ When adding a new resource or feature:
 
 ## Automation Support
 
-All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
+Interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention. Navigation and shell elements use standard `spa_utils` `PageFrame` automation ids: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link` (and role-gated items `nav-products-link`, `nav-settings-link`).
 
 ## CI
 
