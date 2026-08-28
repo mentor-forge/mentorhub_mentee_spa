@@ -1,4 +1,4 @@
-# API Task Automation Framework - Orchestration
+# SPA Task Automation Framework - Orchestration
 
 This folder contains coding tasks that an orchestration agent can execute, based on the context and instructions in each task file. All of these tasks will only make changes in this SPA repo. The agent will first help to plan tasks, and then orchestrate execution of all Pending Tasks to implement a Feature.
 
