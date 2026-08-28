@@ -185,8 +185,21 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 
 ### E2E Tests
 - Uses Cypress for end-to-end testing
-- Tests cover main user flows: login, CRUD operations for each domain
+- Tests cover main user flows: navigation chrome, the journey detail page, and the path and resource detail pages
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
+
+**Cypress runs against `npm run service`, not `npm run dev`.** Both bind host port 8394, so bring up the container stack first and leave the dev server stopped. `cypress.config.ts` keeps `baseUrl: 'http://localhost:8394'` — the published `mentee_spa` container port. Never point Cypress at the welcome origin on `:8080`; single-SPA e2e uses the direct debug port.
+
+**Every visit is prefixed.** The app is mounted under the `/mentee/` base, so specs visit `/mentee/`, `/mentee/journey`, `/mentee/paths/{id}`, and `/mentee/resources/{id}`, and `cypress/support/e2e.ts` registers the shared auth commands with `visitPath: '/mentee/'` so `cy.login()` seeds `localStorage` on the prefixed origin. Assert the **exact** `pathname`, not a suffix: `createWebHistory('/mentee/')` falls back to the raw pathname when a URL does not start with the base, so an un-prefixed visit still renders and `should('include', '/journey')` would pass against a shape production never serves. API intercepts use `**/mentee/api/…` for the same reason.
+
+**Roles are explicit.** `cy.login()` with no argument seeds an **admin** token, which adds the role-gated Products and Settings rows to the `PageFrame` drawer. Use `cy.login(['mentee'])` for plain-mentee expectations and `cy.login(['admin'])` for the role-gated rows.
+
+| Spec | Covers |
+|------|--------|
+| `cypress/e2e/navigation.cy.ts` | `PageFrame` app bar, drawer catalog by role, profile link, logout, prefixed shell / assets / API base |
+| `cypress/e2e/journey.cy.ts` | default route redirect, journey detail sections, expand, promote, advance, complete with rating and note |
+| `cypress/e2e/path.cy.ts` | path detail nested module / topic / resource cards, admin sub-card, Discovery browse link |
+| `cypress/e2e/resource.cy.ts` | resource typed editors, aggregation and notes, admin sub-card, Discovery browse link |
 
 ## Adding New Features
 

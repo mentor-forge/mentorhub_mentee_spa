@@ -1,4 +1,7 @@
 describe('Resource Domain', () => {
+  // Browser URL carries the `/mentee/` journey prefix; the Vue route stays `/resources/:id`.
+  const RESOURCE_DETAIL_URL = '/mentee/resources/resource-1'
+
   const resourceDetailBody = {
     resource: {
       _id: 'resource-1',
@@ -58,12 +61,12 @@ describe('Resource Domain', () => {
 
   beforeEach(() => {
     cy.login()
-    cy.intercept('GET', '**/api/resource/resource-1', resourceDetailBody).as('getResource')
+    cy.intercept('GET', '**/mentee/api/resource/resource-1', resourceDetailBody).as('getResource')
   })
 
   it('should render resource names with spaces and long descriptions from the OpenAPI contract', () => {
     const longDescription = 'A'.repeat(500)
-    cy.intercept('GET', '**/api/resource/resource-1', {
+    cy.intercept('GET', '**/mentee/api/resource/resource-1', {
       ...resourceDetailBody,
       resource: {
         ...resourceDetailBody.resource,
@@ -72,8 +75,9 @@ describe('Resource Domain', () => {
       },
     }).as('getResourceWithLongFields')
 
-    cy.visit('/resources/resource-1')
+    cy.visitPrefixed(RESOURCE_DETAIL_URL)
     cy.wait('@getResourceWithLongFields')
+    cy.location('pathname').should('eq', RESOURCE_DETAIL_URL)
 
     cy.get('[data-automation-id="resource-view-card-title-display"]').should(
       'contain.text',
@@ -84,7 +88,7 @@ describe('Resource Domain', () => {
 
   it('should hide administration card from non-admin users', () => {
     cy.login(['mentee'])
-    cy.visit('/resources/resource-1')
+    cy.visitPrefixed(RESOURCE_DETAIL_URL)
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-admin-card"]').should('not.exist')
@@ -93,7 +97,7 @@ describe('Resource Domain', () => {
   })
 
   it('should show aggregation and notes sections on the resource card', () => {
-    cy.visit('/resources/resource-1')
+    cy.visitPrefixed(RESOURCE_DETAIL_URL)
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-aggregation-heading"]').should('be.visible')
@@ -112,11 +116,26 @@ describe('Resource Domain', () => {
   })
 
   it('should keep the administration sub-card collapsed by default', () => {
-    cy.visit('/resources/resource-1')
+    cy.visitPrefixed(RESOURCE_DETAIL_URL)
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card"]').should('have.class', 'mh-card--collapsed')
     cy.get('[data-automation-id="resource-view-status-display"]').should('not.be.visible')
+  })
+
+  it('should leave for the Discovery resources collection from the browse link', () => {
+    cy.visitPrefixed(RESOURCE_DETAIL_URL)
+    cy.wait('@getResource')
+
+    // An absolute welcome / ALB href, not a Vue Router target: assert the attribute only.
+    cy.get('[data-automation-id="resource-view-browse-resources-link"]')
+      .should('be.visible')
+      .and('have.attr', 'href')
+      .then((href) => {
+        const url = new URL(String(href))
+        expect(url.port).to.equal('8080')
+        expect(url.pathname).to.equal('/discovery/resources')
+      })
   })
 })

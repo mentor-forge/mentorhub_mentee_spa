@@ -1,4 +1,7 @@
 describe('Path Domain', () => {
+  // Browser URL carries the `/mentee/` journey prefix; the Vue route stays `/paths/:id`.
+  const PATH_DETAIL_URL = '/mentee/paths/path-1'
+
   const firstPath = {
     _id: 'path-1',
     name: 'First Path',
@@ -90,13 +93,14 @@ describe('Path Domain', () => {
 
   beforeEach(() => {
     cy.login()
-    cy.intercept('GET', '**/api/path/path-1', pathDetailBody).as('getPath')
-    cy.intercept('GET', '**/api/resource/resource-1', resourceDetailBody).as('getResource')
+    cy.intercept('GET', '**/mentee/api/path/path-1', pathDetailBody).as('getPath')
+    cy.intercept('GET', '**/mentee/api/resource/resource-1', resourceDetailBody).as('getResource')
   })
 
   it('should expand nested module, topic, and resource cards', () => {
-    cy.visit('/paths/path-1')
+    cy.visitPrefixed(PATH_DETAIL_URL)
     cy.wait('@getPath')
+    cy.location('pathname').should('eq', PATH_DETAIL_URL)
 
     cy.get('[data-automation-id="path-view-modules-card-collapse-button"]').click()
     cy.get('[data-automation-id="path-view-module-0-card-collapse-button"]').click()
@@ -128,7 +132,7 @@ describe('Path Domain', () => {
   })
 
   it('should show administration fields only in the collapsed admin sub-card', () => {
-    cy.visit('/paths/path-1')
+    cy.visitPrefixed(PATH_DETAIL_URL)
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-admin-card"]').should('be.visible')
@@ -143,10 +147,25 @@ describe('Path Domain', () => {
 
   it('should hide administration card from non-admin users', () => {
     cy.login(['mentee'])
-    cy.visit('/paths/path-1')
+    cy.visitPrefixed(PATH_DETAIL_URL)
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-admin-card"]').should('not.exist')
     cy.get('[data-automation-id="path-view-status-display"]').should('not.exist')
+  })
+
+  it('should leave for the Discovery paths collection from the browse link', () => {
+    cy.visitPrefixed(PATH_DETAIL_URL)
+    cy.wait('@getPath')
+
+    // An absolute welcome / ALB href, not a Vue Router target: assert the attribute only.
+    cy.get('[data-automation-id="path-view-browse-paths-link"]')
+      .should('be.visible')
+      .and('have.attr', 'href')
+      .then((href) => {
+        const url = new URL(String(href))
+        expect(url.port).to.equal('8080')
+        expect(url.pathname).to.equal('/discovery/paths')
+      })
   })
 })

@@ -1,6 +1,11 @@
 describe('Journey Page', () => {
   const journeyId = '507f1f77bcf86cd799439011'
 
+  // Browser URLs carry the `/mentee/` journey prefix (Vite base + container nginx); the
+  // Vue route paths behind them stay unprefixed.
+  const APP_ROOT_URL = '/mentee/'
+  const JOURNEY_URL = '/mentee/journey'
+
   const journeyBody = {
     _id: journeyId,
     profile_id: journeyId,
@@ -129,7 +134,7 @@ describe('Journey Page', () => {
   }
 
   function stubJourney(body = journeyBody) {
-    cy.intercept('GET', '**/api/journey', body).as('getJourney')
+    cy.intercept('GET', '**/mentee/api/journey', body).as('getJourney')
   }
 
   beforeEach(() => {
@@ -137,15 +142,19 @@ describe('Journey Page', () => {
   })
 
   it('should land on journey page from default route', () => {
-    cy.visit('/')
-    cy.url().should('include', '/journey')
+    cy.visitPrefixed(APP_ROOT_URL)
+    cy.url().should('include', JOURNEY_URL)
+    // Exact pathname, not a suffix: `createWebHistory('/mentee/')` silently falls back to the
+    // raw pathname for an un-prefixed URL, so `include('/journey')` alone would pass at `/journey`.
+    cy.location('pathname').should('eq', JOURNEY_URL)
     cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
   })
 
   it('should load journey detail sections from API', () => {
     stubJourney()
-    cy.visit('/journey')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
+    cy.location('pathname').should('eq', JOURNEY_URL)
 
     cy.get('[data-automation-id="journey-profile-full-name-display"]').should('contain', 'Jane Mentee')
     cy.get('[data-automation-id="journey-profile-email-display"]').should('contain', 'jane@example.com')
@@ -172,7 +181,7 @@ describe('Journey Page', () => {
 
   it('should update journey status from runtime enum values via auto-save', () => {
     stubJourney()
-    cy.intercept('PATCH', `**/api/journey/${journeyId}`, (request) => {
+    cy.intercept('PATCH', `**/mentee/api/journey/${journeyId}`, (request) => {
       request.reply({
         statusCode: 200,
         body: {
@@ -181,7 +190,7 @@ describe('Journey Page', () => {
         },
       })
     }).as('updateJourney')
-    cy.visit('/journey')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-admin-card-collapse-button"]').click()
@@ -201,8 +210,8 @@ describe('Journey Page', () => {
 
   it('should expand journey sections and lazy-load later path detail', () => {
     stubJourney()
-    cy.intercept('GET', '**/api/path/path-later-1', pathDetailBody).as('getLaterPath')
-    cy.visit('/journey')
+    cy.intercept('GET', '**/mentee/api/path/path-later-1', pathDetailBody).as('getLaterPath')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
     cy.wait('@getLaterPath')
 
@@ -220,8 +229,8 @@ describe('Journey Page', () => {
 
   it('should expand next resource embed and show aggregation from resource detail', () => {
     stubJourney()
-    cy.intercept('GET', '**/api/resource/resource-next-1', resourceDetailBody).as('getResource')
-    cy.visit('/journey')
+    cy.intercept('GET', '**/mentee/api/resource/resource-next-1', resourceDetailBody).as('getResource')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-next-card-collapse-button"]').click()
@@ -240,7 +249,7 @@ describe('Journey Page', () => {
 
   it('should promote a path from later to next', () => {
     stubJourney()
-    cy.intercept('PATCH', '**/api/journey/promote/path/path-later-1', {
+    cy.intercept('PATCH', '**/mentee/api/journey/promote/path/path-later-1', {
       statusCode: 200,
       body: {
         ...journeyBody,
@@ -252,7 +261,7 @@ describe('Journey Page', () => {
         }))],
       },
     }).as('promotePath')
-    cy.visit('/journey')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-later-card-collapse-button"]').click()
@@ -262,8 +271,8 @@ describe('Journey Page', () => {
 
   it('should promote a module from a later path to next', () => {
     stubJourney()
-    cy.intercept('GET', '**/api/path/path-later-1', pathDetailBody).as('getLaterPath')
-    cy.intercept('PATCH', '**/api/journey/promote/module/path-later-1/Foundations', {
+    cy.intercept('GET', '**/mentee/api/path/path-later-1', pathDetailBody).as('getLaterPath')
+    cy.intercept('PATCH', '**/mentee/api/journey/promote/module/path-later-1/Foundations', {
       statusCode: 200,
       body: {
         ...journeyBody,
@@ -277,7 +286,7 @@ describe('Journey Page', () => {
         ],
       },
     }).as('promoteModule')
-    cy.visit('/journey')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
     cy.wait('@getLaterPath')
 
@@ -291,8 +300,8 @@ describe('Journey Page', () => {
 
   it('should advance a resource from next to now', () => {
     stubJourney()
-    cy.intercept('GET', '**/api/resource/resource-next-1', resourceDetailBody).as('getResource')
-    cy.intercept('PATCH', '**/api/journey/advance/resource-next-1', {
+    cy.intercept('GET', '**/mentee/api/resource/resource-next-1', resourceDetailBody).as('getResource')
+    cy.intercept('PATCH', '**/mentee/api/journey/advance/resource-next-1', {
       statusCode: 200,
       body: {
         ...journeyBody,
@@ -307,7 +316,7 @@ describe('Journey Page', () => {
         ],
       },
     }).as('advanceResource')
-    cy.visit('/journey')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-next-card-collapse-button"]').click()
@@ -322,8 +331,8 @@ describe('Journey Page', () => {
 
   it('should complete a resource in now with rating and note', () => {
     stubJourney()
-    cy.intercept('GET', '**/api/resource/resource-now-1', nowResourceDetailBody).as('getNowResource')
-    cy.intercept('PATCH', '**/api/journey/complete/resource-now-1', (request) => {
+    cy.intercept('GET', '**/mentee/api/resource/resource-now-1', nowResourceDetailBody).as('getNowResource')
+    cy.intercept('PATCH', '**/mentee/api/journey/complete/resource-now-1', (request) => {
       expect(request.body).to.deep.include({ rating: 4, note: 'Finished reading' })
       request.reply({
         statusCode: 200,
@@ -342,7 +351,7 @@ describe('Journey Page', () => {
         },
       })
     }).as('completeResource')
-    cy.visit('/journey')
+    cy.visitPrefixed(JOURNEY_URL)
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-now-card-collapse-button"]').click()
