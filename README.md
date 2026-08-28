@@ -88,6 +88,22 @@ Detail pages link back out to the Discovery collections with `buildJourneyUrl('d
 
 ## Key Implementation Patterns
 
+### Navigation Shell
+- `src/App.vue` is a single host `<v-app>` wrapping **`PageFrame`** from `@mentor-forge/mentorhub_spa_utils@1.0.0`, which owns the app bar, the role-gated hamburger drawer, the profile avatar, `<v-main>`, and logout:
+
+```vue
+<v-app>
+  <PageFrame :page-title="appBarTitle">
+    <router-view />
+  </PageFrame>
+</v-app>
+```
+
+- **Local nav config is disallowed.** `pageTitle` is the only prop this SPA passes — never `navItems`, URL maps, an ALB origin, role tables, or extra drawer slots. The hamburger catalog, its role gates, and the cross-SPA hrefs are compiled into spa_utils; links are added or changed there, not here.
+- The app bar title stays app-owned: `useAppTitle` produces `{full_name}:Mentee` (and `Mentee` before the journey resolves) plus the `document.title` side effect, and `App.vue` binds it reactively as `:page-title="appBarTitle"`.
+- `PageFrame` does **not** render a `v-container`, and `App.vue` does not add one — every page opens with its own `<v-container>`.
+- Drawer rows are absolute welcome / ALB hrefs from `buildJourneyUrl` (they usually leave for another SPA), not Vue Router `to` targets. `/admin` is not in the catalog, so the runtime-config viewer is reachable by direct URL only and stays `admin`-gated by the router.
+
 ### Authentication
 - JWT tokens stored in localStorage (`access_token`, `token_expires_at`)
 - Auth (`useAuth`, `redirectToIdpLogin`, `bootstrapAuthFromUrl`) from `@mentor-forge/mentorhub_spa_utils`; see `src/initAuth.ts`
@@ -108,6 +124,7 @@ Detail pages link back out to the Discovery collections with `buildJourneyUrl('d
 
 ### Reusable Components and Composables
 This SPA uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Navigation shell**: `PageFrame`
 - **Cards**: `MhCard`, `DataCard`
 - **Editors**: `SentenceEditor`, `MarkdownEditor`, `UrlEditor`, `CountEditor`, `DateTimeEditor`, `DurationEditor`, `EnumEditor`, `EnumArrayEditor`
 - **Cross-SPA URLs**: `buildJourneyUrl`, `JOURNEY_APP_PATHS`
@@ -120,6 +137,7 @@ The list-dashboard building blocks (`CardGrid`, `ListPageSearch`) and the infini
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
 ### Component Architecture
+- **App shell**: `App.vue` holds the single `v-app`, the `PageFrame` shell, the startup `/api/config` fetch, and `provideEditorConfig`. It defines no chrome of its own.
 - **Pages**: Own routing, data fetching, and mutations. Pass data + callbacks to components.
 - **Components**: App-specific components (admin components). Reusable components come from `spa_utils`.
 - **Composables**: App-specific logic (authentication, config). Reusable composables come from `spa_utils`.
@@ -156,6 +174,19 @@ When adding a new resource or feature:
 ## Automation Support
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
+
+The navigation chrome ids come from the spa_utils `PageFrame`, not from this repo — Cypress targets them directly:
+
+| Element | `data-automation-id` |
+|---------|----------------------|
+| Hamburger toggle | `nav-drawer-toggle` |
+| App bar title | `page-frame-title` |
+| Profile avatar link | `nav-profile-link` |
+| Drawer rows, any token | `nav-home-link`, `nav-notifications-link` |
+| Drawer rows, role-gated | `nav-products-link`, `nav-settings-link` (`admin`); `nav-resources-link`, `nav-paths-link`, `nav-plans-link` (`mentor`); `nav-customer-link`, `nav-customer-members-link` (`customer`) |
+| Logout | `nav-logout-link` |
+
+No `data-automation-id` beginning with `nav-`, and no `app-bar-title`, is defined in `src/`.
 
 ## CI
 

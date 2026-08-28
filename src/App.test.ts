@@ -10,23 +10,12 @@ import {
 
 const config = ref<RuntimeEditorConfig | null>(null)
 const loadConfig = vi.fn()
-const afterEach = vi.fn()
 
 vi.mock('@/composables/useConfig', () => ({
   useConfig: () => ({
     config: computed(() => config.value),
     loadConfig,
   }),
-}))
-
-vi.mock('@/composables/useRoles', () => ({
-  useRoles: () => ({
-    hasRole: () => computed(() => false),
-  }),
-}))
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ afterEach }),
 }))
 
 vi.mock('@tanstack/vue-query', () => ({
@@ -49,7 +38,6 @@ describe('App editor config boundary', () => {
   beforeEach(() => {
     config.value = null
     loadConfig.mockReset()
-    afterEach.mockReset()
     vi.mocked(provideEditorConfig).mockReset()
   })
 
@@ -60,15 +48,7 @@ describe('App editor config boundary', () => {
         stubs: {
           RouterView: true,
           VApp: true,
-          VAppBar: true,
-          VAppBarNavIcon: true,
-          VAppBarTitle: true,
-          VContainer: true,
-          VDivider: true,
-          VList: true,
-          VListItem: true,
-          VMain: true,
-          VNavigationDrawer: true,
+          PageFrame: true,
         },
       },
     })
