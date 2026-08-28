@@ -28,7 +28,7 @@ npx cypress install
 ## package code for deployment
 npm run build 
 
-## run dev server, assumes api is running - captures command line
+## run dev server at http://localhost:8394/mentee/, assumes api is running - captures command line
 npm run dev 
 
 ## run unit tests
@@ -59,6 +59,8 @@ npm run open
 npm run container
 ```
 
+**Port 8394 is exclusive.** `npm run dev` and `npm run service` (the `mentee_spa` container) both bind host port **8394**, so they cannot run at the same time. Use `npm run api` to drop the whole stack and bring up only mongodb + the Mentee API before starting `npm run dev`.
+
 ## Architecture Overview
 
 ```
@@ -74,19 +76,28 @@ src/
 
 **This SPA hosts no list dashboards.** Collection browsing lives on **Discovery**, which is the only journey SPA with CardGrid list pages. This repo keeps the detail pages that Discovery cards deep-link into:
 
-| Route | Page |
-|-------|------|
-| `/` | redirect to `/journey` |
-| `/journey` | `JourneyEditPage.vue` — the caller-scoped journey detail page |
-| `/paths/:id` | `PathViewPage.vue` — Discovery path card target |
-| `/resources/:id` | `ResourceViewPage.vue` — Discovery resource card target |
-| `/admin` | `AdminPage.vue` — runtime-config viewer, requires the `admin` role |
+| Browser URL | Route | Page |
+|-------------|-------|------|
+| `/mentee/` | `/` | redirect to `/journey` |
+| `/mentee/journey` | `/journey` | `JourneyEditPage.vue` — the caller-scoped journey detail page |
+| `/mentee/paths/{id}` | `/paths/:id` | `PathViewPage.vue` — Discovery path card target |
+| `/mentee/resources/{id}` | `/resources/:id` | `ResourceViewPage.vue` — Discovery resource card target |
+| `/mentee/admin` | `/admin` | `AdminPage.vue` — runtime-config viewer, requires the `admin` role |
+
+On the dev server those URLs are `http://localhost:8394/mentee/…`; through welcome nginx or the cloud ALB they are `http://<host>:8080/mentee/…`. See "Base Path" below.
 
 Detail pages link back out to the Discovery collections with `buildJourneyUrl('discovery', …)` from `spa_utils` — absolute welcome / ALB hrefs, never Vue Router targets.
 
 **Note**: This SPA uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. The dependency is pinned to the exact version **`1.0.0`** in `package.json` — no caret range. Run `mh` for CodeArtifact credentials before installing. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation.
 
 ## Key Implementation Patterns
+
+### Base Path
+- The app is mounted under the journey prefix: `vite.config.ts` sets `base: '/mentee/'` and the router uses `createWebHistory(import.meta.env.BASE_URL)`.
+- Route `path` strings stay unprefixed (`/`, `/journey`, `/paths/:id`, …). The prefix comes only from the base — duplicating it in a route path would produce `/mentee/mentee/…`.
+- The `injectRuntimeConfig` plugin in `vite.config.ts` injects `<script src="${base}runtime-config.js">` ahead of the app bundle, so the container runtime config is fetched from `/mentee/runtime-config.js`. The tag carries Vite's `vite-ignore` attribute because Vite would otherwise join the base onto the already-prefixed URL.
+- The unauthenticated router guard builds the IdP `return_to` from the origin plus `BASE_URL`, so a logged-out deep link to `/mentee/paths/{id}` comes back to that same prefixed URL.
+- `npm run dev` proxies both `/api` (direct-port debugging) and `/mentee/api` (the shape welcome nginx and the ALB serve) to the Mentee API on `http://localhost:8393`.
 
 ### Navigation Shell
 - `src/App.vue` is a single host `<v-app>` wrapping **`PageFrame`** from `@mentor-forge/mentorhub_spa_utils@1.0.0`, which owns the app bar, the role-gated hamburger drawer, the profile avatar, `<v-main>`, and logout:

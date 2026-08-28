@@ -7,8 +7,15 @@ import {
   useAuth,
 } from '@mentor-forge/mentorhub_spa_utils'
 
+/** Absolute URL for a router path under the Vite base: `/paths/abc` → `http://host:8394/mentee/paths/abc`. */
+function appUrl(fullPath: string): string {
+  const base = import.meta.env.BASE_URL || '/'
+  const prefix = base.endsWith('/') ? base : `${base}/`
+  return window.location.origin + prefix + fullPath.replace(/^\/+/, '')
+}
+
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -49,7 +56,7 @@ router.beforeEach((to, _from, next) => {
   const { isAuthenticated } = useAuth()
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    redirectToIdpLogin(window.location.origin + to.fullPath)
+    redirectToIdpLogin(appUrl(to.fullPath))
     next(false)
     return
   }
