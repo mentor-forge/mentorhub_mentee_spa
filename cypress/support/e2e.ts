@@ -2,6 +2,6 @@
 
 import { registerAuthCommands } from '@mentor-forge/mentorhub_spa_utils/cypress/registerAuthCommands'
 
-registerAuthCommands({ visitPath: '/' })
+registerAuthCommands({ visitPath: '/mentee/' })
 
 export {}

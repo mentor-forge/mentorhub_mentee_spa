@@ -95,7 +95,7 @@ describe('Path Domain', () => {
   })
 
   it('should display a read-only path detail with nested collapsed cards', () => {
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
     cy.get('[data-automation-id="path-view-card"]').should('be.visible')
     cy.get('[data-automation-id="path-view-card-collapse-button"]').should('not.exist')
@@ -104,7 +104,9 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-view-technologies-display"]').should('be.visible')
     cy.get('[data-automation-id="path-view-interests-display"]').should('be.visible')
     cy.get('[data-automation-id="path-view-status-display"]').should('not.be.visible')
-    cy.get('[data-automation-id="path-view-browse-paths-link"]').should('be.visible')
+    cy.get('[data-automation-id="path-view-browse-paths-link"]')
+      .should('be.visible')
+      .and('have.attr', 'href', 'http://localhost:8080/discovery/paths')
     cy.get('[data-automation-id="path-view-modules-card"]').should('be.visible')
     cy.get('[data-automation-id="path-view-modules-card"]').should('have.class', 'mh-card--collapsed')
     cy.get('[data-automation-id="path-view-module-0-card"]').should('have.class', 'mh-card--collapsed')
@@ -116,7 +118,7 @@ describe('Path Domain', () => {
   })
 
   it('should expand nested module, topic, and resource cards', () => {
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-modules-card-collapse-button"]').click()
@@ -149,7 +151,7 @@ describe('Path Domain', () => {
   })
 
   it('should show administration fields only in the collapsed admin sub-card', () => {
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-admin-card"]').should('be.visible')
@@ -164,7 +166,7 @@ describe('Path Domain', () => {
 
   it('should hide administration card from non-admin users', () => {
     cy.login(['mentee'])
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-admin-card"]').should('not.exist')

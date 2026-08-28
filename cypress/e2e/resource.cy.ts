@@ -62,7 +62,7 @@ describe('Resource Domain', () => {
   })
 
   it('should display a resource in read-only typed editors', () => {
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
     cy.get('[data-automation-id="resource-view-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-card-collapse-button"]').should('not.exist')
@@ -74,7 +74,9 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-view-status-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-created-from-ip-display"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-saved-from-ip-display"]').should('be.visible')
-    cy.get('[data-automation-id="resource-view-browse-resources-link"]').should('be.visible')
+    cy.get('[data-automation-id="resource-view-browse-resources-link"]')
+      .should('be.visible')
+      .and('have.attr', 'href', 'http://localhost:8080/discovery/resources')
   })
 
   it('should render resource names with spaces and long descriptions from the OpenAPI contract', () => {
@@ -88,7 +90,7 @@ describe('Resource Domain', () => {
       },
     }).as('getResourceWithLongFields')
 
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResourceWithLongFields')
 
     cy.get('[data-automation-id="resource-view-card-title-display"]').should(
@@ -100,7 +102,7 @@ describe('Resource Domain', () => {
 
   it('should hide administration card from non-admin users', () => {
     cy.login(['mentee'])
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-admin-card"]').should('not.exist')
@@ -109,7 +111,7 @@ describe('Resource Domain', () => {
   })
 
   it('should show aggregation and notes sections on the resource card', () => {
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-aggregation-heading"]').should('be.visible')
@@ -128,7 +130,7 @@ describe('Resource Domain', () => {
   })
 
   it('should keep the administration sub-card collapsed by default', () => {
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')

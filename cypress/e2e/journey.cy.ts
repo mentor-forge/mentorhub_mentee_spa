@@ -137,14 +137,14 @@ describe('Journey Page', () => {
   })
 
   it('should land on journey page from default route', () => {
-    cy.visit('/')
-    cy.url().should('include', '/journey')
+    cy.visit('/mentee/')
+    cy.url().should('include', '/mentee/journey')
     cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
   })
 
   it('should load journey detail sections from API', () => {
     stubJourney()
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-profile-full-name-display"]').should('contain', 'Jane Mentee')
@@ -181,7 +181,7 @@ describe('Journey Page', () => {
         },
       })
     }).as('updateJourney')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-admin-card-collapse-button"]').click()
@@ -202,7 +202,7 @@ describe('Journey Page', () => {
   it('should expand journey sections and lazy-load later path detail', () => {
     stubJourney()
     cy.intercept('GET', '**/api/path/path-later-1', pathDetailBody).as('getLaterPath')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
     cy.wait('@getLaterPath')
 
@@ -221,7 +221,7 @@ describe('Journey Page', () => {
   it('should expand next resource embed and show aggregation from resource detail', () => {
     stubJourney()
     cy.intercept('GET', '**/api/resource/resource-next-1', resourceDetailBody).as('getResource')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-next-card-collapse-button"]').click()
@@ -252,7 +252,7 @@ describe('Journey Page', () => {
         }))],
       },
     }).as('promotePath')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-later-card-collapse-button"]').click()
@@ -277,7 +277,7 @@ describe('Journey Page', () => {
         ],
       },
     }).as('promoteModule')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
     cy.wait('@getLaterPath')
 
@@ -307,7 +307,7 @@ describe('Journey Page', () => {
         ],
       },
     }).as('advanceResource')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-next-card-collapse-button"]').click()
@@ -342,7 +342,7 @@ describe('Journey Page', () => {
         },
       })
     }).as('completeResource')
-    cy.visit('/journey')
+    cy.visit('/mentee/journey')
     cy.wait('@getJourney')
 
     cy.get('[data-automation-id="journey-detail-now-card-collapse-button"]').click()

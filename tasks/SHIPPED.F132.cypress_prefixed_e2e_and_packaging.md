@@ -1,6 +1,6 @@
 # F132 – Cypress e2e under `/mentee/` and full packaging verification
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F131_nginx_mentee_prefix_and_api_client`  
 **Description**: Re-point every Cypress visit to the `/mentee/` prefix, replace the deleted local drawer coverage with the spa_utils `PageFrame` automation ids, and run the full packaged stack as the acceptance gate for both source issues (F-ES09 and F-ES10).
@@ -80,4 +80,12 @@ Do not change `cypress.config.ts` `baseUrl`, `vite.config.ts`, `nginx.conf.templ
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+- **Plan**: Updated `cypress/support/e2e.ts` with `registerAuthCommands({ visitPath: '/mentee/' })`. Recreated `cypress/e2e/navigation.cy.ts` using spa_utils `PageFrame` automation IDs (`nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-products-link`, `nav-settings-link`, `nav-logout-link`). Updated `cypress/e2e/journey.cy.ts`, `cypress/e2e/path.cy.ts`, and `cypress/e2e/resource.cy.ts` to visit `/mentee/...` URLs and assert Discovery browse links. Updated `README.md`.
+- **Packaging and E2E Verification**:
+  - `npm run test` -> 10 test files, 47 unit tests passed.
+  - `npm run build` -> `vue-tsc && vite build` built cleanly.
+  - `npm run container` -> container image built cleanly with `docker-build.sh`.
+  - `mh up mentee` -> all db, api, spa, and welcome containers started and healthy.
+  - `curl` checks: `http://localhost:8394/` -> 302 to `/mentee/`; `http://localhost:8394/mentee/` -> 200 HTML with `no-store`; `http://localhost:8394/mentee/runtime-config.js` -> 200 `no-store`; `http://localhost:8394/health` -> 200 `healthy`; `http://localhost:8080/mentee/` -> 200 Mentee SPA via welcome proxy.
+  - `npm run cypress:run` -> All 4 test specs (`journey.cy.ts`, `navigation.cy.ts`, `path.cy.ts`, `resource.cy.ts`) passed (21 passing tests, 0 failing).
+- **Lint gap note**: Noted that this repository does not have a `lint` script in `package.json` (`npm run build` with `vue-tsc` acts as the type and syntax verification gate).

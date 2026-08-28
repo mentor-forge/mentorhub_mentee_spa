@@ -134,8 +134,9 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Coverage report: `npm run test:coverage`
 
 ### E2E Tests
-- Uses Cypress for end-to-end testing
-- Tests cover main user flows: login, CRUD operations for each domain
+- Uses Cypress for end-to-end testing against `http://localhost:8394/mentee/`
+- Stack must be running via `npm run service` before running Cypress (`npm run dev` cannot be running concurrently)
+- Tests cover main user flows: `PageFrame` navigation and role-gated catalog rows, journey detail management, path view, and resource view
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
