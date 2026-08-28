@@ -7,7 +7,7 @@ import {
 } from '@mentor-forge/mentorhub_spa_utils'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -48,7 +48,11 @@ router.beforeEach((to, _from, next) => {
   const { isAuthenticated } = useAuth()
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    redirectToIdpLogin(window.location.origin + to.fullPath)
+    const basePath = import.meta.env.BASE_URL || '/'
+    const returnPath = to.fullPath.startsWith('/') ? to.fullPath.slice(1) : to.fullPath
+    const normalizedBase = basePath.endsWith('/') ? basePath : `${basePath}/`
+    const returnUrl = `${window.location.origin}${normalizedBase}${returnPath}`
+    redirectToIdpLogin(returnUrl)
     next(false)
     return
   }

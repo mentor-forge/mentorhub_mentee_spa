@@ -18,6 +18,9 @@ npm run service
 
 ## Developer Commands
 
+> [!WARNING]
+> `npm run dev` and `npm run service` both bind host port **8394** and cannot run at the same time.
+
 ```sh
 ## install dependencies (run `mh` first for CodeArtifact auth)
 npm ci
@@ -28,7 +31,7 @@ npx cypress install
 ## package code for deployment
 npm run build 
 
-## run dev server, assumes api is running - captures command line
+## run dev server at http://localhost:8394/mentee/ (assumes api is running)
 npm run dev 
 
 ## run unit tests
@@ -73,6 +76,16 @@ src/
 ```
 
 Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`, etc.); this SPA contains no list dashboards and keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards target.
+
+### Route Table & URLs
+
+| Browser URL (under `/mentee/` base) | Vue Router path | Page |
+|---|---|---|
+| `http://<host>:8080/mentee/` | `/` | redirect → `/journey` |
+| `http://<host>:8080/mentee/journey` | `/journey` | `JourneyEditPage.vue` (caller-scoped journey detail) |
+| `http://<host>:8080/mentee/resources/{id}` | `/resources/:id` | `ResourceViewPage.vue` (Discovery resource card target) |
+| `http://<host>:8080/mentee/paths/{id}` | `/paths/:id` | `PathViewPage.vue` (Discovery path card target) |
+| `http://<host>:8080/mentee/admin` | `/admin` | `AdminPage.vue` (runtime-config viewer, `requiresRole: 'admin'`) |
 
 **Note**: This SPA pins `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `EnumEditor`, `EnumArrayEditor`, `ListPageSearch`), composables (`useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 

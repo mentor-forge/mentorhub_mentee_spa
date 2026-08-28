@@ -1,6 +1,6 @@
 # F130 – Vite `base` `/mentee/`, router `BASE_URL`, and base-aware runtime config
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F129_adopt_page_frame`  
 **Description**: Mount the app at Vite `base: '/mentee/'` with `createWebHistory(import.meta.env.BASE_URL)` so browser URLs are `/mentee/...` and never `/mentee/mentee/...`. Make the existing runtime-config injection base-aware, add a base-aware IdP return URL, and add a prefixed dev proxy. Route `path` strings stay unchanged. Do not change `nginx.conf.template`, the `Dockerfile`, or `src/api/client.ts` — that is F131.
@@ -75,4 +75,9 @@ Do not change `nginx.conf.template`, `Dockerfile`, `package.json`, `cypress.conf
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+- **Plan**: Added `base: '/mentee/'` to `vite.config.ts`. Updated `injectRuntimeConfig()` to dynamically use the resolved base so it emits `<script src="${base}runtime-config.js">`. Added `'/mentee/api'` dev proxy with path rewrite. Updated `src/router/index.ts` with `createWebHistory(import.meta.env.BASE_URL)` and base-aware unauthenticated IdP return URL redirect. Updated `index.html` title to `Mentee` and deleted the dead `href="/vite.svg"` link. Updated `README.md` with port 8394 conflict warning, prefixed dev URLs, and route table.
+- **Build inspection**: `dist/index.html` verified to contain `/mentee/` asset and runtime-config paths with 0 instances of `/mentee/mentee`. `dist/` root contains `index.html`, `runtime-config.js`, `runtime-config.js.template`, and `assets/`.
+- **Cypress gate note**: Packaging verification with Cypress is deferred to F131/F132 as container nginx prefix serving is implemented in F131 and spec re-pointing in F132.
+- **Test results**:
+  - `npm run test` -> 10 test files passed, 47 tests passed.
+  - `npm run build` -> `vue-tsc && vite build` built cleanly with no errors.

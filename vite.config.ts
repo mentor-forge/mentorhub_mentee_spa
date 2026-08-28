@@ -1,11 +1,18 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
 /** Load container runtime config before the app module so spa_utils reads IDP_LOGIN_URI. */
-function injectRuntimeConfig() {
+function injectRuntimeConfig(): Plugin {
+  let base = '/'
   return {
     name: 'inject-runtime-config',
+    configResolved(config) {
+      base = config.base || '/'
+      if (!base.endsWith('/')) {
+        base += '/'
+      }
+    },
     transformIndexHtml: {
       order: 'pre' as const,
       handler(html: string) {
@@ -13,7 +20,7 @@ function injectRuntimeConfig() {
           '<head>',
           `<head>
     <script>window.__MENTORHUB_RUNTIME__=window.__MENTORHUB_RUNTIME__||{};</script>
-    <script src="/runtime-config.js"></script>`
+    <script src="${base}runtime-config.js"></script>`
         )
       },
     },
@@ -21,6 +28,7 @@ function injectRuntimeConfig() {
 }
 
 export default defineConfig({
+  base: '/mentee/',
   plugins: [vue(), injectRuntimeConfig()],
   resolve: {
     alias: {
@@ -30,6 +38,11 @@ export default defineConfig({
   server: {
     port: 8394,
     proxy: {
+      '/mentee/api': {
+        target: 'http://localhost:8393',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/mentee/, ''),
+      },
       '/api': {
         target: 'http://localhost:8393',
         changeOrigin: true
