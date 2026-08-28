@@ -65,12 +65,24 @@ npm run container
 src/
   api/              # API client layer (types.ts, client.ts)
   components/       # App-specific UI components (admin components)
-  pages/            # Route-level components (List, New, Edit/View pages)
+  pages/            # Route-level components (detail pages only)
   composables/      # App-specific composables (useConfig, useRoles wrapper); auth from spa_utils
   stores/           # Pinia stores (UI state only)
   router/           # Vue Router configuration
   plugins/          # Vuetify plugin configuration
 ```
+
+**This SPA hosts no list dashboards.** Collection browsing lives on **Discovery**, which is the only journey SPA with CardGrid list pages. This repo keeps the detail pages that Discovery cards deep-link into:
+
+| Route | Page |
+|-------|------|
+| `/` | redirect to `/journey` |
+| `/journey` | `JourneyEditPage.vue` — the caller-scoped journey detail page |
+| `/paths/:id` | `PathViewPage.vue` — Discovery path card target |
+| `/resources/:id` | `ResourceViewPage.vue` — Discovery resource card target |
+| `/admin` | `AdminPage.vue` — runtime-config viewer, requires the `admin` role |
+
+Detail pages link back out to the Discovery collections with `buildJourneyUrl('discovery', …)` from `spa_utils` — absolute welcome / ALB hrefs, never Vue Router targets.
 
 **Note**: This SPA uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. The dependency is pinned to the exact version **`1.0.0`** in `package.json` — no caret range. Run `mh` for CodeArtifact credentials before installing. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation.
 
@@ -92,19 +104,18 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
 This SPA uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
-- **Cards**: `CardGrid`, `MhCard`, `DataCard`
+- **Cards**: `MhCard`, `DataCard`
 - **Editors**: `SentenceEditor`, `MarkdownEditor`, `UrlEditor`, `CountEditor`, `DateTimeEditor`, `DurationEditor`, `EnumEditor`, `EnumArrayEditor`
-- **Components**: `ListPageSearch`
+- **Cross-SPA URLs**: `buildJourneyUrl`, `JOURNEY_APP_PATHS`
 - **Composables**: `useErrorHandler`, `useRoles`, `useAuth`, `provideEditorConfig`
 
 `AutoSaveField` and `AutoSaveSelect` remain exported but are legacy — prefer the type-aligned editors above with `DataCard`.
 
-The infinite-scroll list APIs (`useInfiniteScroll`, `InfiniteScroll*` types) were **removed in spa_utils 1.0.0**, and the cursor fields `after_id`, `has_more`, and `next_cursor` do not appear in this SPA's API contracts. List pages here use the local `src/composables/useOffsetList.ts` (TanStack `useInfiniteQuery` over offset/size request headers).
+The list-dashboard building blocks (`CardGrid`, `ListPageSearch`) and the infinite-scroll list APIs (`useInfiniteScroll`, `InfiniteScroll*` types, removed in spa_utils 1.0.0) are not used here: this SPA has no list pages, and the cursor fields `after_id`, `has_more`, and `next_cursor` do not appear in its API contracts.
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
@@ -134,9 +145,9 @@ When adding a new resource or feature:
 
 1. **Add API Types**: Extend `src/api/types.ts` with new interfaces
 2. **Add API Methods**: Add methods to `src/api/client.ts`
-3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
+3. **Create Pages**: Detail, edit, and create pages only — collection browsing belongs on Discovery, so do not add a list dashboard here
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, compose `DataCard` with the type-aligned editors (`SentenceEditor`, `EnumEditor`, …) from `spa_utils`. For list pages, use `CardGrid`/`MhCard` with `ListPageSearch` over the local `useOffsetList`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, compose `DataCard` with the type-aligned editors (`SentenceEditor`, `EnumEditor`, …) from `spa_utils`. To send a user to a collection, link out with `buildJourneyUrl('discovery', …)`.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

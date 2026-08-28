@@ -2,14 +2,11 @@ import type {
   Journey,
   JourneyCompleteInput,
   JourneyUpdate,
-  Resource,
   ResourceDetail,
   AggregationDetail,
-  Path,
   PathDetail,
   ConfigResponse,
-  Error,
-  ListParams
+  Error
 } from './types'
 import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
@@ -121,48 +118,12 @@ export const api = {
     )
   },
 
-  async getResources(params?: ListParams): Promise<Resource[]> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.description) queryParams.append('description', params.description)
-    if (params?.status) queryParams.append('status', params.status)
-    if (params?.url) queryParams.append('url', params.url)
-    if (params?.interests) queryParams.append('interests', params.interests)
-    if (params?.technologies) queryParams.append('technologies', params.technologies)
-    if (params?.skill_level) queryParams.append('skill_level', params.skill_level)
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-
-    const query = queryParams.toString()
-    return request<Resource[]>(`/resource${query ? `?${query}` : ''}`, {
-      headers: {
-        offset: String(params?.offset ?? 0),
-        size: String(params?.size ?? 20),
-      },
-    })
-  },
-
   async getResource(resourceId: string): Promise<ResourceDetail> {
     return request<ResourceDetail>(`/resource/${resourceId}`)
   },
 
   async getAggregationDetail(resourceId: string): Promise<AggregationDetail> {
     return request<AggregationDetail>(`/aggregation/${resourceId}`)
-  },
-
-  async getPaths(params?: ListParams): Promise<Path[]> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-
-    const query = queryParams.toString()
-    return request<Path[]>(`/path${query ? `?${query}` : ''}`, {
-      headers: {
-        offset: String(params?.offset ?? 0),
-        size: String(params?.size ?? 20),
-      },
-    })
   },
 
   async getPath(pathId: string): Promise<PathDetail> {
