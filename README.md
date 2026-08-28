@@ -84,7 +84,7 @@ src/
 | `/mentee/resources/{id}` | `/resources/:id` | `ResourceViewPage.vue` — Discovery resource card target |
 | `/mentee/admin` | `/admin` | `AdminPage.vue` — runtime-config viewer, requires the `admin` role |
 
-On the dev server those URLs are `http://localhost:8394/mentee/…`; through welcome nginx or the cloud ALB they are `http://<host>:8080/mentee/…`. See "Base Path" below.
+**`http://<host>:8080/mentee/` — the welcome / ALB origin — is the supported browser entry point.** Direct port **8394** (`http://localhost:8394/mentee/`) is for Cypress, OpenAPI, and debugging only; never link to it from another SPA. On the dev server the same URLs are served by Vite at `http://localhost:8394/mentee/…`. See "Base Path" below.
 
 Detail pages link back out to the Discovery collections with `buildJourneyUrl('discovery', …)` from `spa_utils` — absolute welcome / ALB hrefs, never Vue Router targets.
 
@@ -98,6 +98,25 @@ Detail pages link back out to the Discovery collections with `buildJourneyUrl('d
 - The `injectRuntimeConfig` plugin in `vite.config.ts` injects `<script src="${base}runtime-config.js">` ahead of the app bundle, so the container runtime config is fetched from `/mentee/runtime-config.js`. The tag carries Vite's `vite-ignore` attribute because Vite would otherwise join the base onto the already-prefixed URL.
 - The unauthenticated router guard builds the IdP `return_to` from the origin plus `BASE_URL`, so a logged-out deep link to `/mentee/paths/{id}` comes back to that same prefixed URL.
 - `npm run dev` proxies both `/api` (direct-port debugging) and `/mentee/api` (the shape welcome nginx and the ALB serve) to the Mentee API on `http://localhost:8393`.
+- Vite `base` prefixes asset **URLs** only — the build output stays flat in `dist/`, with no `dist/mentee/` folder. Container nginx therefore maps the prefix onto the same docroot with an internal `rewrite` (see `nginx.conf.template`).
+
+### Container URLs and Proxy Boundaries
+
+`nginx.conf.template` (port 80 in the container, published as 8394) serves:
+
+| Request | Handling |
+|---------|----------|
+| `/mentee/api/…` | proxied to `http://${API_HOST}:${API_PORT}/api/…` — the prefix is stripped so the Mentee API still sees `/api/…` |
+| `/api/…` | the same proxy, kept for direct-port debugging |
+| `/mentee/` and `/mentee/{route}` | the app shell via history fallback, `Cache-Control: no-store` |
+| `/mentee/assets/…` and other prefixed static files | served from the flat docroot as `public, immutable` |
+| `/mentee/runtime-config.js` and `/runtime-config.js` | the `envsubst`-generated IdP config, `Cache-Control: no-store` |
+| `/` and `/mentee` | 302 to `/mentee/` |
+| `/health` | `healthy` for the container health check |
+
+This container proxies **only** the Mentee API — no other journey SPA and no other domain's `/api` is reachable through it. Browser API calls go to `/mentee/api/…` because `src/api/client.ts` derives its base from `import.meta.env.BASE_URL`.
+
+Two nginx ordering rules make this work, and both are load-bearing: regex locations beat plain prefix locations, so the prefixed asset regex must stay **ahead of** the root-path one; and `location ^~ /mentee/api/` suppresses regex evaluation entirely so an API path ending in `.js` can never be captured by the asset cache.
 
 ### Navigation Shell
 - `src/App.vue` is a single host `<v-app>` wrapping **`PageFrame`** from `@mentor-forge/mentorhub_spa_utils@1.0.0`, which owns the app bar, the role-gated hamburger drawer, the profile avatar, `<v-main>`, and logout:
@@ -123,6 +142,7 @@ Detail pages link back out to the Discovery collections with `buildJourneyUrl('d
 
 ### API Client
 - Located in `src/api/client.ts`
+- The API base is derived from the Vite base (`` `${import.meta.env.BASE_URL}/api` `` collapsed to single slashes), so the browser calls `/mentee/api/…` and reaches `mentee_api` through this SPA's own nginx
 - All API calls include JWT token from localStorage
 - Error handling via `ApiError` class
 - Type-safe with TypeScript interfaces in `src/api/types.ts`
@@ -204,7 +224,7 @@ No `data-automation-id` beginning with `nav-`, and no `app-bar-title`, is define
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
 
 ## Configuration
-- Runtime configuration available at `/api/config` endpoint
+- Runtime configuration available at the `/mentee/api/config` endpoint (`/api/config` on the direct debug port)
 - Use enumerator values from config, not hardcoded in OpenAPI spec
 - Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration
 - Container listens on port 80 internally; map host port to container port 80 (e.g., `8185:80` in docker-compose)

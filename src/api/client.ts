@@ -10,7 +10,15 @@ import type {
 } from './types'
 import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
-const API_BASE = '/api'
+/**
+ * Same-origin API base derived from the Vite base, so the browser sends
+ * `/mentee/api/...` and this SPA's nginx (or the dev proxy) strips the prefix
+ * before the request reaches the Mentee API. Resolved per request so the base
+ * is read at call time rather than captured at module load.
+ */
+function apiBase(): string {
+  return `${import.meta.env.BASE_URL}/api`.replace(/\/{2,}/g, '/')
+}
 
 class ApiError extends Error {
   constructor(
@@ -38,7 +46,7 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(`${apiBase()}${endpoint}`, {
     ...options,
     headers,
   })

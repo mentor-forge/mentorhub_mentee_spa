@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { api } from './client'
 import type { PathDetail } from './types'
 
@@ -11,6 +11,12 @@ describe('API Client - Path Endpoints', () => {
     mockFetch.mockClear()
     localStorage.clear()
     localStorage.setItem('access_token', 'test-token')
+    // The app is mounted under the `/mentee/` Vite base; vitest resolves BASE_URL to `/`.
+    vi.stubEnv('BASE_URL', '/mentee/')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   it('should get a single path detail with nested modules, topics, and resource summaries', async () => {
@@ -58,7 +64,7 @@ describe('API Client - Path Endpoints', () => {
       description: 'First resource',
     })
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path/507f1f77bcf86cd799439011',
+      '/mentee/api/path/507f1f77bcf86cd799439011',
       expect.any(Object)
     )
   })

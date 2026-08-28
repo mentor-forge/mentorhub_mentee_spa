@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { api } from './client'
 
 // Mock fetch globally
@@ -10,6 +10,12 @@ describe('API Client - Resource Endpoints', () => {
     mockFetch.mockClear()
     localStorage.clear()
     localStorage.setItem('access_token', 'test-token')
+    // The app is mounted under the `/mentee/` Vite base; vitest resolves BASE_URL to `/`.
+    vi.stubEnv('BASE_URL', '/mentee/')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   it('should get a single resource detail', async () => {
@@ -35,7 +41,7 @@ describe('API Client - Resource Endpoints', () => {
 
     expect(result).toEqual(mockResourceDetail)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource/507f1f77bcf86cd799439011',
+      '/mentee/api/resource/507f1f77bcf86cd799439011',
       expect.any(Object)
     )
   })
@@ -85,7 +91,7 @@ describe('API Client - Resource Endpoints', () => {
 
     expect(result).toEqual(mockAggregationDetail)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/aggregation/507f1f77bcf86cd799439011',
+      '/mentee/api/aggregation/507f1f77bcf86cd799439011',
       expect.any(Object)
     )
   })
