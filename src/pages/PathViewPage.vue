@@ -18,11 +18,11 @@
         >
           <template #actions>
             <v-btn
-              @click="router.push('/paths')"
+              :href="browsePathsHref"
               variant="text"
-              data-automation-id="path-view-back-to-list-button"
+              data-automation-id="path-view-browse-paths-link"
             >
-              Back to List
+              Browse Paths
             </v-btn>
           </template>
 
@@ -150,10 +150,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import {
   BreadcrumbDisplay,
+  buildJourneyUrl,
   DataCard,
   EnumArrayEditor,
   EnumEditor,
@@ -167,9 +168,10 @@ import { useRoles } from '@/composables/useRoles'
 import ResourceViewCard from '@/components/ResourceViewCard.vue'
 
 const routeLocation = useRoute()
-const router = useRouter()
 const { hasRole } = useRoles()
 const hasAdminRole = hasRole('admin')
+
+const browsePathsHref = buildJourneyUrl('discovery', 'paths')
 
 const pathId = computed(() => routeLocation.params.id as string)
 

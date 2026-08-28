@@ -170,14 +170,6 @@ describe('Journey Page', () => {
     })
   })
 
-  it('should navigate to journey from drawer', () => {
-    cy.visit('/paths')
-    cy.get('[data-automation-id="nav-drawer-toggle"]').click()
-    cy.get('[data-automation-id="nav-journey-link"]').click()
-    cy.url().should('include', '/journey')
-    cy.get('[data-automation-id="journey-detail-card"]').should('be.visible')
-  })
-
   it('should update journey status from runtime enum values via auto-save', () => {
     stubJourney()
     cy.intercept('PATCH', `**/api/journey/${journeyId}`, (request) => {

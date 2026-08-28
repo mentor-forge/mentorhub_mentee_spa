@@ -64,13 +64,15 @@ npm run container
 ```
 src/
   api/              # API client layer (types.ts, client.ts)
-  components/       # App-specific UI components (admin components)
-  pages/            # Route-level components (List, New, Edit/View pages)
+  components/       # App-specific UI components (admin components, ResourceViewCard)
+  pages/            # Detail-only pages (JourneyEditPage, PathViewPage, ResourceViewPage, AdminPage)
   composables/      # App-specific composables (useConfig, useRoles wrapper); auth from spa_utils
   stores/           # Pinia stores (UI state only)
-  router/           # Vue Router configuration
+  router/           # Vue Router configuration (locked detail routes)
   plugins/          # Vuetify plugin configuration
 ```
+
+Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`, etc.); this SPA contains no list dashboards and keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards target.
 
 **Note**: This SPA pins `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `EnumEditor`, `EnumArrayEditor`, `ListPageSearch`), composables (`useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
@@ -90,9 +92,9 @@ src/
 
 ### Data Fetching
 - Uses TanStack Query (Vue Query) for server state management
-- Query keys follow pattern: `['resource', id]` or `['resources']`
+- Query keys follow pattern: `['journey']`, `['path', id]`, or `['resource', id]`
 - Mutations invalidate related queries on success
-- Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
+- Example: `useQuery({ queryKey: ['path', pathId], queryFn: () => api.getPath(pathId.value) })`
 
 ### Reusable Components and Composables
 This SPA uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
@@ -128,9 +130,9 @@ When adding a new resource or feature:
 
 1. **Add API Types**: Extend `src/api/types.ts` with new interfaces
 2. **Add API Methods**: Add methods to `src/api/client.ts`
-3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
+3. **Create Pages**: Follow the detail/view page pattern (`src/pages/*ViewPage.vue`)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit forms with PATCH support, use `DataCard` and configurator-type editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `AutoSaveField`) from `spa_utils`.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

@@ -174,17 +174,3 @@ export interface ConfigResponse {
     claims?: Record<string, unknown>
   }
 }
-
-export interface ListParams {
-  offset?: number
-  size?: number
-  name?: string
-  description?: string
-  status?: string
-  url?: string
-  interests?: string
-  technologies?: string
-  skill_level?: string
-  sort_by?: string
-  order?: 'asc' | 'desc'
-}

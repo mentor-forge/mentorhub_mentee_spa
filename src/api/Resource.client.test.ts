@@ -12,64 +12,6 @@ describe('API Client - Resource Endpoints', () => {
     localStorage.setItem('access_token', 'test-token')
   })
 
-  it('should get all resources', async () => {
-    const mockResources = [
-      {
-        _id: '507f1f77bcf86cd799439011',
-        name: 'test-resource',
-        description: 'Test description',
-        status: 'active'
-      }
-    ]
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResources
-    })
-
-    const result = await api.getResources()
-
-    expect(result).toEqual(mockResources)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource',
-      expect.objectContaining({
-        headers: expect.objectContaining({ offset: '0', size: '20' })
-      })
-    )
-  })
-
-  it('should get resources with query filters and pagination headers', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => []
-    })
-
-    await api.getResources({
-      name: 'test',
-      description: 'guide',
-      status: 'active,draft',
-      url: 'example.com',
-      interests: 'api,sre',
-      technologies: 'Python,React',
-      skill_level: 'Apprentice,Craftsperson',
-      offset: 40,
-      size: 10,
-      sort_by: 'status',
-      order: 'desc'
-    })
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource?name=test&description=guide&status=active%2Cdraft&url=example.com&interests=api%2Csre&technologies=Python%2CReact&skill_level=Apprentice%2CCraftsperson&sort_by=status&order=desc',
-      expect.objectContaining({
-        headers: expect.objectContaining({ offset: '40', size: '10' })
-      })
-    )
-  })
-
   it('should get a single resource detail', async () => {
     const mockResourceDetail = {
       resource: {

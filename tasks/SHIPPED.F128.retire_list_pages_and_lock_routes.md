@@ -1,6 +1,6 @@
 # F128 – Retire the CardGrid list pages, lock the detail-only route table
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F127_pin_spa_utils_1_0_0`  
 **Description**: Delete this SPA's two CardGrid list dashboards (`PathsListPage.vue`, `ResourcesListPage.vue`), their routes, their offset-list plumbing, their API surface, their Cypress coverage, and their local drawer rows. Collection browsing moves to Discovery; this SPA keeps **detail** pages that Discovery cards deep-link into. Repoint the two "Back to List" actions and the router role gate out to Discovery with `buildJourneyUrl` (available now that F127 pinned 1.0.0). Route `path` strings stay unprefixed — Vite `base` is F130.
@@ -140,4 +140,9 @@ Do not change `package.json`, `package-lock.json`, `vite.config.ts`, `nginx.conf
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+- **Plan**: Deleted list pages (`PathsListPage.vue`, `ResourcesListPage.vue`), `useOffsetList.ts`, and local-drawer spec `navigation.cy.ts`. Removed `getPaths` and `getResources` from `src/api/client.ts` and `ListParams` from `src/api/types.ts`. Updated unit tests in `src/api/*.test.ts`. Updated `src/router/index.ts` with locked detail routes and Discovery role-gate redirect using `buildJourneyUrl('discovery')`. Updated `PathViewPage.vue` and `ResourceViewPage.vue` with `buildJourneyUrl` browse links. Removed paths/resources links from drawer in `src/App.vue`. Updated Cypress specs (`path.cy.ts`, `resource.cy.ts`, `journey.cy.ts`) to remove list tests. Updated `README.md`.
+- **Rating/Note pages note**: Note that F-ES10 mentions keeping rating and note detail pages; this SPA has no standalone rating or note pages or routes because mentees complete resources inline with a rating and note via `JourneyCompleteDialog.vue` from `JourneyEditPage.vue`.
+- **Test results**:
+  - `npm run test` -> 10 test files passed, 47 tests passed.
+  - `npm run build` -> `vue-tsc && vite build` built cleanly with no errors.
+- **Grep check**: Verified 0 occurrences of `useOffsetList`, `PathsListPage`, `ResourcesListPage`, `getPaths`, `getResources`.

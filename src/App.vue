@@ -22,18 +22,6 @@
           title="Journey"
           data-automation-id="nav-journey-link"
         />
-        <v-list-item
-          to="/paths"
-          prepend-icon="mdi-routes"
-          title="Paths"
-          data-automation-id="nav-paths-link"
-        />
-        <v-list-item
-          to="/resources"
-          prepend-icon="mdi-book-open-variant"
-          title="Resources"
-          data-automation-id="nav-resources-link"
-        />
       </v-list>
 
       <template v-slot:append>
