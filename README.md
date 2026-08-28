@@ -72,7 +72,7 @@ src/
   plugins/          # Vuetify plugin configuration
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This SPA pins `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `EnumEditor`, `EnumArrayEditor`, `ListPageSearch`), composables (`useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
 ## Key Implementation Patterns
 
@@ -92,13 +92,12 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
-- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
+This SPA uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Components**: `AutoSaveField`, `EnumEditor`, `EnumArrayEditor`, `ListPageSearch`
+- **Composables**: `useErrorHandler`, `useRoles`
 - **Utilities**: `formatDate`, `validationRules`
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.

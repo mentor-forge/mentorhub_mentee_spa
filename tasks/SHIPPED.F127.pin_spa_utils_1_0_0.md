@@ -1,6 +1,6 @@
 # F127 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.0`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: _(none — first task in this wave)_  
 **Description**: This repo owns the Mentee SPA **1.0.0 pin** (issue F-ES10). Replace the caret range `^0.5.7` with an exact **`1.0.0`** pin, refresh the lockfile from CodeArtifact, and fix any residual compile or test breakage. Do **not** adopt `PageFrame` (F129), do not change routes or delete pages (F128), and do not touch the `/mentee/` base path (F130–F131).
@@ -84,4 +84,11 @@ Do not change `src/App.vue` chrome, `src/router/index.ts`, `vite.config.ts`, `ng
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+- **Plan**: Verified CodeArtifact has `@mentor-forge/mentorhub_spa_utils@1.0.0`. Replaced `"^0.5.7"` with `"1.0.0"` in `package.json`. Updated `package-lock.json` with `npm install --include=dev`. Updated `README.md` to note `1.0.0` pin and updated component list.
+- **Infinite scroll grep**: Grep for `useInfiniteScroll`, `InfiniteScroll`, `after_id`, `has_more`, `next_cursor` returned 0 results across `src/`, `cypress/`, and `tests/`.
+- **Cypress subpaths**: Verified `cypress/jwtDefaults`, `cypress/registerJwtSignTask`, and `cypress/registerAuthCommands` resolve without issue.
+- **Test results**:
+  - `npm ls @mentor-forge/mentorhub_spa_utils` -> `1.0.0`
+  - `npm run test` -> 10 test files passed, 54 tests passed.
+  - `npm run build` -> `vue-tsc && vite build` built cleanly with no errors.
+- **Follow-ups**: Noted that this repository has no `npm run lint` script; `npm run build` acts as the type-checking gate.
