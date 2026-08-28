@@ -161,7 +161,10 @@ Interactive elements in this SPA include `data-automation-id` attributes followi
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
 
 ## Configuration
-- Runtime configuration available at `/api/config` endpoint
-- Use enumerator values from config, not hardcoded in OpenAPI spec
-- Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration
-- Container listens on port 80 internally; map host port to container port 80 (e.g., `8185:80` in docker-compose)
+- Welcome origin `http://<host>:8080/mentee/` is the supported browser entry point.
+- Direct port `http://localhost:8394/mentee/` is for direct-port debugging and Cypress testing only.
+- API calls reach `mentee_api` via this SPA's nginx proxy at `/mentee/api/` (`/api/` is retained for direct-port debugging).
+- Runtime configuration is available at the `/mentee/api/config` endpoint (with `/api/config` fallback).
+- Use enumerator values from config, not hardcoded in OpenAPI spec.
+- Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration.
+- Container listens on port 80 internally; mapped to host port 8394 in docker-compose.

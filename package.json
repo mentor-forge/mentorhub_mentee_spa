@@ -18,7 +18,7 @@
     "service": "mh down && mh up mentee && npm run open",
     "container": "sh scripts/docker-build.sh",
     "push": "docker push ghcr.io/mentor-forge/mentorhub_mentee_spa:latest",
-    "open": "open -a 'Google Chrome' 'http://localhost:8394' || google-chrome 'http://localhost:8394' || exg-open 'localhost:8394'",
+    "open": "open -a 'Google Chrome' 'http://localhost:8394/mentee/' || google-chrome 'http://localhost:8394/mentee/' || exg-open 'localhost:8394/mentee/'",
     "build-publish": "npm install --include=dev && npm run container && npm run push",
     "build-package": "npm install --include=dev && npx cypress install && npm run container",
     "publish-package": "npm run push",

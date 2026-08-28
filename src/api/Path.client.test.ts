@@ -58,7 +58,7 @@ describe('API Client - Path Endpoints', () => {
       description: 'First resource',
     })
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path/507f1f77bcf86cd799439011',
+      '/mentee/api/path/507f1f77bcf86cd799439011',
       expect.any(Object)
     )
   })

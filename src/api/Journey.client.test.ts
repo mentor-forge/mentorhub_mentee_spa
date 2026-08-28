@@ -49,7 +49,7 @@ describe('API Client - Journey Endpoints', () => {
     const result = await api.getMyJourney()
 
     expect(result).toEqual(mockJourney)
-    expect(mockFetch).toHaveBeenCalledWith('/api/journey', expect.any(Object))
+    expect(mockFetch).toHaveBeenCalledWith('/mentee/api/journey', expect.any(Object))
   })
 
   it('should update a journey', async () => {
@@ -62,7 +62,7 @@ describe('API Client - Journey Endpoints', () => {
 
     expect(result).toEqual(updatedJourney)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/507f1f77bcf86cd799439011',
+      '/mentee/api/journey/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(update),
@@ -77,7 +77,7 @@ describe('API Client - Journey Endpoints', () => {
 
     expect(result).toEqual(mockJourney)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/advance/507f1f77bcf86cd799439012',
+      '/mentee/api/journey/advance/507f1f77bcf86cd799439012',
       expect.objectContaining({ method: 'PATCH' })
     )
   })
@@ -94,7 +94,7 @@ describe('API Client - Journey Endpoints', () => {
 
     expect(result).toEqual(mockJourney)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/complete/507f1f77bcf86cd799439012',
+      '/mentee/api/journey/complete/507f1f77bcf86cd799439012',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(input),
@@ -108,7 +108,7 @@ describe('API Client - Journey Endpoints', () => {
     await api.completeJourneyResource('507f1f77bcf86cd799439012')
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/complete/507f1f77bcf86cd799439012',
+      '/mentee/api/journey/complete/507f1f77bcf86cd799439012',
       expect.objectContaining({
         method: 'PATCH',
         body: undefined,
@@ -123,7 +123,7 @@ describe('API Client - Journey Endpoints', () => {
 
     expect(result).toEqual(mockJourney)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/promote/path/C00000000000000000000006',
+      '/mentee/api/journey/promote/path/C00000000000000000000006',
       expect.objectContaining({ method: 'PATCH' })
     )
   })
@@ -138,7 +138,7 @@ describe('API Client - Journey Endpoints', () => {
 
     expect(result).toEqual(mockJourney)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/promote/module/C00000000000000000000006/Foundations',
+      '/mentee/api/journey/promote/module/C00000000000000000000006/Foundations',
       expect.objectContaining({ method: 'PATCH' })
     )
   })
@@ -149,7 +149,7 @@ describe('API Client - Journey Endpoints', () => {
     await api.promoteJourneyModule('C00000000000000000000006', 'A/B')
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/journey/promote/module/C00000000000000000000006/A%2FB',
+      '/mentee/api/journey/promote/module/C00000000000000000000006/A%2FB',
       expect.objectContaining({ method: 'PATCH' })
     )
   })

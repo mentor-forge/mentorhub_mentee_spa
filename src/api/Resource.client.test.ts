@@ -35,7 +35,7 @@ describe('API Client - Resource Endpoints', () => {
 
     expect(result).toEqual(mockResourceDetail)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource/507f1f77bcf86cd799439011',
+      '/mentee/api/resource/507f1f77bcf86cd799439011',
       expect.any(Object)
     )
   })
@@ -85,7 +85,7 @@ describe('API Client - Resource Endpoints', () => {
 
     expect(result).toEqual(mockAggregationDetail)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/aggregation/507f1f77bcf86cd799439011',
+      '/mentee/api/aggregation/507f1f77bcf86cd799439011',
       expect.any(Object)
     )
   })
