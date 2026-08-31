@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { hasStoredRole, redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
+import { buildJourneyUrl, hasStoredRole, redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,24 +17,12 @@ const router = createRouter({
     },
 
     {
-      path: '/resources',
-      name: 'Resources',
-      component: () => import('@/pages/ResourcesListPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/resources/:id',
       name: 'ResourceView',
       component: () => import('@/pages/ResourceViewPage.vue'),
       meta: { requiresAuth: true }
     },
 
-    {
-      path: '/paths',
-      name: 'Paths',
-      component: () => import('@/pages/PathsListPage.vue'),
-      meta: { requiresAuth: true }
-    },
     {
       path: '/paths/:id',
       name: 'PathView',
@@ -62,7 +50,8 @@ router.beforeEach((to, _from, next) => {
 
   const requiredRole = to.meta.requiresRole as string | undefined
   if (requiredRole && !hasStoredRole(requiredRole)) {
-    next({ name: 'Journey' })
+    window.location.replace(buildJourneyUrl('discovery'))
+    next(false)
     return
   }
 

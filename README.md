@@ -65,12 +65,14 @@ npm run container
 src/
   api/              # API client layer (types.ts, client.ts)
   components/       # App-specific UI components (admin components)
-  pages/            # Route-level components (List, New, Edit/View pages)
+  pages/            # Route-level components (journey, path, and resource detail pages)
   composables/      # App-specific composables (useConfig, useRoles wrapper); auth from spa_utils
   stores/           # Pinia stores (UI state only)
   router/           # Vue Router configuration
   plugins/          # Vuetify plugin configuration
 ```
+
+This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`). This repo keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards deep-link into.
 
 **Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
@@ -92,7 +94,6 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
@@ -129,9 +130,9 @@ When adding a new resource or feature:
 
 1. **Add API Types**: Extend `src/api/types.ts` with new interfaces
 2. **Add API Methods**: Add methods to `src/api/client.ts`
-3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
+3. **Create Pages**: Follow the detail / edit pattern (collection lists live on Discovery)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.); do not introduce new `AutoSaveField` usage. For list pages, use `CardGrid` / `MhCard` with offset/size list queries (or `useResourceList` + `ListPageSearch` for simple lists).
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.); do not introduce new `AutoSaveField` usage.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

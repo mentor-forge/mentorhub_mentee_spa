@@ -5,11 +5,11 @@
         <ResourceViewCard :resource-id="resourceId">
           <template #actions>
             <v-btn
-              @click="router.push('/resources')"
+              :href="browseResourcesHref"
               variant="text"
-              data-automation-id="resource-view-back-to-list-button"
+              data-automation-id="resource-view-browse-resources-link"
             >
-              Back to List
+              Browse Resources
             </v-btn>
           </template>
         </ResourceViewCard>
@@ -20,11 +20,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
+import { buildJourneyUrl } from '@mentor-forge/mentorhub_spa_utils'
 import ResourceViewCard from '@/components/ResourceViewCard.vue'
 
 const routeLocation = useRoute()
-const router = useRouter()
+const browseResourcesHref = buildJourneyUrl('discovery', 'resources')
 
 const resourceId = computed(() => routeLocation.params.id as string)
 </script>

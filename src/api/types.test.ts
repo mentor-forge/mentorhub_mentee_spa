@@ -9,7 +9,6 @@ import type {
   CreateInput,
   Consume,
   ConfigResponse,
-  ListParams
 } from './types'
 
 describe('API Types', () => {
@@ -235,46 +234,6 @@ describe('API Types', () => {
       }
       
       expect(config.token).toBeUndefined()
-    })
-  })
-
-  describe('ListParams', () => {
-    it('should match the OpenAPI list contract', () => {
-      const params: ListParams = {
-        offset: 20,
-        size: 10,
-        name: 'test',
-        description: 'guide',
-        status: 'active,draft',
-        sort_by: 'name',
-        order: 'asc'
-      }
-
-      expect(params.offset).toBe(20)
-      expect(params.size).toBe(10)
-      expect(params.name).toBe('test')
-      expect(params.description).toBe('guide')
-      expect(params.status).toBe('active,draft')
-      expect(params.sort_by).toBe('name')
-      expect(params.order).toBe('asc')
-    })
-
-    it('should allow optional fields', () => {
-      const params: ListParams = {}
-
-      expect(params.offset).toBeUndefined()
-      expect(params.size).toBeUndefined()
-      expect(params.name).toBeUndefined()
-      expect(params.sort_by).toBeUndefined()
-      expect(params.order).toBeUndefined()
-    })
-
-    it('should accept desc order', () => {
-      const params: ListParams = {
-        order: 'desc'
-      }
-
-      expect(params.order).toBe('desc')
     })
   })
 })

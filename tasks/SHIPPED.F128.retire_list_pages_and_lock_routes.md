@@ -1,6 +1,6 @@
 # F128 – Retire the CardGrid list pages, lock the detail-only route table
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F127_pin_spa_utils_1_0_0`  
 **Description**: Delete this SPA's two CardGrid list dashboards (`PathsListPage.vue`, `ResourcesListPage.vue`), their routes, their offset-list plumbing, their API surface, their Cypress coverage, and their local drawer rows. Collection browsing moves to Discovery; this SPA keeps **detail** pages that Discovery cards deep-link into. Repoint the two "Back to List" actions and the router role gate out to Discovery with `buildJourneyUrl` (available now that F127 pinned 1.0.0). Route `path` strings stay unprefixed — Vite `base` is F130.
@@ -140,4 +140,34 @@ Do not change `package.json`, `package-lock.json`, `vite.config.ts`, `nginx.conf
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+1. Lock Vue routes to `/` → `/journey`, `/journey`, `/resources/:id`, `/paths/:id`, `/admin`. Role-gate fallback: `buildJourneyUrl('discovery')` + `window.location.replace` + `next(false)`.
+2. Delete `PathsListPage.vue`, `ResourcesListPage.vue`, `useOffsetList.ts`, `navigation.cy.ts`.
+3. Remove `getPaths` / `getResources` from the API client and `ListParams` from types + its test block. Drop list `it` blocks from Path/Resource client tests.
+4. Replace "Back to List" on Path/Resource view pages with Discovery anchors via `buildJourneyUrl`; remove unused `useRouter`.
+5. Drop drawer rows `nav-paths-link` / `nav-resources-link` from `App.vue`. Keep journey, admin, logout.
+6. Cypress: drop list-dependent `it`s in path/resource specs; drop journey drawer-from-`/paths` `it`; delete `navigation.cy.ts`.
+7. README: no list dashboards here; collections live on Discovery; drop `useResourceList` list-page guidance.
+8. Record: this SPA has no rating/note detail pages — complete-with-rating-and-note stays on `JourneyCompleteDialog`.
+9. Run `npm run test`, `npm run build`, packaging (`container`, `service`, `cypress:run`). Do not commit. Leave Status Pending.
+
+### Summary
+Deleted the two CardGrid list dashboards, `useOffsetList`, `getPaths` / `getResources`, `ListParams`, and `navigation.cy.ts`. Vue routes match the locked table (`/` → `/journey`, `/journey`, `/resources/:id`, `/paths/:id`, `/admin`). Role-gate fallback leaves for Discovery via `buildJourneyUrl('discovery')` + `window.location.replace` + `next(false)`. Path/Resource view pages use Discovery browse anchors (`path-view-browse-paths-link`, `resource-view-browse-resources-link`). Drawer no longer has Paths/Resources rows. Collection browsing is documented as Discovery-only.
+
+**Rating/note pages:** this SPA has no rating or note detail pages or routes. Mentees capture a rating and a note inline via `JourneyCompleteDialog` from `JourneyEditPage`. That complete-with-rating-and-note flow is unchanged. No new rating/note routes were added.
+
+### Commands / results
+- Grep (`src/`, `cypress/`): no `useOffsetList`, `getPaths`, `getResources`, `ListParams`, `path-list-*`, `resource-list-*`, list `router.push`/`to` for `/paths` or `/resources`
+- `npm run test`: **47/47 passed** (10 files; 7 list/`ListParams` `it`s removed)
+- `npm run test:coverage`: tests pass; `src/api/**` still above thresholds (97% lines / 82.6% branches / 100% funcs). `src/composables/**` **branches 59.57% vs 60%** — see follow-ups. `src/components/**` 0% is pre-existing (`npm run test` does not enable coverage)
+- `npm run build`: **passed** (`vue-tsc` + Vite)
+- `npm run api` + `npm run dev` manual smoke: **skipped** (packaging/Cypress used instead; do not bind 8394 twice)
+- `npm run container`: **passed**
+- `npm run service`: **passed** with `GITHUB_FOREVER_TOKEN` as `GITHUB_TOKEN` and `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`
+- `npm run cypress:run`: **16/16 passed** (journey 9, path 3, resource 4) at the un-prefixed origin
+
+### Follow-ups
+- `npm run test:coverage` trips `src/composables/**` branches at **59.57% / 60%**. Deleting untested `useOffsetList.ts` left `useAuth.ts` (re-export, 0%) and `useConfig.ts` (51.35% branches) as the drag. Did not change `vitest.config.ts` (locked). `npm run test` (the required gate) still passes.
+- No `npm run lint` script in this repo (same as F127).
+- Manual `npm run api` + `npm run dev` smoke (`/`, `/paths`, `/resources`, browse hrefs, drawer, complete+rating+note, non-admin `/admin` → Discovery) was not run; Cypress + container cover the kept routes.
+- F129 adopts `PageFrame` (this chrome is temporary). F132 rewrites Cypress for `/mentee/` prefixes and recreates navigation coverage.
