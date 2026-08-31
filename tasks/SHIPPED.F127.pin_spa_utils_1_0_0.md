@@ -1,6 +1,6 @@
 # F127 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.0`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: _(none — first task in this wave)_  
 **Description**: This repo owns the Mentee SPA **1.0.0 pin** (issue F-ES10). Replace the caret range `^0.5.7` with an exact **`1.0.0`** pin, refresh the lockfile from CodeArtifact, and fix any residual compile or test breakage. Do **not** adopt `PageFrame` (F129), do not change routes or delete pages (F128), and do not touch the `/mentee/` base path (F130–F131).
@@ -84,4 +84,35 @@ Do not change `src/App.vue` chrome, `src/router/index.ts`, `vite.config.ts`, `ng
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+1. Confirm no `useInfiniteScroll` / `InfiniteScroll*` / `after_id` / `has_more` / `next_cursor` in `src/`, `cypress/`, `tests/`.
+2. Pin `package.json` to exact `"@mentor-forge/mentorhub_spa_utils": "1.0.0"` (no caret).
+3. `npm install --include=dev` (CodeArtifact already refreshed via `mh`); confirm `npm ls` is `1.0.0`.
+4. Update `README.md` version note and drop infinite-scroll helpers from the component list; do not mention PageFrame adoption.
+5. Check Cypress subpath imports against 1.0.0; change only if a path/option moved.
+6. Fix any `src/**` compile/test breakage from 1.0.0; do not touch App chrome, router, vite, nginx, Dockerfile, vitest, or client.
+7. Run `npm run test`, `npm run build`, then packaging: `npm run container`, `npm run service`, `npm run cypress:run`. Skip long-lived `npm run api`+`npm run dev` smoke if time-constrained.
+
+### Summary
+Pinned `@mentor-forge/mentorhub_spa_utils` to exact **1.0.0** (no caret). Lockfile resolves `mentorhub_spa_utils-1.0.0.tgz` from CodeArtifact. `npm ls` reports `1.0.0`.
+
+Removal-check grep for `useInfiniteScroll`, `InfiniteScroll`, `after_id`, `has_more`, and `next_cursor` across `src/`, `cypress/`, and `tests/` returned **nothing** (already clean). Cypress subpaths (`cypress/jwtDefaults`, `cypress/registerJwtSignTask`, `cypress/registerAuthCommands` + `visitPath`) are unchanged in 1.0.0 — no Cypress file edits. No `src/**` edits were required; App chrome, router, vite, nginx, Dockerfile, vitest, and client were left untouched. README names the 1.0.0 pin and lists CardGrid / MhCard / DataCard / typed editors (no PageFrame adoption copy, no infinite-scroll helpers).
+
+### Commands / results
+- Grep removal-check (`src/`, `cypress/`, `tests/`): clean
+- `npm install --include=dev`: ok
+- `npm ls @mentor-forge/mentorhub_spa_utils`: `@mentor-forge/mentorhub_spa_utils@1.0.0`
+- `npm run test`: **54/54 passed** (10 files)
+- `npm run build`: **passed** (`vue-tsc` + Vite)
+- `npm run lint`: **not run** — this repo has no `lint` script (issue acceptance-criteria follow-up)
+- `npm run api` + `npm run dev` manual smoke: **skipped** (time-constrained; packaging/Cypress used instead)
+- `npm run container`: **passed** (Docker Desktop was not running at first; started it, then image built)
+- `npm run service`: first attempt failed (`GITHUB_TOKEN` in `~/.mentorhub/GITHUB_TOKEN` denied by GHCR). Retried with `GITHUB_FOREVER_TOKEN` exported as `GITHUB_TOKEN`; stack came up (welcome, mongo, mongodb_api/spa, mentee_api, mentee_spa).
+- `npm run cypress:run` (first): 38/39 — `navigation.cy.ts` logout timed out because compose/`mh` injected `IDP_LOGIN_URI=http://m5max.tailb0d293.ts.net:8080/login.html` while the spec uses `cy.origin('http://127.0.0.1:8080')`. Recreated `mentee_spa` with `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`.
+- `npm run cypress:run` (after loopback IdP): **39/39 passed** (journey 10, navigation 7, path 9, resource 13)
+
+### Follow-ups
+- No `npm run lint` script in this repo (record vs issue AC).
+- Stale `~/.mentorhub/GITHUB_TOKEN` fails GHCR login (`denied`); `GITHUB_FOREVER_TOKEN` works. Refresh the default token so `mh up` / `npm run service` succeed without a manual override.
+- Cypress logout spec assumes loopback IdP. With `HOST_NAME` set, `mh` injects a Tailscale `IDP_LOGIN_URI` and the logout spec hangs. For Cypress, set `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html` before `mh up` (or recreate the SPA container with that env).
+- Manual `npm run api` + `npm run dev` smoke (login, `/` → `/journey`, `{full_name}:Mentee` title, local drawer) was not run in this session.

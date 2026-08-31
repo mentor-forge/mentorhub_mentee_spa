@@ -72,7 +72,7 @@ src/
   plugins/          # Vuetify plugin configuration
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
 ## Key Implementation Patterns
 
@@ -96,9 +96,9 @@ src/
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
-- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
+- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
@@ -131,7 +131,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.); do not introduce new `AutoSaveField` usage. For list pages, use `CardGrid` / `MhCard` with offset/size list queries (or `useResourceList` + `ListPageSearch` for simple lists).
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling
