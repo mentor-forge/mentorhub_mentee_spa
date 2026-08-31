@@ -150,8 +150,9 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 ### E2E Tests
 - Uses Cypress for end-to-end testing against the packaged SPA on `http://localhost:8394`
 - Entry and visits are prefixed: `/mentee/`, `/mentee/journey`, `/mentee/paths/{id}`, `/mentee/resources/{id}` (`baseUrl` stays `http://localhost:8394`; do not point Cypress at `:8080`)
+- Prefer `cy.visitPrefixed(...)` from `cypress/support/commands.ts` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
 - `npm run service` must be running. Do not run `npm run dev` at the same time — both bind host port **8394**
-- Tests cover login, journey detail (including complete-with-rating-and-note), path/resource detail, PageFrame chrome, and Discovery browse-link hrefs
+- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (mentee vs admin roles), Discovery browse-link hrefs, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy)
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
