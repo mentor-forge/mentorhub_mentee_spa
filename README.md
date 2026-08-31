@@ -16,6 +16,32 @@ UI Components should stick to Vuetify styling, and leverage re-usable input comp
 npm run service 
 ```
 
+| Service | Port | URL |
+|---------|------|-----|
+| Developer Edition login (IdP) | **8080** | `http://127.0.0.1:8080/login.html` |
+| Mentee SPA (welcome / ALB — **supported browser entry**) | **8080** | `http://<host>:8080/mentee/` |
+| Mentee SPA (Vite dev or container — **direct-port debugging only**) | **8394** | `http://localhost:8394/mentee/` |
+| Mentee API | **8393** | this SPA's nginx at `/mentee/api/` (and `/api/` for direct-port debug) |
+
+> [!WARNING]
+> `npm run dev` and `npm run service` both bind host port **8394** and cannot run at the same time.
+
+The supported browser entry is `http://<host>:8080/mentee/` through Developer Edition welcome / ALB. `http://localhost:8394/mentee/` is for Cypress, OpenAPI, and debugging only. API calls from the app use `/mentee/api/` and reach `mentee_api` through this SPA's nginx.
+
+`npm run dev` serves the app at `http://localhost:8394/mentee/`.
+
+### In-App Route Table
+
+Vue route `path` strings stay unprefixed. Vite `base: '/mentee/'` prefixes the browser URL.
+
+| Browser URL | Vue Path | Page |
+|---|---|---|
+| `http://localhost:8394/mentee/` | `/` | redirect → `/journey` |
+| `http://localhost:8394/mentee/journey` | `/journey` | `JourneyEditPage.vue` (caller-scoped journey detail) |
+| `http://localhost:8394/mentee/resources/{id}` | `/resources/:id` | `ResourceViewPage.vue` (Discovery resource card target) |
+| `http://localhost:8394/mentee/paths/{id}` | `/paths/:id` | `PathViewPage.vue` (Discovery path card target) |
+| `http://localhost:8394/mentee/admin` | `/admin` | `AdminPage.vue` (runtime-config viewer, `admin` role required) |
+
 ## Developer Commands
 
 ```sh
@@ -28,7 +54,7 @@ npx cypress install
 ## package code for deployment
 npm run build 
 
-## run dev server, assumes api is running - captures command line
+## run Vite dev server on http://localhost:8394/mentee/ (assumes API is running)
 npm run dev 
 
 ## run unit tests
@@ -65,14 +91,16 @@ npm run container
 src/
   api/              # API client layer (types.ts, client.ts)
   components/       # App-specific UI components (admin components)
-  pages/            # Route-level components (List, New, Edit/View pages)
+  pages/            # Route-level components (journey, path, and resource detail pages)
   composables/      # App-specific composables (useConfig, useRoles wrapper); auth from spa_utils
   stores/           # Pinia stores (UI state only)
   router/           # Vue Router configuration
   plugins/          # Vuetify plugin configuration
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`). This repo keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards deep-link into.
+
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
 ## Key Implementation Patterns
 
@@ -92,21 +120,22 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
-- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle`, bound reactively from `useAppTitle` as `:page-title="appBarTitle"` so the bar shows `{full_name}:Mentee` once the journey loads (and `Mentee` before that).
+- **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
+- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
 ### Component Architecture
+- **App Shell**: `PageFrame` wraps `router-view` inside the host `v-app`. Title markup lives in spa_utils (`page-frame-title`); title *logic* stays in `useAppTitle`.
 - **Pages**: Own routing, data fetching, and mutations. Pass data + callbacks to components.
 - **Components**: App-specific components (admin components). Reusable components come from `spa_utils`.
-- **Composables**: App-specific logic (authentication, config). Reusable composables come from `spa_utils`.
+- **Composables**: App-specific logic (authentication, config, app-bar title). Reusable composables come from `spa_utils`.
 - **Stores**: UI-only state (loading, error messages, etc.)
 
 ## Testing
@@ -119,8 +148,11 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Coverage report: `npm run test:coverage`
 
 ### E2E Tests
-- Uses Cypress for end-to-end testing
-- Tests cover main user flows: login, CRUD operations for each domain
+- Uses Cypress for end-to-end testing against the packaged SPA on `http://localhost:8394`
+- Entry and visits are prefixed: `/mentee/`, `/mentee/journey`, `/mentee/paths/{id}`, `/mentee/resources/{id}` (`baseUrl` stays `http://localhost:8394`; do not point Cypress at `:8080`)
+- Prefer `cy.visitPrefixed(...)` from `cypress/support/commands.ts` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
+- `npm run service` must be running. Do not run `npm run dev` at the same time — both bind host port **8394**
+- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (mentee vs admin roles), Discovery browse-link hrefs, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy)
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
@@ -129,9 +161,9 @@ When adding a new resource or feature:
 
 1. **Add API Types**: Extend `src/api/types.ts` with new interfaces
 2. **Add API Methods**: Add methods to `src/api/client.ts`
-3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
+3. **Create Pages**: Follow the detail / edit pattern (collection lists live on Discovery)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.); do not introduce new `AutoSaveField` usage.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling
@@ -141,12 +173,21 @@ When adding a new resource or feature:
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
 
+Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
+
+- Always present: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
+- Role-gated (token must carry the role): `nav-products-link`, `nav-settings-link`, `nav-resources-link`, `nav-paths-link`, `nav-plans-link`, `nav-customer-link`, `nav-customer-members-link`
+
+Do not define `app-bar-title` or host `nav-*` ids in this SPA. Cypress `navigation.cy.ts` covers the spa_utils drawer, title, profile, and logout ids.
+
 ## CI
 
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
 
 ## Configuration
-- Runtime configuration available at `/api/config` endpoint
-- Use enumerator values from config, not hardcoded in OpenAPI spec
+- **Supported browser entry**: `http://<host>:8080/mentee/` via Developer Edition welcome / ALB
+- **Direct-port debugging only**: `http://localhost:8394/mentee/` (Cypress, OpenAPI, `npm run service`); `http://localhost:8394/` redirects to `/mentee/`
+- **API proxy**: the client calls `/mentee/api/` (derived from Vite `base`); container nginx proxies that to `http://${API_HOST}:${API_PORT}/api/` on `mentee_api` (port **8393**). Direct-port `/api/` is kept for debugging
+- Runtime enumerators come from `GET /mentee/api/config` (or `/api/config` on the direct port), not from OpenAPI
 - Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration
-- Container listens on port 80 internally; map host port to container port 80 (e.g., `8185:80` in docker-compose)
+- Container listens on port 80 internally; map host port to container port 80 (e.g., `8394:80` in docker-compose)
