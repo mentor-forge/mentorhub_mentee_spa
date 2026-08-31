@@ -1,6 +1,6 @@
 # F129 – Adopt spa_utils `PageFrame` and delete the local chrome
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F128_retire_list_pages_and_lock_routes`  
 **Description**: Replace this SPA's local app bar, navigation drawer, and logout handler with the imported `PageFrame`, keeping the dynamic `{full_name}:Mentee` title by binding it to `pageTitle`. Route paths keep the shape F128 locked; the `/mentee/` base path is F130.
@@ -99,4 +99,36 @@ Do not change `src/router/index.ts`, `src/composables/**`, `src/pages/**`, `src/
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+
+Replace local App chrome with spa_utils `PageFrame`, passing only `:page-title="appBarTitle"`. Keep the `getMyJourney` query, title watches, `provideEditorConfig`, and authenticated `loadConfig()`. Drop drawer, `handleLogout`, `useRouter`, and `useRoles` from `App.vue`. Stub `PageFrame` in `App.test.ts`; change Cypress `app-bar-title` → `page-frame-title`. Document the shell, disallowed local nav, `useAppTitle` binding, and spa_utils automation ids in `README.md`. Do not touch router, composables, pages, vite, nginx, Dockerfile, package.json, cypress.config, or client.
+
+Known limitations to record (not fix): PageFrame logout returns to origin `/` not `/mentee/`; `/admin` is direct-URL only after chrome removal.
+
+### Summary
+
+`src/App.vue` is now a single host `v-app` wrapping `PageFrame` with `:page-title="appBarTitle"`. Local `v-app-bar`, drawer, `drawer` ref, `router.afterEach` close, `handleLogout`, `useRouter`, and `useRoles` / `hasAdminRole` are gone. Title query/watches, `provideEditorConfig`, and authenticated `loadConfig()` stay. `App.test.ts` stubs `PageFrame` (plus `RouterView` / `VApp`) and dropped the `useRoles` / `useRouter` mocks. Cypress title selector is `page-frame-title`. README documents the shell, disallowed local nav, `useAppTitle` binding, and spa_utils automation ids.
+
+**Page gutters:** after removing the outer `<v-container fluid>`, Journey / Path / Resource pages still open with their own `<v-container>`, and spa_utils `AdminPage` also wraps in `<v-container>`. Cypress rendered journey, `/paths/:id`, and `/resources/:id` without layout failures. No browser MCP was available for a visual gutter pass; `/admin` was not in this Cypress suite.
+
+**Known limitation — logout return URL:** `PageFrame.handleLogout` returns to `` `${window.location.origin}/` `` (compiled in spa_utils; not overridable). Once F130 mounts under `/mentee/`, logout lands on the welcome root rather than the Mentee SPA. Acceptable; follow-up is a spa_utils issue for a base-aware logout return URL. No local logout workaround was added.
+
+**`/admin` is direct-URL only:** the local `nav-admin-link` row is gone. The spa_utils Settings row targets `/admin/settings` in the **Admin** journey, not this page. `/admin` remains an `admin`-gated route reachable only by typing the URL.
+
+### Commands / results
+
+- Grep `src/`: no `app-bar-title`, no host `data-automation-id="nav-*"`, no `handleLogout`. Only allowed prop is `:page-title="appBarTitle"`.
+- `npm run test`: **47/47 passed** (10 files), including `src/App.test.ts`
+- `npm run build`: **passed** (`vue-tsc` + Vite)
+- `npm run api` + `npm run dev`: API required `GITHUB_FOREVER_TOKEN` as `GITHUB_TOKEN` (file token denied by GHCR). Dev served `http://localhost:8394/` (HTTP 200). Vite-transformed `App.vue` imports `PageFrame` and binds `appBarTitle`. Stopped before packaging so 8394 was free. Click-through hamburger / role rows / avatar / logout were not exercised (no browser MCP).
+- `npm run container`: **passed**
+- `npm run service`: **passed** with `GITHUB_FOREVER_TOKEN` as `GITHUB_TOKEN` and `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`
+- `npm run cypress:run`: **16/16 passed** (journey 9, path 3, resource 4), including `page-frame-title` contains `Jane Mentee:Mentee`
+
+### Follow-ups
+
+- spa_utils: base-aware logout return URL (today always origin `/`, not `/mentee/`).
+- F130–F131: Vite `base` + nginx `/mentee/` prefix.
+- F132: full Cypress rewrite for prefixed paths and spa_utils drawer/title ids (Home / Notifications / Products / Settings / profile / logout).
+- `/admin` has no in-app nav after chrome removal; keep as a documented direct-URL, `admin`-gated route.
+- Interactive drawer/title/avatar/logout smoke (mentee vs admin tokens) was not run in a browser; F132 owns that coverage.

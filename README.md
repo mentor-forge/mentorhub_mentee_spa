@@ -74,7 +74,7 @@ src/
 
 This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`). This repo keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards deep-link into.
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
 ## Key Implementation Patterns
 
@@ -98,6 +98,7 @@ This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle`, bound reactively from `useAppTitle` as `:page-title="appBarTitle"` so the bar shows `{full_name}:Mentee` once the journey loads (and `Mentee` before that).
 - **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
@@ -105,9 +106,10 @@ This template uses components and composables from `@mentor-forge/mentorhub_spa_
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
 ### Component Architecture
+- **App Shell**: `PageFrame` wraps `router-view` inside the host `v-app`. Title markup lives in spa_utils (`page-frame-title`); title *logic* stays in `useAppTitle`.
 - **Pages**: Own routing, data fetching, and mutations. Pass data + callbacks to components.
 - **Components**: App-specific components (admin components). Reusable components come from `spa_utils`.
-- **Composables**: App-specific logic (authentication, config). Reusable composables come from `spa_utils`.
+- **Composables**: App-specific logic (authentication, config, app-bar title). Reusable composables come from `spa_utils`.
 - **Stores**: UI-only state (loading, error messages, etc.)
 
 ## Testing
@@ -141,6 +143,13 @@ When adding a new resource or feature:
 ## Automation Support
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
+
+Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
+
+- Always present: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
+- Role-gated (token must carry the role): `nav-products-link`, `nav-settings-link`, `nav-resources-link`, `nav-paths-link`, `nav-plans-link`, `nav-customer-link`, `nav-customer-members-link`
+
+Do not define `app-bar-title` or host `nav-*` ids in this SPA. Full drawer coverage is F132.
 
 ## CI
 
