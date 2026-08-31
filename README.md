@@ -19,11 +19,14 @@ npm run service
 | Service | Port | URL |
 |---------|------|-----|
 | Developer Edition login (IdP) | **8080** | `http://127.0.0.1:8080/login.html` |
-| Mentee SPA (Vite dev or container) | **8394** | `http://localhost:8394/mentee/` |
-| Mentee API | **8393** | proxied via SPA at `/mentee/api` and `/api` |
+| Mentee SPA (welcome / ALB — **supported browser entry**) | **8080** | `http://<host>:8080/mentee/` |
+| Mentee SPA (Vite dev or container — **direct-port debugging only**) | **8394** | `http://localhost:8394/mentee/` |
+| Mentee API | **8393** | this SPA's nginx at `/mentee/api/` (and `/api/` for direct-port debug) |
 
 > [!WARNING]
 > `npm run dev` and `npm run service` both bind host port **8394** and cannot run at the same time.
+
+The supported browser entry is `http://<host>:8080/mentee/` through Developer Edition welcome / ALB. `http://localhost:8394/mentee/` is for Cypress, OpenAPI, and debugging only. API calls from the app use `/mentee/api/` and reach `mentee_api` through this SPA's nginx.
 
 `npm run dev` serves the app at `http://localhost:8394/mentee/`.
 
@@ -179,7 +182,9 @@ Do not define `app-bar-title` or host `nav-*` ids in this SPA. Full drawer cover
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
 
 ## Configuration
-- Runtime configuration available at `/api/config` endpoint
-- Use enumerator values from config, not hardcoded in OpenAPI spec
+- **Supported browser entry**: `http://<host>:8080/mentee/` via Developer Edition welcome / ALB
+- **Direct-port debugging only**: `http://localhost:8394/mentee/` (Cypress, OpenAPI, `npm run service`); `http://localhost:8394/` redirects to `/mentee/`
+- **API proxy**: the client calls `/mentee/api/` (derived from Vite `base`); container nginx proxies that to `http://${API_HOST}:${API_PORT}/api/` on `mentee_api` (port **8393**). Direct-port `/api/` is kept for debugging
+- Runtime enumerators come from `GET /mentee/api/config` (or `/api/config` on the direct port), not from OpenAPI
 - Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration
-- Container listens on port 80 internally; map host port to container port 80 (e.g., `8185:80` in docker-compose)
+- Container listens on port 80 internally; map host port to container port 80 (e.g., `8394:80` in docker-compose)

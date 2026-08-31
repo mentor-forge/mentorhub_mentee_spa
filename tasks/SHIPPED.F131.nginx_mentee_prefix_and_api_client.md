@@ -1,6 +1,6 @@
 # F131 – SPA nginx `/mentee/` prefix and prefixed API client
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F130_vite_base_and_router_prefix`  
 **Description**: Teach container nginx to serve the `/mentee/` prefix (assets, Vue history fallback, prefixed API proxy, prefixed `runtime-config.js`) and switch the API client to the prefixed `/mentee/api` base so calls from the welcome origin reach `mentee_api` through this SPA's nginx. Keep direct-port `/api/` and `/runtime-config.js` for debugging.
@@ -87,4 +87,56 @@ Do not change `vite.config.ts`, `src/router/index.ts`, `src/App.vue`, `cypress.c
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+- Mirror the shipped admin/discovery/customer/mentor nginx prefix pattern, swapping in `/mentee/`:
+  - `location /mentee/api/` + keep `location /api/` (same proxy headers, `${API_HOST}:${API_PORT}` → `/api/`)
+  - `location /mentee/` rewrite onto dist root + `try_files` history fallback + HTML `Cache-Control: no-store`
+  - Prefixed asset regex `^/mentee/(.*\.(js|css|...))$` **before** the root-path asset regex so it wins; neither regex matches `/mentee/api/` (no asset extension)
+  - Exact `location = /mentee/runtime-config.js` (try_files `/runtime-config.js`) and keep `location = /runtime-config.js`; both `no-store` so they beat the immutable asset cache
+  - `location = /` → `302 /mentee/` with `absolute_redirect off`
+  - Keep `location /health` and a root `location /` fallback for direct-port debug
+- `src/api/client.ts`: `API_BASE` from Vite `BASE_URL` (`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api` → `/mentee/api`). Auth, 401, 204, Content-Type unchanged.
+- Client tests: replace `/api/...` assertions with `/mentee/api/...`. If Vitest still sees `BASE_URL=/` (standalone `vitest.config.ts` has no `base`), add `base: '/mentee/'` there — sibling SPAs did this; it is the only way prefixed assertions can pass. Note as a necessary Outputs exception if required.
+- `package.json` `open` → `http://localhost:8394/mentee/`.
+- `README.md`: welcome `:8080/mentee/` is the supported browser entry; `:8394/mentee/` is direct-port debug only; API via this SPA's nginx at `/mentee/api/`.
+- Dockerfile: no change expected (`runtime-config.js` already generated at `/usr/share/nginx/html/runtime-config.js`).
+- **Do not run Cypress as a gate.** Specs still visit un-prefixed paths and are re-pointed in F132.
+- Testing: `npm run test`, `npm run build`, then `npm run container` + `npm run service` and the listed `curl -i` checks. Env: `GITHUB_FOREVER_TOKEN`, `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`.
+- Leave Status Pending. No commit/push.
+
+### Implemented
+- `nginx.conf.template`: prefixed `/mentee/api/` proxy (kept `/api/`), `/mentee/` rewrite + history fallback + HTML `no-store`, prefixed asset cache regex before the root asset regex, `location = /` → `302 /mentee/` (`absolute_redirect off`), dual `runtime-config.js` (`/mentee/` + root, both `no-store`), `/health` unchanged.
+- `src/api/client.ts`: `API_BASE` is `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api` → `/mentee/api`. Authorization, Content-Type, 401 logout/redirect, and 204/empty-body handling unchanged.
+- Client tests assert `/mentee/api/...` (config, journey, path, resource, aggregation).
+- `package.json` `open` → `http://localhost:8394/mentee/`.
+- `README.md`: welcome `:8080/mentee/` supported entry; `:8394/mentee/` debug only; API via this SPA's nginx at `/mentee/api/`.
+- `Dockerfile`: **not changed**. Startup `envsubst` still writes `/usr/share/nginx/html/runtime-config.js`; prefixed location `try_files /runtime-config.js`.
+- `vitest.config.ts`: **necessary Outputs exception** — added `base: '/mentee/'` so Vitest `BASE_URL` matches Vite. Without it, tests still fetched `/api/...` (standalone vitest config does not inherit `vite.config.ts` `base`). Same one-liner as mentor/admin/customer/discovery.
+
+### Cypress
+**Not run as a gate.** Specs still visit un-prefixed paths and are re-pointed in F132.
+
+### Test results
+- `npm run test`: 10 files, 47 tests passed (after `vitest.config.ts` `base`).
+- `npm run build`: `vue-tsc && vite build` succeeded.
+- `npm run container`: image `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest` built.
+- `npm run service`: first `mh up mentee` failed GHCR login (`~/.mentorhub/GITHUB_TOKEN` stale). Retried with `GITHUB_TOKEN` from `~/.mentorhub/GITHUB_FOREVER_TOKEN` and `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html` — stack came up (welcome, db, mentee_api, mentee_spa).
+
+### Curl verification (`localhost:8394` unless noted)
+| Check | Result |
+|---|---|
+| `GET /` | **302** `Location: /mentee/` |
+| `GET /mentee/` | **200** `text/html`, title `Mentee`, assets `/mentee/assets/...`, `Cache-Control: no-store` (not welcome `index.html`) |
+| `GET /mentee/journey` | **200** `text/html` (history fallback) |
+| `GET /mentee/paths/anything` | **200** `text/html` (history fallback) |
+| `GET /mentee/runtime-config.js` | **200**, `Cache-Control: no-store`, body `IDP_LOGIN_URI: 'http://127.0.0.1:8080/login.html'` |
+| `GET /runtime-config.js` | **200**, `Cache-Control: no-store`, same body |
+| `GET /mentee/api/config` | **401** JSON `Missing or invalid Authorization header` (reaches mentee_api) |
+| `GET /api/config` | **401** JSON same body |
+| `GET /mentee/assets/index-B2XwRbvJ.js` | **200** `application/javascript`, `Cache-Control: public, immutable` |
+| `GET /health` | **200** `healthy` |
+| `GET http://localhost:8080/mentee/` | **200** this SPA (title `Mentee`, `/mentee/` assets) — welcome was in the mentee profile |
+
+### Follow-ups
+- F132: re-point Cypress visits/intercepts under `/mentee/` and treat `cypress:run` as a packaging gate.
+- Planner gap: F131 Outputs omitted `vitest.config.ts` `base`; sibling SPAs already have it. Leave as-is unless F132 wants to own the file.
