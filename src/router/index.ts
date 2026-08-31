@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { buildJourneyUrl, hasStoredRole, redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -43,7 +43,8 @@ router.beforeEach((to, _from, next) => {
   const { isAuthenticated } = useAuth()
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    redirectToIdpLogin(window.location.origin + to.fullPath)
+    const returnUrl = window.location.origin + import.meta.env.BASE_URL + to.fullPath.replace(/^\//, '')
+    redirectToIdpLogin(returnUrl)
     next(false)
     return
   }

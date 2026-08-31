@@ -1,6 +1,6 @@
 # F130 – Vite `base` `/mentee/`, router `BASE_URL`, and base-aware runtime config
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F129_adopt_page_frame`  
 **Description**: Mount the app at Vite `base: '/mentee/'` with `createWebHistory(import.meta.env.BASE_URL)` so browser URLs are `/mentee/...` and never `/mentee/mentee/...`. Make the existing runtime-config injection base-aware, add a base-aware IdP return URL, and add a prefixed dev proxy. Route `path` strings stay unchanged. Do not change `nginx.conf.template`, the `Dockerfile`, or `src/api/client.ts` — that is F131.
@@ -75,4 +75,38 @@ Do not change `nginx.conf.template`, `Dockerfile`, `package.json`, `cypress.conf
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+- `vite.config.ts`: set `base: '/mentee/'` (single build). Make `injectRuntimeConfig` read resolved `config.base` and emit `<script src="${base}runtime-config.js">` (still `pre`, seed line kept). Add `'/mentee/api'` proxy → `localhost:8393` with rewrite that strips `/mentee`; keep existing `/api` proxy.
+- `src/router/index.ts`: `createWebHistory(import.meta.env.BASE_URL)`. Leave every route `path` unprefixed. IdP return URL = `origin + BASE_URL + to.fullPath` without leading slash. Keep `next(false)`.
+- `index.html`: title `Mentee`. Delete the dead `/vite.svg` favicon link (file is not in `public/`).
+- `README.md`: document `http://localhost:8394/mentee/`, F128 in-app URLs, and the port-8394 `dev` vs `service` conflict.
+- Do not change nginx, Dockerfile, package.json, cypress.config, client.ts, vitest, public runtime-config, App.vue.
+- Testing: `npm run test`, `npm run build`, inspect `dist/index.html` for `/mentee/` assets (no `/mentee/mentee`), confirm no `dist/mentee/` folder. Manual `api`+`dev` if feasible.
+- **Do not run Cypress as a gate.** Specs still hit unprefixed paths and container nginx still serves `/` until F131/F132.
+
+### Implemented
+- `vite.config.ts`: `base: '/mentee/'`; `injectRuntimeConfig` reads `config.base` and emits `<script src="${base}runtime-config.js" vite-ignore>` (`pre`, seed line kept). `vite-ignore` is required — without it Vite 7 rewrites the already-prefixed src to `/mentee/mentee/runtime-config.js` on the dev server. Added `'/mentee/api'` → `localhost:8393` with rewrite stripping `/mentee`; kept `/api`.
+- `src/router/index.ts`: `createWebHistory(import.meta.env.BASE_URL)`. Route `path` strings unchanged (`/`, `/journey`, `/resources/:id`, `/paths/:id`, `/admin`). IdP return URL is `window.location.origin + import.meta.env.BASE_URL + to.fullPath.replace(/^\//, '')`. `next(false)` kept.
+- `index.html`: title `Mentee`. **Deleted** the dead `/vite.svg` favicon link (file is not in `public/`); did not make it base-aware.
+- `README.md`: `npm run dev` at `http://localhost:8394/mentee/`, F128 in-app route table, port-8394 `dev` vs `service` conflict warning.
+
+### Cypress
+**Not run as a gate.** `npm run cypress:run` is expected to fail until F131 (prefixed nginx + API client) and F132 (prefixed specs).
+
+### Test results
+- `npm run test`: 10 files, 47 tests passed. No unit test asserted an un-prefixed IdP return URL, so none were updated.
+- `npm run build`: `vue-tsc && vite build` succeeded.
+- `dist/index.html`: module bundle `/mentee/assets/index-BvBBgYAu.js`, CSS `/mentee/assets/index-DPA2ijAz.css`, `runtime-config.js` at `/mentee/runtime-config.js`. No `/mentee/mentee`. No `dist/mentee/` folder. `runtime-config.js` and `runtime-config.js.template` copied to dist root.
+
+### Manual `api` + `dev`
+`npm run dev` on **8394** was not feasible: `mentorhub-mentee_spa-1` already binds that port (the documented `dev` vs `service` conflict). API was already up on 8393. Smoke-checked a throwaway Vite on port 18394 instead:
+- `GET /mentee/` → 200 HTML with `/mentee/runtime-config.js` (not `/mentee/mentee/...`)
+- `GET /mentee/runtime-config.js` → 200 `text/javascript`
+- `GET /mentee/paths/demo-id` and `/mentee/resources/demo-id` → 200 HTML (history fallback)
+- `GET /mentee/api/config` and `/api/config` → 401 JSON from gunicorn (proxy rewrite reaches mentee_api)
+- Client-side `/` → `/journey` redirect and IdP deep-link return were not browser-verified (no browser tools; 8394 occupied by the un-prefixed container).
+
+### Follow-ups
+- F131: container nginx `/mentee/` + prefixed API client (`src/api/client.ts`).
+- F132: Cypress visits under `/mentee/` and packaging verification.
+- Browser check of `/mentee/` → `/mentee/journey` and logged-out deep-link return once 8394 is free for `npm run dev`.

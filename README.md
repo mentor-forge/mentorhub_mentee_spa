@@ -16,6 +16,29 @@ UI Components should stick to Vuetify styling, and leverage re-usable input comp
 npm run service 
 ```
 
+| Service | Port | URL |
+|---------|------|-----|
+| Developer Edition login (IdP) | **8080** | `http://127.0.0.1:8080/login.html` |
+| Mentee SPA (Vite dev or container) | **8394** | `http://localhost:8394/mentee/` |
+| Mentee API | **8393** | proxied via SPA at `/mentee/api` and `/api` |
+
+> [!WARNING]
+> `npm run dev` and `npm run service` both bind host port **8394** and cannot run at the same time.
+
+`npm run dev` serves the app at `http://localhost:8394/mentee/`.
+
+### In-App Route Table
+
+Vue route `path` strings stay unprefixed. Vite `base: '/mentee/'` prefixes the browser URL.
+
+| Browser URL | Vue Path | Page |
+|---|---|---|
+| `http://localhost:8394/mentee/` | `/` | redirect → `/journey` |
+| `http://localhost:8394/mentee/journey` | `/journey` | `JourneyEditPage.vue` (caller-scoped journey detail) |
+| `http://localhost:8394/mentee/resources/{id}` | `/resources/:id` | `ResourceViewPage.vue` (Discovery resource card target) |
+| `http://localhost:8394/mentee/paths/{id}` | `/paths/:id` | `PathViewPage.vue` (Discovery path card target) |
+| `http://localhost:8394/mentee/admin` | `/admin` | `AdminPage.vue` (runtime-config viewer, `admin` role required) |
+
 ## Developer Commands
 
 ```sh
@@ -28,7 +51,7 @@ npx cypress install
 ## package code for deployment
 npm run build 
 
-## run dev server, assumes api is running - captures command line
+## run Vite dev server on http://localhost:8394/mentee/ (assumes API is running)
 npm run dev 
 
 ## run unit tests
