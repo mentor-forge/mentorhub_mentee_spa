@@ -1,6 +1,6 @@
 # F132 – Cypress e2e under `/mentee/` and full packaging verification
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F131_nginx_mentee_prefix_and_api_client`  
 **Description**: Re-point every Cypress visit to the `/mentee/` prefix, replace the deleted local drawer coverage with the spa_utils `PageFrame` automation ids, and run the full packaged stack as the acceptance gate for both source issues (F-ES09 and F-ES10).
@@ -80,4 +80,43 @@ Do not change `cypress.config.ts` `baseUrl`, `vite.config.ts`, `nginx.conf.templ
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Plan
+1. Point `registerAuthCommands` at `visitPath: '/mentee/'` so JWT seeding and first navigation land on the prefixed origin.
+2. Recreate `cypress/e2e/navigation.cy.ts` against spa_utils `PageFrame` ids only (`nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`, plus role-gated `nav-products-link` / `nav-settings-link`). No local drawer selectors. Mentee-only login for Home/Notifications; admin login for Products/Settings. Title: `Mentee` before delayed journey stub, then `{full_name}:Mentee`. Logout: IdP pathname + `return_to` presence (not a prefixed value). Home/Notifications/profile hrefs are absolute `:8080` anchors.
+3. Prefix every `cy.visit` and `cy.url().should('include', …)` in journey/path/resource specs: `/mentee/`, `/mentee/journey`, `/mentee/paths/path-1`, `/mentee/resources/resource-1`. Keep existing detail-page assertions (expand, promote, advance, complete-with-rating-and-note, nested cards, typed editors, aggregation).
+4. Assert Discovery browse-link `href`s (`path-view-browse-paths-link` → `/discovery/paths`, `resource-view-browse-resources-link` → `/discovery/resources`) without following them.
+5. Document prefixed Cypress entry and `npm run service` (not `npm run dev`) in README Testing.
+6. Packaging gate: `npm run test`, `npm run build`, `npm run container`, `npm run service`, `npm run cypress:run`, `curl -i http://localhost:8394/mentee/`. Env: `GITHUB_FOREVER_TOKEN` as `GITHUB_TOKEN`, `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`. No production source changes unless a missing/wrong automation id is exposed.
+7. Leave Status Pending. Record follow-ups: no `lint` script; spa_utils base-aware logout return URL; `:8080/mentee/` welcome check if welcome is up.
+
+### Implementation
+- `cypress/support/e2e.ts`: `visitPath: '/mentee/'`. `commands.ts` unchanged — `visitPath` is enough for prefixed JWT storage.
+- `cypress/e2e/navigation.cy.ts` recreated (spa_utils ids only). `cy.login(['mentee'])` for Home/Notifications and **not** Products/Settings; `cy.login(['admin'])` for those two. Profile/Home/Notifications hrefs asserted as `http://localhost:8080/...` (not `:8394`, not `/mentee/mentee`). Title: delayed `GET **/api/journey` stub so `page-frame-title` is `Mentee` then `Jane Mentee:Mentee` (login visit is the only navigation so the delayed intercept is not raced by a second visit). Logout uses `cy.origin('http://127.0.0.1:8080')` and asserts pathname `/login.html` plus `return_to=` presence, not a prefixed return_to value. `PageFrame` logout still returns to origin `/`.
+- Journey/path/resource specs: all visits and URL includes prefixed. Detail coverage kept. New browse-link `href` assertions; links are not followed.
+- `README.md` Testing: Cypress entry is `http://localhost:8394/mentee/...`; `npm run service` required, not `npm run dev`. Automation Support notes `navigation.cy.ts` covers spa_utils chrome.
+- No `src/**` changes. No edits to `cypress.config.ts` `baseUrl`, vite, nginx, Dockerfile, package.json, vitest, or `src/api/client.ts`.
+- Grep `cypress/`: no `nav-journey-link`, `app-bar-title`, `nav-admin-link`, list-page ids, `getPaths`/`getResources`, or unprefixed `/paths` / `/resources` list visits.
+
+### Commands run and results
+Env: `GITHUB_TOKEN` from `~/.mentorhub/GITHUB_FOREVER_TOKEN`; `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`. Port 8394 was Docker from F131; `mh down` in `npm run service` freed it. No `npm run dev` alongside service.
+
+| Command | Result |
+|---|---|
+| `npm run test` | **pass** — 10 files, 47 tests |
+| `npm run build` | **pass** — `vue-tsc` clean, Vite production build |
+| `npm run container` | **pass** — `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest` |
+| `npm run service` | **pass** — welcome, mongo, mongodb_api/spa, mentee_api, mentee_spa up. SPA `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html` |
+| `npm run cypress:run` | **pass** — 22/22 (journey 9, navigation 4, path 4, resource 5), ~15s |
+| `curl -i http://localhost:8394/mentee/` | **200** `text/html`, `/mentee/` asset URLs (`/mentee/runtime-config.js`, `/mentee/assets/...`) |
+| `curl -i http://localhost:8080/mentee/` | **200** this SPA (not welcome `index.html`); same `/mentee/` assets |
+
+`npm run lint` is **not defined** in this repo; `npm run build` (`vue-tsc`) is the type gate.
+
+Source-issue acceptance: `:8080/mentee/` serves this SPA; `:8394/mentee/` works for Cypress; API calls from the prefixed origin use `/mentee/api` through this SPA's nginx (F131); unit + e2e pass.
+
+### Follow-ups
+- This repo has no `lint` script; the source issues list `npm run lint`. Do not add tooling here.
+- spa_utils: `PageFrame` logout `return_to` is origin `/`, not `/mentee/` (F129). Cypress asserts pathname + `return_to` presence only.
+- Cypress logout assumes loopback IdP. With `HOST_NAME` set, `mh` injects a Tailscale `IDP_LOGIN_URI` and the logout spec hangs. For Cypress, set `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html` before `mh up`.
+- Status left **Pending** for the orchestrator to commit, push, and mark Shipped.
+

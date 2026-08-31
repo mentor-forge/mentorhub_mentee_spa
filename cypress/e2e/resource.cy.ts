@@ -72,7 +72,7 @@ describe('Resource Domain', () => {
       },
     }).as('getResourceWithLongFields')
 
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResourceWithLongFields')
 
     cy.get('[data-automation-id="resource-view-card-title-display"]').should(
@@ -84,7 +84,7 @@ describe('Resource Domain', () => {
 
   it('should hide administration card from non-admin users', () => {
     cy.login(['mentee'])
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-admin-card"]').should('not.exist')
@@ -93,7 +93,7 @@ describe('Resource Domain', () => {
   })
 
   it('should show aggregation and notes sections on the resource card', () => {
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-aggregation-heading"]').should('be.visible')
@@ -112,11 +112,19 @@ describe('Resource Domain', () => {
   })
 
   it('should keep the administration sub-card collapsed by default', () => {
-    cy.visit('/resources/resource-1')
+    cy.visit('/mentee/resources/resource-1')
     cy.wait('@getResource')
 
     cy.get('[data-automation-id="resource-view-admin-card"]').should('be.visible')
     cy.get('[data-automation-id="resource-view-admin-card"]').should('have.class', 'mh-card--collapsed')
     cy.get('[data-automation-id="resource-view-status-display"]').should('not.be.visible')
+  })
+
+  it('should link Browse Resources to Discovery on the welcome origin', () => {
+    cy.visit('/mentee/resources/resource-1')
+    cy.wait('@getResource')
+
+    cy.get('[data-automation-id="resource-view-browse-resources-link"]')
+      .should('have.attr', 'href', 'http://localhost:8080/discovery/resources')
   })
 })

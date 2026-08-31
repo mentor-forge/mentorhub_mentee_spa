@@ -95,7 +95,7 @@ describe('Path Domain', () => {
   })
 
   it('should expand nested module, topic, and resource cards', () => {
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-modules-card-collapse-button"]').click()
@@ -128,7 +128,7 @@ describe('Path Domain', () => {
   })
 
   it('should show administration fields only in the collapsed admin sub-card', () => {
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-admin-card"]').should('be.visible')
@@ -143,10 +143,18 @@ describe('Path Domain', () => {
 
   it('should hide administration card from non-admin users', () => {
     cy.login(['mentee'])
-    cy.visit('/paths/path-1')
+    cy.visit('/mentee/paths/path-1')
     cy.wait('@getPath')
 
     cy.get('[data-automation-id="path-view-admin-card"]').should('not.exist')
     cy.get('[data-automation-id="path-view-status-display"]').should('not.exist')
+  })
+
+  it('should link Browse Paths to Discovery on the welcome origin', () => {
+    cy.visit('/mentee/paths/path-1')
+    cy.wait('@getPath')
+
+    cy.get('[data-automation-id="path-view-browse-paths-link"]')
+      .should('have.attr', 'href', 'http://localhost:8080/discovery/paths')
   })
 })

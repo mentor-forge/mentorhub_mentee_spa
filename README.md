@@ -148,8 +148,10 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Coverage report: `npm run test:coverage`
 
 ### E2E Tests
-- Uses Cypress for end-to-end testing
-- Tests cover main user flows: login, CRUD operations for each domain
+- Uses Cypress for end-to-end testing against the packaged SPA on `http://localhost:8394`
+- Entry and visits are prefixed: `/mentee/`, `/mentee/journey`, `/mentee/paths/{id}`, `/mentee/resources/{id}` (`baseUrl` stays `http://localhost:8394`; do not point Cypress at `:8080`)
+- `npm run service` must be running. Do not run `npm run dev` at the same time — both bind host port **8394**
+- Tests cover login, journey detail (including complete-with-rating-and-note), path/resource detail, PageFrame chrome, and Discovery browse-link hrefs
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
@@ -175,7 +177,7 @@ Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
 - Always present: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
 - Role-gated (token must carry the role): `nav-products-link`, `nav-settings-link`, `nav-resources-link`, `nav-paths-link`, `nav-plans-link`, `nav-customer-link`, `nav-customer-members-link`
 
-Do not define `app-bar-title` or host `nav-*` ids in this SPA. Full drawer coverage is F132.
+Do not define `app-bar-title` or host `nav-*` ids in this SPA. Cypress `navigation.cy.ts` covers the spa_utils drawer, title, profile, and logout ids.
 
 ## CI
 
