@@ -204,6 +204,21 @@
     </DataCard>
   </MhCard>
 
+  <MhCard
+    v-else
+    title="Resource"
+    :collapsible="embedMode"
+    v-model:collapsed="cardCollapsed"
+    :automation-id="`${automationIdPrefix}-card`"
+  >
+    <template v-if="$slots.actions" #actions>
+      <slot name="actions" />
+    </template>
+    <p class="text-body-1" :data-automation-id="`${automationIdPrefix}-placeholder`">
+      Resource details will appear here.
+    </p>
+  </MhCard>
+
   <v-snackbar
     v-if="!embedMode"
     :model-value="showError as unknown as boolean"

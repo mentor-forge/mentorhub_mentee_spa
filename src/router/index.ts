@@ -17,14 +17,14 @@ const router = createRouter({
     },
 
     {
-      path: '/resources/:id',
+      path: '/resource/:id',
       name: 'ResourceView',
       component: () => import('@/pages/ResourceViewPage.vue'),
       meta: { requiresAuth: true }
     },
 
     {
-      path: '/paths/:id',
+      path: '/path/:id',
       name: 'PathView',
       component: () => import('@/pages/PathViewPage.vue'),
       meta: { requiresAuth: true }
@@ -58,6 +58,10 @@ router.beforeEach((to, _from, next) => {
   }
 
   next()
+})
+
+router.afterEach(() => {
+  document.title = 'Mentee'
 })
 
 export default router

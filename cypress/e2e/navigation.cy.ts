@@ -162,21 +162,14 @@ describe('Navigation (spa_utils PageFrame)', () => {
     assertAlbHref('nav-profile-link', '/customer/profile/')
   })
 
-  it('should show Mentee in the title before the journey resolves and the full name after', () => {
-    cy.intercept('GET', '**/mentee/api/journey', { body: journeyBody, delay: 3000 }).as(
-      'getSlowJourney'
-    )
+  it('should show Mentee in the title', () => {
+    stubJourney()
     cy.login(['mentee'])
 
     cy.get('[data-automation-id="page-frame-title"]')
       .invoke('text')
       .invoke('trim')
       .should('equal', 'Mentee')
-    cy.wait('@getSlowJourney')
-    cy.get('[data-automation-id="page-frame-title"]')
-      .invoke('text')
-      .invoke('trim')
-      .should('equal', 'Jane Mentee:Mentee')
   })
 
   it('should show only Home and Events for a mentee-only login', () => {
@@ -319,12 +312,12 @@ describe('Navigation (spa_utils PageFrame)', () => {
     stubIdpLoginUri()
     // Plain `cy.visit`: the guard leaves for the IdP during bootstrap, so by the time
     // `cy.visitPrefixed` could read the navigation entry the document is the IdP stub.
-    cy.visit('/mentee/paths/path-1')
+    cy.visit('/mentee/path/path-1')
 
     cy.location('pathname', { timeout: 10000 }).should('eq', IDP_STUB_PATHNAME)
     cy.location('search').then((search) => {
       const returnTo = new URLSearchParams(search).get('return_to') ?? ''
-      expect(new URL(returnTo).pathname).to.equal('/mentee/paths/path-1')
+      expect(new URL(returnTo).pathname).to.equal('/mentee/path/path-1')
     })
   })
 

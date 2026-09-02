@@ -18,10 +18,6 @@ vi.mock('@/composables/useConfig', () => ({
   }),
 }))
 
-vi.mock('@tanstack/vue-query', () => ({
-  useQuery: () => ({ data: ref(undefined) }),
-}))
-
 vi.mock('@mentor-forge/mentorhub_spa_utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@mentor-forge/mentorhub_spa_utils')>()
   return {

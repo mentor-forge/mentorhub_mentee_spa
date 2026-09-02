@@ -10,6 +10,16 @@
       </v-col>
     </v-row>
 
+    <v-row v-else-if="!path">
+      <v-col cols="12">
+        <MhCard title="Path" automation-id="path-view-card">
+          <p class="text-body-1" data-automation-id="path-view-placeholder">
+            Path details will appear here.
+          </p>
+        </MhCard>
+      </v-col>
+    </v-row>
+
     <v-row v-else-if="path">
       <v-col cols="12">
         <MhCard
