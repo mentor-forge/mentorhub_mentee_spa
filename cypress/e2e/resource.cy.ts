@@ -1,6 +1,6 @@
 describe('Resource Domain', () => {
-  // Browser URL carries the `/mentee/` journey prefix; the Vue route stays `/resources/:id`.
-  const RESOURCE_DETAIL_URL = '/mentee/resources/resource-1'
+  // Browser URL carries the `/mentee/` journey prefix; the Vue route stays `/resource/:id`.
+  const RESOURCE_DETAIL_URL = '/mentee/resource/resource-1'
 
   const resourceDetailBody = {
     resource: {

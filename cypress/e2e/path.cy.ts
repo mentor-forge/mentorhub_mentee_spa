@@ -1,6 +1,6 @@
 describe('Path Domain', () => {
-  // Browser URL carries the `/mentee/` journey prefix; the Vue route stays `/paths/:id`.
-  const PATH_DETAIL_URL = '/mentee/paths/path-1'
+  // Browser URL carries the `/mentee/` journey prefix; the Vue route stays `/path/:id`.
+  const PATH_DETAIL_URL = '/mentee/path/path-1'
 
   const firstPath = {
     _id: 'path-1',
