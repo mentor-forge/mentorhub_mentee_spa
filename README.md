@@ -100,7 +100,7 @@ src/
 
 This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`). This repo keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards deep-link into.
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.1` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
 ## Key Implementation Patterns
 
@@ -123,8 +123,8 @@ This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
-- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle`, bound reactively from `useAppTitle` as `:page-title="appBarTitle"` so the bar shows `{full_name}:Mentee` once the journey loads (and `Mentee` before that).
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.1`:
+- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle`, bound reactively from `useAppTitle` as `:page-title="appBarTitle"` so the bar shows `{full_name}:Mentee` once the journey loads (and `Mentee` before that). The compiled 1.0.1 hamburger catalog is Home, Events, Resources, Paths, and Plans; Notifications and Settings are **admin-only**. Settings uses `hostingConfigHref()` and will land on this SPA’s `/config` once that Vue route ships (F134) — do not treat `/mentee/config` as already routed. Products, Customer, and Customer Members are **not** hamburger rows. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 - **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
@@ -175,8 +175,11 @@ All interactive elements in this SPA include `data-automation-id` attributes fol
 
 Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
 
-- Always present: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
-- Role-gated (token must carry the role): `nav-products-link`, `nav-settings-link`, `nav-resources-link`, `nav-paths-link`, `nav-plans-link`, `nav-customer-link`, `nav-customer-members-link`
+- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-events-link`, `nav-logout-link`
+- Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
+- Role-gated (`admin` only): `nav-notifications-link`, `nav-settings-link` — Settings `href` is hosting `/config` via `hostingConfigHref()` (this origin, no `:8080` rewrite)
+- Token tab (AdminPage): `admin-tab-token`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`
+- Not hamburger rows: Products, Customer, Customer Members (`nav-products-link`, `nav-customer-link`, `nav-customer-members-link` were removed in 1.0.1)
 
 Do not define `app-bar-title` or host `nav-*` ids in this SPA. Cypress `navigation.cy.ts` covers the spa_utils drawer, title, profile, and logout ids.
 
