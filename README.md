@@ -40,7 +40,8 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentee/'` prefixes the b
 | `http://localhost:8394/mentee/journey` | `/journey` | `JourneyEditPage.vue` (caller-scoped journey detail) |
 | `http://localhost:8394/mentee/resources/{id}` | `/resources/:id` | `ResourceViewPage.vue` (Discovery resource card target) |
 | `http://localhost:8394/mentee/paths/{id}` | `/paths/:id` | `PathViewPage.vue` (Discovery path card target) |
-| `http://localhost:8394/mentee/admin` | `/admin` | `AdminPage.vue` (runtime-config viewer, `admin` role required) |
+| `http://localhost:8394/mentee/config` | `/config` | `AdminPage.vue` (Settings host: Token / Config Items / Versions / Enumerators; `admin` role required). Hamburger Settings stays on this origin (no `:8080` rewrite). |
+| `http://localhost:8394/mentee/admin` | `/admin` | alias of `/config` |
 
 ## Developer Commands
 
@@ -124,7 +125,7 @@ This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.1`:
-- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle`, bound reactively from `useAppTitle` as `:page-title="appBarTitle"` so the bar shows `{full_name}:Mentee` once the journey loads (and `Mentee` before that). The compiled 1.0.1 hamburger catalog is Home, Events, Resources, Paths, and Plans; Notifications and Settings are **admin-only**. Settings uses `hostingConfigHref()` and will land on this SPA’s `/config` once that Vue route ships (F134) — do not treat `/mentee/config` as already routed. Products, Customer, and Customer Members are **not** hamburger rows. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
+- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle`, bound reactively from `useAppTitle` as `:page-title="appBarTitle"` so the bar shows `{full_name}:Mentee` once the journey loads (and `Mentee` before that). The compiled 1.0.1 hamburger catalog is Home, Events, Resources, Paths, and Plans; Notifications and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentee/config` on the hosting origin (no `:8080` rewrite). `/mentee/admin` is an alias of `/config`. Products, Customer, and Customer Members are **not** hamburger rows. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 - **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
