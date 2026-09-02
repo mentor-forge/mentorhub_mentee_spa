@@ -152,8 +152,8 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Cypress against the packaged SPA on `http://localhost:8394` (`npm run service` must be running; do not run `npm run dev` at the same time — both bind **8394**)
 - Entry and visits are prefixed: `/mentee/`, `/mentee/journey`, `/mentee/path/{id}`, `/mentee/resource/{id}`, `/mentee/config` (`baseUrl` stays `http://localhost:8394`; do not point Cypress at `:8080`)
 - Prefer `cy.visitPrefixed(...)` from `cypress/support/commands.ts` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
-- `cy.login()` with no roles is an **admin** token — use `cy.login(['mentee'])` for the least-privileged Home + Events catalog and `cy.login(['admin'])` for Settings
-- Specs cover journey/path/resource detail, spa_utils **1.0.2** `PageFrame` chrome (Home/Resources/Paths for authenticated users; Notifications, Events, and Settings **admin-only**; Settings `href` is hosting `http://localhost:8394/mentee/config`, not welcome `:8080` or `/admin/settings`; Products / Customer / Customer Members absent; Discovery ALB hrefs for Home), Token tab claims, the `/mentee/config` admin gate, logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy)
+- `cy.login()` with no roles is an **admin** token — use `cy.login(['mentee'])` for mentee pages and `cy.login(['admin'])` for Settings
+- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentee/config` Settings host and admin gate), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here.
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
@@ -174,15 +174,15 @@ When adding a new resource or feature:
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
 
-Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
+Cypress targets spa_utils `PageFrame` ids for chrome, not local ones. Hamburger catalog
+role gates and collection hrefs are tested in spa_utils — this SPA only asserts host chrome
+and routes:
 
-- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-events-link`, `nav-logout-link`
-- Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
-- Role-gated (`admin` only): `nav-notifications-link`, `nav-settings-link` — Settings `href` is hosting `/mentee/config` via `hostingConfigHref()` (this origin, no `:8080` rewrite)
+- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`
+- This SPA hosts Settings at `/mentee/config` (`nav-settings-link`, admin-only)
 - Token tab (AdminPage): `admin-tab-token`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`
-- Absent for every role: `nav-products-link`, `nav-customer-link`, `nav-customer-members-link`
 
-Do not define `app-bar-title` or host `nav-*` ids in this SPA. Cypress `navigation.cy.ts` covers the spa_utils drawer, title, profile, and logout ids.
+Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 
 ## CI
 

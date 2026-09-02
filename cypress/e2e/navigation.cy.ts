@@ -1,16 +1,6 @@
 /**
- * Navigation chrome coverage for the spa_utils `PageFrame` 1.0.1 catalog under `/mentee/`.
- *
- * Every automation id asserted here is compiled into `@mentor-forge/mentorhub_spa_utils`
- * (`nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`,
- * `nav-events-link`, `nav-notifications-link`, `nav-settings-link`, `nav-logout-link`).
- * This SPA defines no `nav-*` id of its own.
- *
- * Removed hamburger ids (`nav-products-link`, `nav-customer-link`,
- * `nav-customer-members-link`) must stay absent for every role checked.
- *
- * This SPA does not host Events — assert `nav-events-link` href only.
- * `cy.login()` with no argument seeds an **admin** token; roles are picked deliberately.
+ * Host routing and PageFrame wiring for Mentee.
+ * Hamburger catalog role gates and collection hrefs are covered in spa_utils.
  */
 describe('Navigation (spa_utils PageFrame)', () => {
   const APP_ORIGIN = Cypress.config('baseUrl') as string
@@ -18,12 +8,6 @@ describe('Navigation (spa_utils PageFrame)', () => {
   const CONFIG_PATHNAME = '/mentee/config'
   const IDP_STUB_PATHNAME = '/login.html'
   const SETTINGS_HREF = `${APP_ORIGIN}${CONFIG_PATHNAME}`
-
-  const removedCatalogIds = [
-    'nav-products-link',
-    'nav-customer-link',
-    'nav-customer-members-link',
-  ]
 
   const journeyBody = {
     _id: '507f1f77bcf86cd799439011',
@@ -79,51 +63,6 @@ describe('Navigation (spa_utils PageFrame)', () => {
     cy.intercept('GET', '**/mentee/api/config', adminConfigBody).as('getAdminConfig')
   }
 
-  function openDrawer() {
-    cy.get('[data-automation-id="nav-drawer-toggle"]').should('be.visible').click({ force: true })
-    cy.get('.v-navigation-drawer', { timeout: 5000 }).should('be.visible')
-  }
-
-  /** Ordered automation ids of the catalog rows (the drawer's first list, above the divider). */
-  function drawerCatalogIds() {
-    return cy
-      .get('.v-navigation-drawer .v-list')
-      .first()
-      .find('[data-automation-id]')
-      .then(($rows) => [...$rows].map((row) => row.getAttribute('data-automation-id') ?? ''))
-  }
-
-  function assertRemovedCatalogRows() {
-    removedCatalogIds.forEach((automationId) => {
-      cy.get(`[data-automation-id="${automationId}"]`).should('not.exist')
-    })
-  }
-
-  function assertAlbHref(automationId: string, expectedPath: string) {
-    cy.get(`[data-automation-id="${automationId}"]`)
-      .should('match', 'a')
-      .and('have.attr', 'href')
-      .then((href) => {
-        const url = new URL(String(href))
-        expect(url.port, `${automationId} port`).to.equal('8080')
-        expect(url.pathname, `${automationId} pathname`).to.equal(expectedPath)
-        expect(String(href)).not.to.include(':8394')
-        expect(String(href)).not.to.include('/mentee/mentee')
-      })
-  }
-
-  function assertHostingSettingsHref() {
-    cy.get('[data-automation-id="nav-settings-link"]')
-      .should('have.attr', 'href', SETTINGS_HREF)
-      .and(($link) => {
-        const href = $link.attr('href') ?? ''
-        expect(href).to.include(':8394')
-        expect(href).not.to.include(':8080')
-        expect(href).not.to.include('/admin/settings')
-        expect(href).not.to.include('/mentee/mentee')
-      })
-  }
-
   beforeEach(() => {
     cy.clearLocalStorage()
   })
@@ -154,63 +93,27 @@ describe('Navigation (spa_utils PageFrame)', () => {
     })
   })
 
-  it('should show the hamburger and the customer profile link when authenticated', () => {
+  it('shows Mentee PageFrame chrome', () => {
     stubJourney()
     cy.login(['mentee'])
 
     cy.get('[data-automation-id="nav-drawer-toggle"]').should('be.visible')
-    assertAlbHref('nav-profile-link', '/customer/profile/')
-  })
-
-  it('should show Mentee in the title', () => {
-    stubJourney()
-    cy.login(['mentee'])
-
+    cy.get('[data-automation-id="nav-profile-link"]').should('be.visible')
     cy.get('[data-automation-id="page-frame-title"]')
       .invoke('text')
       .invoke('trim')
       .should('equal', 'Mentee')
   })
 
-  it('should show only Home and Events for a mentee-only login', () => {
-    stubJourney()
-    cy.login(['mentee'])
-    openDrawer()
-
-    drawerCatalogIds().should('deep.equal', ['nav-home-link', 'nav-events-link'])
-    assertAlbHref('nav-home-link', '/discovery/')
-    assertAlbHref('nav-events-link', '/discovery/events')
-    cy.get('[data-automation-id="nav-notifications-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-settings-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-resources-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-paths-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-plans-link"]').should('not.exist')
-    assertRemovedCatalogRows()
-    cy.get('[data-automation-id="nav-logout-link"]').should('be.visible')
-  })
-
-  it('should show only admin catalog rows and host Settings at /mentee/config', () => {
+  it('hosts Settings at /mentee/config for admin with token claims', () => {
     stubJourney()
     stubAdminConfig()
     cy.login(['admin'])
-    openDrawer()
+    cy.get('[data-automation-id="nav-drawer-toggle"]').should('be.visible').click({ force: true })
 
-    drawerCatalogIds().should('deep.equal', [
-      'nav-home-link',
-      'nav-events-link',
-      'nav-notifications-link',
-      'nav-settings-link',
-    ])
-    assertAlbHref('nav-home-link', '/discovery/')
-    assertAlbHref('nav-events-link', '/discovery/events')
-    assertAlbHref('nav-notifications-link', '/discovery/notifications')
-    cy.get('[data-automation-id="nav-resources-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-paths-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-plans-link"]').should('not.exist')
-    assertRemovedCatalogRows()
-    assertHostingSettingsHref()
-
-    cy.get('[data-automation-id="nav-settings-link"]').click()
+    cy.get('[data-automation-id="nav-settings-link"]')
+      .should('have.attr', 'href', SETTINGS_HREF)
+      .click()
     cy.wait('@getAdminConfig')
     cy.location('origin').should('eq', APP_ORIGIN)
     cy.location('pathname').should('eq', CONFIG_PATHNAME)
@@ -228,19 +131,6 @@ describe('Navigation (spa_utils PageFrame)', () => {
       .should('have.value', 'mentor-e2e')
   })
 
-  it('should show only Home and Events for a customer-only login', () => {
-    stubJourney()
-    cy.login(['customer'])
-    openDrawer()
-
-    drawerCatalogIds().should('deep.equal', ['nav-home-link', 'nav-events-link'])
-    assertAlbHref('nav-home-link', '/discovery/')
-    assertAlbHref('nav-events-link', '/discovery/events')
-    cy.get('[data-automation-id="nav-notifications-link"]').should('not.exist')
-    cy.get('[data-automation-id="nav-settings-link"]').should('not.exist')
-    assertRemovedCatalogRows()
-  })
-
   it('should keep an admin on /mentee/config', () => {
     stubJourney()
     stubAdminConfig()
@@ -256,9 +146,6 @@ describe('Navigation (spa_utils PageFrame)', () => {
   it('should not keep a non-admin on /mentee/config showing AdminPage', () => {
     stubJourney()
     cy.login(['mentee'])
-    // Plain `cy.visit`: the guard `location.replace`s to `:8080/discovery/`.
-    // Cypress cannot follow that the way Discovery follows same-origin Home —
-    // prove the unload at the origin boundary. Do not add a local Home fallback.
     cy.visit(CONFIG_PATHNAME)
 
     cy.origin('http://localhost:8080', () => {
@@ -269,23 +156,12 @@ describe('Navigation (spa_utils PageFrame)', () => {
     })
   })
 
-  it('should close the drawer when the toggle is clicked again', () => {
-    stubJourney()
-    cy.login(['mentee'])
-    openDrawer()
-
-    cy.get('[data-automation-id="nav-drawer-toggle"]').click({ force: true })
-    cy.wait(500)
-    cy.get('.v-navigation-drawer', { timeout: 5000 }).should('not.be.visible')
-  })
-
   it('should clear auth and leave for the IdP login URL on logout', () => {
     stubJourney()
     stubIdpLoginUri()
     cy.login(['mentee'])
 
-    cy.get('[data-automation-id="nav-drawer-toggle"]').should('be.visible')
-    openDrawer()
+    cy.get('[data-automation-id="nav-drawer-toggle"]').should('be.visible').click({ force: true })
     cy.get('[data-automation-id="nav-logout-link"]').should('be.visible').click()
 
     cy.location('pathname', { timeout: 10000 }).should('eq', IDP_STUB_PATHNAME)
@@ -310,8 +186,6 @@ describe('Navigation (spa_utils PageFrame)', () => {
 
   it('should return an unauthenticated deep link to its prefixed URL after login', () => {
     stubIdpLoginUri()
-    // Plain `cy.visit`: the guard leaves for the IdP during bootstrap, so by the time
-    // `cy.visitPrefixed` could read the navigation entry the document is the IdP stub.
     cy.visit('/mentee/path/path-1')
 
     cy.location('pathname', { timeout: 10000 }).should('eq', IDP_STUB_PATHNAME)
