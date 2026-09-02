@@ -1,6 +1,6 @@
 # F135 – 1.0.1 catalog, `/mentee/config` Cypress and packaging
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F134_host_admin_page_at_config`  
 **Description**: Point Cypress at the spa_utils **1.0.1** hamburger catalog, prove Settings opens this SPA’s `/mentee/config`, cover Token claims, admin-gate `/config`, and verify logout `return_to=/discovery/`. Run the packaged SPA as the acceptance gate for F-ES11.
@@ -91,4 +91,58 @@ Do not restore a local drawer. Do not change the spa_utils pin. Do not add an Ev
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Planned approach
+
+Rewrite `cypress/e2e/navigation.cy.ts` from the 1.0.0 catalog to spa_utils 1.0.1, following the mentor SPA F157 Cypress pattern without adding an Events route or following Events/Home off this SPA.
+
+- Keep prefix / API / title / drawer-close / unauthenticated-deep-link / runtime-config coverage.
+- Mentee-only (`cy.login(['mentee'])`): ordered Home, Events; ALB `:8080` hrefs; no Notifications/Settings.
+- Admin-only (`cy.login(['admin'])`): ordered Home, Events, Notifications, Settings; no mentor browse rows. Settings `href` asserted on `http://localhost:8394/mentee/config` (includes `:8394`, not `:8080`, not `/admin/settings`, not `/mentee/mentee`) **before** click; click stays on this SPA.
+- Other least-privileged (`cy.login(['customer'])`): Home + Events only; removed Products/Customer/Members ids absent.
+- Removed ids `nav-products-link`, `nav-customer-link`, `nav-customer-members-link` absent for admin, mentee, and customer.
+- Token tab: intercept `GET **/mentee/api/config` with `token: { profile_id, customer_id, mentor_id }`; open Settings → `admin-tab-token`; assert the three display inputs.
+- Config gate: mentee-only `cy.visit('/mentee/config')` (plain visit — guard `location.replace`s to `:8080/discovery/`); prove pathname is no longer `/mentee/config` and AdminPage chrome is absent via `cy.origin`. Admin `cy.visitPrefixed('/mentee/config')` after login stays. No local Home fallback.
+- Logout: `return_to` is `http://localhost:8080/discovery/` (not `127.0.0.1`, not bare `/`, not `/mentee/`). Delete the F129/F132 “root origin” comment.
+- README Testing / Automation Support: 1.0.1 ids, Settings host, removed Products/Customer/Members.
+- Do not change spa_utils pin, router, or other repos. No `npm run lint` script. Rebuild container (`npm run container` + `npm run service`) before `cypress:run` so 8394 is the new image.
+
+### Summary
+
+Rewrote `cypress/e2e/navigation.cy.ts` for the spa_utils **1.0.1** hamburger catalog and updated README Testing / Automation Support. Settings is asserted on hosting `http://localhost:8394/mentee/config` (not `:8080`, not `/admin/settings`, not `/mentee/mentee`). Token tab claims are stubbed via `GET **/mentee/api/config`. Non-admin `/mentee/config` is proven to unload toward `:8080/discovery/` via `cy.origin` (no local Home fallback). Logout `return_to` is `http://localhost:8080/discovery/`. Packaged Cypress gate is green.
+
+### Files changed
+
+- `cypress/e2e/navigation.cy.ts` — 1.0.1 catalog (mentee / admin / customer), Settings hosting href + Token tab, `/mentee/config` role gate, logout `return_to=/discovery/`
+- `README.md` — Testing / Automation Support 1.0.1 ids, Settings host, removed Products/Customer/Members, Token tab ids
+- `tasks/PENDING.F135.config_catalog_e2e.md` — this Execution Notes section
+
+No changes to `deployment.cy.ts`, detail specs, Cypress support, fixtures, spa_utils pin, or router.
+
+### Command results
+
+| Command | Result |
+|---------|--------|
+| `npm run test` | **pass** — 11 files, 51 tests |
+| `npm run test:coverage` | tests **pass** (51/51); threshold **exit 1** is the pre-existing miss (composables branches 59.57%/60%, components 0%/90%). `vitest.config.ts` not changed. |
+| `npm run build` | **pass** — `vue-tsc` + Vite |
+| `npm run container` | **pass** — `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest` |
+| `npm run service` | **pass** — `mh down && mh up mentee` (welcome + mongodb + mentee_api + mentee_spa on 8394) |
+| `npm run cypress:run` | **pass** — 5 specs, **39/39** tests |
+
+Cypress spec counts:
+
+- `deployment.cy.ts` — 8
+- `journey.cy.ts` — 9
+- `navigation.cy.ts` — 13
+- `path.cy.ts` — 4
+- `resource.cy.ts` — 5
+
+### Env workarounds
+
+- `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html` exported before `npm run service` so logout specs do not hang on a Tailscale IdP host. Container `runtime-config.js` confirmed that URI.
+- `GITHUB_TOKEN` was already set; GHCR auth was not needed (container build used CodeArtifact + cached Docker Hub bases).
+
+### Follow-ups
+
+- This repo has **no** `npm run lint` script. `npm run build` (`vue-tsc`) is the type gate. Do not add a lint script; record the gap from issue acceptance criteria.
+- `npm run test:coverage` still exits 1 on pre-existing component/composable thresholds (same as F134).
