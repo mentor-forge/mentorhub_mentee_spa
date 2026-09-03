@@ -101,7 +101,7 @@ src/
 
 This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`). This repo keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards deep-link into.
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.2` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.3` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`). Token-tab `display_name` (`admin-token-display-name-display`) and PageFrame chrome `nav-profile-name-display` are owned by spa_utils 1.0.3 — this SPA does not map or fall back a local token display name.
 
 ## Key Implementation Patterns
 
@@ -124,8 +124,8 @@ This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.2`:
-- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle="Mentee"`, matching the other journey SPAs. The compiled 1.0.2 hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentee/config` on the hosting origin (no `:8080` rewrite). `/mentee/admin` is an alias of `/config`. Products, Customer, and Customer Members are **not** hamburger rows. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.3`:
+- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle="Mentee"`, matching the other journey SPAs. The compiled 1.0.3 hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentee/config` on the hosting origin (no `:8080` rewrite). `/mentee/admin` is an alias of `/config`. Products, Customer, and Customer Members are **not** hamburger rows. When the JWT `display_name` claim is present, PageFrame chrome shows it next to the avatar (`nav-profile-name-display`) with no fallback to `name` / `given_name` / `email` / `user_id` / `sub`. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 - **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
@@ -179,8 +179,9 @@ role gates and collection hrefs are tested in spa_utils — this SPA only assert
 and routes:
 
 - Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`
+- PageFrame chrome (spa_utils 1.0.3): `nav-profile-name-display` when JWT `display_name` is present and non-blank
 - This SPA hosts Settings at `/mentee/config` (`nav-settings-link`, admin-only)
-- Token tab (AdminPage): `admin-tab-token`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`
+- Token tab (AdminPage, spa_utils 1.0.3): `admin-tab-token`, `admin-token-display-name-display`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`. Missing string claims display `N/A`. This SPA does not invent a local display-name mapping.
 
 Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 

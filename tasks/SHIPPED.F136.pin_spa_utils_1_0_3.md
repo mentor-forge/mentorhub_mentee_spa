@@ -1,6 +1,6 @@
 # F136 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.3` (`token.display_name`)
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: _(none — first task in this wave)_  
 **Description**: This repo owns the Mentee SPA **1.0.3 pin** ([F-ES15 / GitHub #35](https://github.com/mentor-forge/mentorhub_mentee_spa/issues/35)). Bump `@mentor-forge/mentorhub_spa_utils` from exact `1.0.2` to exact **`1.0.3`**, refresh the lockfile from CodeArtifact, and replace any local use of token `name` with token `display_name`. Do **not** change routes in this task.
@@ -98,4 +98,39 @@ Do not change routes. Do not pass disallowed `PageFrame` props. Do not change Cy
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+**Plan**
+
+1. Confirm `@mentor-forge/mentorhub_spa_utils@1.0.3` is published to CodeArtifact (`mh`, then `npm view`). If not, Blocked and stop.
+2. Pin `package.json` to exact `1.0.3` (no caret) and refresh `package-lock.json` with `npm install --include=dev`. Confirm with `npm ls`.
+3. Local token-claim audit: `src` has no `token.name` / `display_name` reads. `ConfigResponse.token` is `{ claims?: Record<string, unknown> }` with fixtures using `sub`/`roles` only — no token display field as `name`. Prefer no production-code / type churn unless 1.0.3 compile fails. `useConfig` / `useRoles` read enumerator / collection `name` and token `roles`, not a token display claim.
+4. Update `README.md` to name pin **1.0.3** and document spa_utils ownership of Token-tab `display_name` (`admin-token-display-name-display`) and PageFrame chrome (`nav-profile-name-display`). Keep hamburger catalog and `/mentee/config` Settings wording. Do not invent a local mapping.
+5. Cypress spa_utils subpaths (`cypress/jwtDefaults`, `cypress/registerJwtSignTask`, `cypress/registerAuthCommands`) already match 1.0.3 README; touch `cypress.config.ts` / `e2e.ts` only if a subpath or option moved.
+6. `vitest.config.ts` already inlines spa_utils; change only if 1.0.3 requires it. Do not change coverage thresholds.
+7. Testing from repo root: `npm run test`, `npm run test:coverage`, `npm run build`. Do not run Cypress or packaging.
+
+**Implementation**
+
+- `package.json` pin `"@mentor-forge/mentorhub_spa_utils": "1.0.3"` (exact, no caret).
+- `package-lock.json` resolved `1.0.3` from CodeArtifact (`https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/@mentor-forge/mentorhub_spa_utils/-/mentorhub_spa_utils-1.0.3.tgz`).
+- `README.md` names 1.0.3 and documents Token-tab / chrome `display_name` ownership. Hamburger catalog and `/mentee/config` Settings wording kept.
+- No production-code change: `src` had no token `name` reads. `ConfigResponse.token` remains `{ claims?: Record<string, unknown> }` — fixtures use `sub`/`roles`, not a display claim. `useConfig` / `useRoles` unchanged (enumerator / collection `name` and token `roles` only).
+- Remaining `src` `name` hits are Profile / Path / Resource / Module / Topic / enumerator / collection / Vue slot / route names — not the JWT display claim.
+- 1.0.3 Cypress exports unchanged: `./cypress/jwtDefaults`, `./cypress/registerJwtSignTask`, `./cypress/registerAuthCommands`. `cypress.config.ts` / `e2e.ts` not touched.
+- `vitest.config.ts` not changed (inline setting still required; thresholds locked).
+
+**Commands / results**
+
+| Command | Result |
+|---|---|
+| `mh` then `npm view @mentor-forge/mentorhub_spa_utils version` | **1.0.3** (published; versions include 1.0.3) |
+| `npm install --include=dev` | changed 1 package |
+| `npm ls @mentor-forge/mentorhub_spa_utils` | `@mentor-forge/mentorhub_spa_utils@1.0.3` |
+| `rg 'token\.name\|token\[.name.\]\|token\.get\(.name.\)' src README.md` | no hits |
+| `rg 'display_name' src README.md` | README only (ownership docs); no `src` reads |
+| `npm run test` | **48/48 passed** (10 files), including `src/App.test.ts` |
+| `npm run test:coverage` | tests **pass** (48/48); threshold **exit 1** is pre-existing (F128 / F133 / L105). `src/api/**` still above (97% lines / 82.6% branches / 100% funcs). `src/composables/**` functions **88.88% / 90%**, branches **54.76% / 60%**. `src/components/**` lines/statements **0% / 90%**. `vitest.config.ts` not changed. |
+| `npm run build` | **vue-tsc clean**; Vite production build succeeded |
+
+Cypress and packaging left for F137. No blockers.
+
+**Status**: Shipped.
