@@ -153,7 +153,7 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Entry and visits are prefixed: `/mentee/`, `/mentee/journey`, `/mentee/path/{id}`, `/mentee/resource/{id}`, `/mentee/config` (`baseUrl` stays `http://localhost:8394`; do not point Cypress at `:8080`)
 - Prefer `cy.visitPrefixed(...)` from `cypress/support/commands.ts` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
 - `cy.login()` with no roles is an **admin** token — use `cy.login(['mentee'])` for mentee pages and `cy.login(['admin'])` for Settings
-- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentee/config` Settings host and admin gate), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here.
+- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentee/config` Settings host and admin gate), Token-tab / chrome `display_name` from spa_utils **1.0.3** (`admin-token-display-name-display`, `nav-profile-name-display`), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here. Journey profile `full_name` and path/resource `name` are document fields, not the token display claim.
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
@@ -179,7 +179,9 @@ role gates and collection hrefs are tested in spa_utils — this SPA only assert
 and routes:
 
 - Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`
-- PageFrame chrome (spa_utils 1.0.3): `nav-profile-name-display` when JWT `display_name` is present and non-blank
+- spa_utils **1.0.3** ids this host asserts (not local `nav-*` ids):
+  - Token tab `admin-token-display-name-display` — config intercept `token.display_name`; missing claim renders `N/A` (no `name` / `given_name` / `email` fallback)
+  - PageFrame chrome `nav-profile-name-display` inside `nav-profile-link` — JWT `display_name` next to the avatar; omitted when the claim is blank or missing
 - This SPA hosts Settings at `/mentee/config` (`nav-settings-link`, admin-only)
 - Token tab (AdminPage, spa_utils 1.0.3): `admin-tab-token`, `admin-token-display-name-display`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`. Missing string claims display `N/A`. This SPA does not invent a local display-name mapping.
 
