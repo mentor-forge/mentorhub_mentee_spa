@@ -11,7 +11,7 @@ describe('Journey Page', () => {
     profile_id: journeyId,
     profile: {
       _id: journeyId,
-      full_name: 'Jane Mentee',
+      display_name: 'Jane Mentee',
       email: 'jane@example.com',
       goals: ['Learn Python', 'Build a portfolio'],
       interests: ['api'],
@@ -156,7 +156,7 @@ describe('Journey Page', () => {
     cy.wait('@getJourney')
     cy.location('pathname').should('eq', JOURNEY_URL)
 
-    cy.get('[data-automation-id="journey-profile-full-name-display"]').should('contain', 'Jane Mentee')
+    cy.get('[data-automation-id="journey-profile-display-name-display"]').should('contain', 'Jane Mentee')
     cy.get('[data-automation-id="journey-profile-email-display"]').should('contain', 'jane@example.com')
     cy.get('[data-automation-id="journey-profile-goal-0-display"]').should('contain', 'Learn Python')
     cy.get('[data-automation-id="journey-profile-interests-display"]').should('be.visible')

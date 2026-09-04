@@ -64,8 +64,7 @@ export interface JourneyCompleteInput {
 
 export interface Profile {
   _id: string
-  name?: string
-  full_name?: string
+  display_name?: string
   email?: string
   description?: string
   goals?: string[]
