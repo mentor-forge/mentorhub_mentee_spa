@@ -15,7 +15,7 @@ describe('Navigation (spa_utils PageFrame)', () => {
     profile_id: '507f1f77bcf86cd799439011',
     profile: {
       _id: '507f1f77bcf86cd799439011',
-      full_name: 'Jane Mentee',
+      display_name: 'Jane Mentee',
       email: 'jane@example.com',
       goals: ['Learn Python'],
       interests: ['api'],

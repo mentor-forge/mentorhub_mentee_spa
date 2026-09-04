@@ -2,10 +2,10 @@
   <v-row>
     <v-col cols="12" md="6">
       <SentenceEditor
-        field="full_name"
-        label="Full Name"
+        field="display_name"
+        label="Display Name"
         :editable="false"
-        automation-id="journey-profile-full-name-display"
+        automation-id="journey-profile-display-name-display"
       />
       <EmailEditor
         field="email"
