@@ -101,7 +101,7 @@ src/
 
 This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery (`/discovery/paths`, `/discovery/resources`). This repo keeps the caller-scoped journey detail page plus the path and resource detail pages that Discovery cards deep-link into.
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.4` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`). Token-tab `display_name` (`admin-token-display-name-display`) and PageFrame chrome `nav-profile-name-display` are owned by spa_utils 1.0.4 — this SPA does not map or fall back a local token display name.
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.5` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`PageFrame`, `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`). Token-tab `display_name` (`admin-token-display-name-display`) and PageFrame chrome `nav-profile-name-display` are owned by spa_utils 1.0.5 — this SPA does not map or fall back a local token display name.
 
 ## Key Implementation Patterns
 
@@ -124,8 +124,8 @@ This SPA has no CardGrid list dashboards. Collection browsing lives on Discovery
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.4`:
-- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle="Mentee"`, matching the other journey SPAs. The compiled 1.0.4 hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentee/config` on the hosting origin (no `:8080` rewrite). `/mentee/admin` is an alias of `/config`. Products, Customer, and Customer Members are **not** hamburger rows. When the JWT `display_name` claim is present, PageFrame chrome shows it below Logout in the drawer (`nav-profile-name-display`) with no fallback to `name` / `given_name` / `email` / `user_id` / `sub`. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.5`:
+- **Shell**: `PageFrame` is the navigation shell (app bar, role-gated hamburger drawer, profile link, and IdP logout). Local nav config is disallowed — do not pass `navItems`, URL maps, ALB origin, or extra drawer slots. The only host prop is `pageTitle="Mentee"`, matching the other journey SPAs. The compiled 1.0.5 hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentee/config` on the hosting origin (no `:8080` rewrite). `/mentee/admin` is an alias of `/config`. Products, Customer, and Customer Members are **not** hamburger rows. When the JWT `display_name` claim is present, PageFrame chrome shows it below Logout in the drawer (`nav-profile-name-display`) with no fallback to `name` / `given_name` / `email` / `user_id` / `sub`. Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 - **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, `EnumArrayEditor`, `BreadcrumbDisplay`), and `ListPageSearch`. Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy pages; `AutoSaveSelect` remains available where runtime enumerators have not yet migrated.
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `provideEditorConfig`
 - **Utilities**: `formatDate`, `validationRules`
@@ -153,7 +153,7 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Entry and visits are prefixed: `/mentee/`, `/mentee/journey`, `/mentee/path/{id}`, `/mentee/resource/{id}`, `/mentee/config` (`baseUrl` stays `http://localhost:8394`; do not point Cypress at `:8080`)
 - Prefer `cy.visitPrefixed(...)` from `cypress/support/commands.ts` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
 - `cy.login()` with no roles is an **admin** token — use `cy.login(['mentee'])` for mentee pages and `cy.login(['admin'])` for Settings
-- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentee/config` Settings host and admin gate), Token-tab / chrome `display_name` from spa_utils **1.0.4** (`admin-token-display-name-display`, `nav-profile-name-display`), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here. Journey profile `display_name` and path/resource `name` are document fields, not the token display claim.
+- Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentee/config` Settings host and admin gate), Token-tab / chrome `display_name` from spa_utils **1.0.5** (`admin-token-display-name-display`, `nav-profile-name-display`), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here. Journey profile `display_name` and path/resource `name` are document fields, not the token display claim.
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
@@ -179,11 +179,11 @@ role gates and collection hrefs are tested in spa_utils — this SPA only assert
 and routes:
 
 - Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`
-- spa_utils **1.0.4** ids this host asserts (not local `nav-*` ids):
-  - Token tab `admin-token-display-name-display` — config intercept `token.display_name`; missing claim renders `N/A` (no `name` / `given_name` / `email` fallback)
-  - PageFrame chrome `nav-profile-name-display` below Logout — JWT `display_name` in the drawer footer; omitted when the claim is blank or missing
+- spa_utils **1.0.5** ids this host asserts (not local `nav-*` ids):
+  - Token tab `admin-token-display-name-display` — config intercept `token.display_name`; missing claim renders `unknown` (no `name` / `given_name` / `email` fallback)
+  - PageFrame chrome `nav-profile-name-display` below Logout — `config.token.display_name` in the drawer footer (`unknown` when the claim is blank or missing)
 - This SPA hosts Settings at `/mentee/config` (`nav-settings-link`, admin-only)
-- Token tab (AdminPage, spa_utils 1.0.4): `admin-tab-token`, `admin-token-display-name-display`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`. Missing string claims display `N/A`. This SPA does not invent a local display-name mapping.
+- Token tab (AdminPage, spa_utils 1.0.5): `admin-tab-token`, `admin-token-display-name-display`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`. Missing `display_name` displays `unknown`. This SPA does not invent a local display-name mapping.
 
 Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 
