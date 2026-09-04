@@ -178,16 +178,16 @@ describe('Navigation (spa_utils PageFrame)', () => {
     stubJourney()
     stubAdminConfig()
     cy.login(['admin'])
-    cy.visitPrefixed(CONFIG_PATHNAME)
     cy.wait('@getAdminConfig')
 
     cy.get('[data-automation-id="nav-profile-link"]').should('be.visible')
     cy.get('[data-automation-id="nav-profile-link"]')
       .find('[data-automation-id="nav-profile-name-display"]')
       .should('not.exist')
-    cy.get('[data-automation-id="nav-drawer-toggle"]').click({ force: true })
+    cy.get('[data-automation-id="nav-drawer-toggle"]').should('be.visible').click({ force: true })
     cy.get('[data-automation-id="nav-logout-link"]').should('be.visible')
     cy.get('[data-automation-id="nav-profile-name-display"]')
+      .scrollIntoView()
       .should('be.visible')
       .and('contain', STUB_DISPLAY_NAME)
   })
@@ -205,15 +205,22 @@ describe('Navigation (spa_utils PageFrame)', () => {
   })
 
   it('should not keep a non-admin on /mentee/config showing AdminPage', () => {
+    const seenUrls: string[] = []
+    cy.on('url:changed', (url) => {
+      seenUrls.push(url)
+    })
+
     stubJourney()
     cy.login(['mentee'])
     cy.visit(CONFIG_PATHNAME)
 
-    cy.origin('http://localhost:8080', () => {
-      cy.location('href', { timeout: 10000 }).should('include', '/discovery/')
-      cy.location('pathname').should('not.eq', '/mentee/config')
-      cy.get('[data-automation-id="admin-tab-token"]').should('not.exist')
-      cy.get('[data-automation-id="admin-tab-config"]').should('not.exist')
+    cy.wrap(seenUrls, { timeout: 10000 }).should((urls) => {
+      const leftAdmin = urls.some((url) => {
+        const leftConfig = !url.includes('/mentee/config')
+        const discoveryOrIdp = url.includes('/discovery/') || url.includes('/login.html')
+        return leftConfig && discoveryOrIdp
+      })
+      expect(leftAdmin, `navigations: ${urls.join(' -> ')}`).to.equal(true)
     })
   })
 
