@@ -1,6 +1,6 @@
 # F138 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.6` (CardGrid removal, DataCardGrid, MarkdownEditor)
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: _(none — first task in this wave)_  
 **Description**: This repo owns the Mentee SPA **1.0.6 pin**. Bump `@mentor-forge/mentorhub_spa_utils` from exact `1.0.5` to exact **`1.0.6`**, refresh the lockfile from CodeArtifact, and align this SPA with the shipped 1.0.6 card and markdown contract. Package `CardGrid` is removed. Do not reintroduce list card dashboards. Do not add `marked` or `dompurify`. Cypress and packaging are **F139**.
@@ -115,3 +115,48 @@ Paths are relative to **this SPA repository root**.
 Do not change journey, path, resource, or `/config` routes. Do not pass disallowed `PageFrame` props. Do not change Cypress specs in this task unless a compile of test helpers breaks. Do not change `src/router/index.ts`, `vite.config.ts`, `nginx.conf.template`, or `Dockerfile`. Do not change `ResourceViewCard` editor type or automation id, `SentenceEditor` fields, or `JourneyCompleteDialog`. Do not rename profile, path, or resource fields. Do not add `src/main.ts` stylesheet import unless the production build proves package CSS is missing.
 
 ## Execution Notes
+
+### Plan
+1. Confirmed `@mentor-forge/mentorhub_spa_utils@1.0.6` is published on CodeArtifact (`mh` + `npm view` → `1.0.6`).
+2. Pin `package.json` dependency to exact `"1.0.6"` (no caret); run `npm install --include=dev` to refresh lockfile.
+3. Update `README.md` to document 1.0.6: drop consumed `CardGrid` / `ListPageSearch`; note Discovery owns collections; document `DataCardGrid` / `DataCard` peer-card contract (this SPA stays vertical; no `DataCardGrid` usage); note resource `MarkdownEditor` resting view owned by spa_utils (no local `marked`/`dompurify`); bump Token/chrome display_name ownership to 1.0.6.
+4. Survey reconfirmed: zero `CardGrid` / `DataCardGrid` imports in `src/**`; `MarkdownEditor` only on `ResourceViewCard` (read-only). No src layout changes planned unless compile fails.
+5. Run Testing Expectations (ls, confirmation `rg`, test, coverage, build). Do not run Cypress, container, or service. Leave Status Pending.
+
+### Summary
+Pin succeeded. `@mentor-forge/mentorhub_spa_utils` is exact **1.0.6** in `package.json` / lockfile. README aligned to 1.0.6 card/markdown contract. No `src/**` changes required (no `CardGrid` imports; vertical journey/path/resource layouts left alone; ResourceViewCard MarkdownEditor unchanged). No `marked`/`dompurify` added. Status left **Pending** for orchestrator commit/ship.
+
+### Files changed
+- `package.json` — pin `"@mentor-forge/mentorhub_spa_utils": "1.0.6"`
+- `package-lock.json` — resolved 1.0.6 from CodeArtifact (transitive `marked`/`dompurify` nested under spa_utils only)
+- `README.md` — version note 1.0.6; dropped consumed `CardGrid`/`ListPageSearch`; DataCardGrid peer-card contract; MarkdownEditor resting view; Token/chrome display_name ownership 1.0.6
+- `tasks/PENDING.F138.pin_spa_utils_1_0_6.md` — this Execution Notes update
+
+### Intentionally not changed
+- All `src/**` (App.vue, JourneyEditPage, PathViewPage, ResourceViewCard, JourneyPathEmbedCard, JourneyCompleteDialog, JourneyProfileHeader, AdminPage, router, main.ts)
+- `vitest.config.ts` (thresholds unchanged; inline still correct)
+- Cypress specs / `cypress.config.ts` / `cypress/support/e2e.ts` (subpaths still resolve)
+- No lint script added
+
+### Commands and results
+1. `mh` — CodeArtifact auth refreshed
+2. `npm view @mentor-forge/mentorhub_spa_utils version` → **1.0.6** (published)
+3. `npm install --include=dev` — ok (added 3 packages / changed 1)
+4. `npm ls @mentor-forge/mentorhub_spa_utils` → `@mentor-forge/mentorhub_spa_utils@1.0.6`
+5. Confirmation searches:
+   - `rg 'CardGrid' src cypress package.json README.md` — zero component imports; README mentions removal/non-use only
+   - `rg 'marked|dompurify' package.json package-lock.json src` — zero in `package.json`/`src`; lockfile hits only nested spa_utils transitive deps (acceptable)
+   - `rg 'MarkdownEditor' src` — only `ResourceViewCard.vue`
+   - `rg 'DataCardGrid' src` — zero matches
+   - `rg "from '@mentor-forge/mentorhub_spa_utils'" src cypress.config.ts cypress/support` — all existing imports present (Cypress helpers use `/cypress/...` subpaths and still resolve)
+6. `npm run test` — **10 files, 48 tests passed**
+7. `npm run test:coverage` — **48 tests passed**; exit 1 from **pre-existing** threshold misses (unchanged; did not edit `vitest.config.ts`):
+   - `src/composables/**` functions 88.88% < 90%; branches 54.76% < 60%
+   - `src/components/**` lines 0% < 90%; statements 0% < 90%
+8. `npm run build` — **passed** (`vue-tsc` clean + Vite production build)
+
+### Blocker
+None.
+
+### Orchestrator confirmation
+Re-ran `npm ls` (`@mentor-forge/mentorhub_spa_utils@1.0.6` from CodeArtifact), CardGrid / marked / MarkdownEditor / DataCardGrid searches, `npm run test:coverage` (48 passed; pre-existing composables and components threshold misses unchanged; `src/api/**` still 97 / 82.6 / 100 / 97), and `npm run build` (vue-tsc clean). Cypress subpaths unchanged. Marked shipped.
