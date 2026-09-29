@@ -1,6 +1,6 @@
 # F139 – 1.0.6 Cypress confirmation and packaging
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F138_pin_spa_utils_1_0_6`  
 **Description**: Confirm Cypress still matches spa_utils **1.0.6** `MarkdownEditor` resting view and editor behavior, and run the packaged SPA as the acceptance gate for the Mentee 1.0.6 pin. The only markdown field is read-only resource description. Do not invent an editable markdown field. Do not change the pin.
@@ -97,3 +97,58 @@ Paths are relative to **this SPA repository root**.
 Do not change the spa_utils pin. Do not add `marked` or `dompurify`. Do not add a collection route or a `DataCardGrid` page. Do not pass disallowed `PageFrame` props. Do not edit `src/**` unless a spec failure proves a 1.0.6 selector bug that cannot be fixed in the spec — and do not convert `SentenceEditor`, the complete-dialog textarea, or the read-only resource description into an editable markdown field to do it.
 
 ## Execution Notes
+
+### Plan
+1. Reconfirm Context: pin is exact 1.0.6 (F138); only MarkdownEditor is read-only resource description; no CardGrid/DataCardGrid; journey-complete-note is a visible dialog v-textarea; no Cypress markdown typing.
+2. Update `README.md` Testing / Automation Support: spa_utils **1.0.6**; resource description is read-only package `MarkdownEditor` resting view (assert display text, do not open edit mode); profile notes and path description stay `SentenceEditor`; complete-resource note stays dialog textarea; no local `data-card-grid`; no claim of `marked`/`dompurify` deps.
+3. Run confirmation `rg` searches; `npm run test`; `npm run test:coverage` (record pre-existing threshold misses; do not edit vitest.config.ts); `npm run build`. No lint script — note as follow-up.
+4. Packaging: ensure GHCR token / `IDP_LOGIN_URI` if needed; `npm run container`; `npm run service`; `npm run cypress:run`. Touch Cypress specs only if a 1.0.6 selector breaks (`resource.cy.ts` prefer keep `contain.text`; scope to display/`markdown-field-display` if ambiguous; never activate edit mode).
+5. Write results into Execution Notes. Leave Status **Pending**.
+
+### Summary
+README Testing / Automation Support now documents spa_utils **1.0.6** editor contracts for this host. No Cypress selector changes were required — `resource.cy.ts` `contain.text` on `resource-view-description-display` still passes against rendered markdown HTML; `journey-complete-note` stays a direct `.type` on the dialog textarea. Pin unchanged. Packaging gate passed (37/37). Status left **Pending**.
+
+### Files changed
+- `README.md` — Testing / Automation Support notes for read-only `MarkdownEditor` resource description, `SentenceEditor` profile/path fields, dialog `journey-complete-note`, no local `data-card-grid`
+- `tasks/PENDING.F139.spa_utils_1_0_6_cypress_and_packaging.md` — this Execution Notes update
+
+### Intentionally not changed
+- `package.json` / lockfile (pin remains exact `1.0.6`)
+- All `src/**`
+- All `cypress/**` specs (no 1.0.6 selector breakage)
+- `vitest.config.ts` (thresholds unchanged)
+
+### Confirmation searches
+- `rg 'CardGrid|data-card-grid' cypress src` — **zero**
+- `rg 'marked|dompurify' package.json` — **zero**
+- `rg 'MarkdownEditor|markdown-field-display|resource-view-description-display' cypress src` — `ResourceViewCard.vue` (import + usage) and `resource.cy.ts` `contain.text` assertion only; no textarea typing
+- `rg 'journey-complete-note' cypress/e2e/journey.cy.ts` — still `.type('Finished reading')` on the dialog textarea
+
+### Commands and results
+1. `npm run test` — **10 files, 48 tests passed**
+2. `npm run test:coverage` — **48 tests passed**; exit 1 from **pre-existing** threshold misses (unchanged; did not edit `vitest.config.ts`):
+   - `src/composables/**` functions 88.88% < 90%; branches 54.76% < 60%
+   - `src/components/**` lines 0% < 90%; statements 0% < 90%
+3. `npm run build` — **passed** (`vue-tsc` clean + Vite production build)
+4. `npm run lint` — **not defined** in this repo (follow-up vs issue acceptance criteria; do not add tooling here)
+5. `npm run container` — **PASS** (image `ghcr.io/mentor-forge/mentorhub_mentee_spa:latest`)
+6. `npm run service` — **PASS** (`GITHUB_TOKEN` from `~/.mentorhub/GITHUB_FOREVER_TOKEN`; `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html`; runtime-config confirmed; `/mentee/` → 200)
+7. `npm run cypress:run` — **PASS** 37/37 (0 failing):
+   - `deployment.cy.ts` 8/8
+   - `journey.cy.ts` 9/9
+   - `navigation.cy.ts` 11/11
+   - `path.cy.ts` 4/4
+   - `resource.cy.ts` 5/5
+
+### Cypress selector changes
+None. Resource description `contain.text` on `resource-view-description-display` still passes after 1.0.6 sanitized HTML rendering.
+
+### Env workarounds
+- Exported `GITHUB_TOKEN` from `~/.mentorhub/GITHUB_FOREVER_TOKEN` before `mh up` / `npm run service` (GHCR pull auth).
+- Exported `IDP_LOGIN_URI=http://127.0.0.1:8080/login.html` before `mh up` so logout specs do not hang on a Tailscale IdP host. Confirmed in `/mentee/runtime-config.js`.
+
+### Blocker
+None.
+
+### Orchestrator confirmation
+Re-checked the README diff (Testing / Automation Support only), pin still exact `1.0.6`, confirmation searches (zero CardGrid / data-card-grid / marked / dompurify; resource description still `contain.text`; `journey-complete-note` still direct `.type`). Cypress result **37/37** matches the prior F137 packaged counts (deployment 8, journey 9, navigation 11, path 4, resource 5). Marked shipped.

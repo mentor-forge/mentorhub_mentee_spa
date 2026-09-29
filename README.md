@@ -154,6 +154,7 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Prefer `cy.visitPrefixed(...)` from `cypress/support/commands.ts` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
 - `cy.login()` with no roles is an **admin** token — use `cy.login(['mentee'])` for mentee pages and `cy.login(['admin'])` for Settings
 - Specs cover journey/path/resource detail, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentee/config` Settings host and admin gate), Token-tab / chrome `display_name` from spa_utils **1.0.6** (`admin-token-display-name-display`, `nav-profile-name-display`), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated and unauthenticated `/mentee/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here. Journey profile `display_name` and path/resource `name` are document fields, not the token display claim.
+- Resource description resting view is package `MarkdownEditor` (spa_utils **1.0.6** sanitized rendered markdown). This host asserts the display text (`resource-view-description-display` / `markdown-field-display`) and does **not** open edit mode — the field is read-only. Profile notes (`journey-profile-notes-display`) and path description stay `SentenceEditor`. The complete-resource note stays a dialog `v-textarea` (`journey-complete-note`) typed directly without a display-activation step. This SPA has no local `data-card-grid` id and does not depend on `marked` or `dompurify`.
 - Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
 
 ## Adding New Features
@@ -182,6 +183,7 @@ and routes:
 - spa_utils **1.0.6** ids this host asserts (not local `nav-*` ids):
   - Token tab `admin-token-display-name-display` — config intercept `token.display_name`; missing claim renders `unknown` (no `name` / `given_name` / `email` fallback)
   - PageFrame chrome `nav-profile-name-display` below Logout — `config.token.display_name` in the drawer footer (`unknown` when the claim is blank or missing)
+- Resource description: read-only package `MarkdownEditor` resting view — assert `resource-view-description-display` (or scoped `markdown-field-display`); do not click/Enter into edit mode and do not type. Profile notes (`journey-profile-notes-display`) and path description remain `SentenceEditor`. Complete-resource note (`journey-complete-note`) remains a dialog textarea (direct `.type`, no display activation). No local `data-card-grid`.
 - This SPA hosts Settings at `/mentee/config` (`nav-settings-link`, admin-only)
 - Token tab (AdminPage, spa_utils 1.0.6): `admin-tab-token`, `admin-token-display-name-display`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`. Missing `display_name` displays `unknown`. This SPA does not invent a local display-name mapping.
 
