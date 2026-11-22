@@ -1,6 +1,6 @@
 # F142 – Use GitHub npm BuildKit secrets in SPA container builds
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -76,4 +76,19 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Replaced the AWS token wrapper with the established GitHub Packages BuildKit
+secret. The build uses the committed lock through `npm ci` and confines
+registry-scoped npm config to the install step’s temporary mount. Excluded npm
+config files from the build context. Preserved the Node version, Vite cache,
+runtime IDP config, routes and proxy, and the default GHCR tag.
+
+- Clean `npm ci` and `npm run container` passed with AWS credential and region
+  variables unset. Missing `GITHUB_TOKEN` fails before the build with a clear
+  message.
+- The isolated ARM64 image, `mentorhub-mentee-spa:f142`, was checked for npm
+  auth instructions in final history and secret/config paths in the final
+  filesystem. Neither check found residue.
+- All 37 packaged Electron Cypress cases passed against the built image,
+  Mentee API, and seeded MongoDB on a disposable Docker network. This covered
+  runtime config, login and logout flows, API authentication, and the Mentee
+  route prefix. Shell syntax and `git diff --check` passed.

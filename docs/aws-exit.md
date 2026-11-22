@@ -58,3 +58,16 @@ The runtime image currently uses the floating `nginx:stable-alpine` tag.
 The separate Nginx task owns the version pin and dual-architecture validation.
 Retain the packaged Cypress deployment checks and assess Vite coverage
 separately during acceptance.
+
+## Container build
+
+Set a local GitHub Packages read token in `GITHUB_TOKEN`, then run
+`npm run container`. The wrapper passes it to BuildKit as an environment-backed
+secret. Only the locked `npm ci` install can access the secret. Its host-scoped
+npm config lives in a temporary mount, and the build context excludes npm
+config files. The default GHCR image tag is unchanged. Set `MENTEE_SPA_IMAGE`
+to build an isolated local tag.
+
+An ARM64 image built with AWS variables unset. Its final history and filesystem
+contained no npm credentials or secret config. The complete packaged Cypress
+suite passed against an isolated Mentee API and seeded MongoDB.
