@@ -17,14 +17,18 @@ previously referenced CodeArtifact authentication for dependency setup.
 ## Shared package prerequisite and rollback
 
 [I-US01](https://github.com/mentor-forge/mentorhub_spa_utils/issues/43) specifies
-public visibility for SPA Utils on GitHub Packages. Installation still
-requires authentication. The Customer SPA lock and clean-install record
-verify the published 1.0.7 tarball and SHA-512 integrity in another consumer.
-Verify a clean Mentee SPA install with a GitHub token that has
-`read:packages`, and grant this repository read access under the shared
-package's **Manage Actions access** settings. Confirm the workflow token can
-install the package in hosted CI. Keep GitHub auth scoped to the package
-registry and keep all third-party packages on public npm.
+public visibility for SPA Utils on GitHub Packages. Direct tarball access
+requires authentication. Verified the published 1.0.7 tarball against the
+lockfile SHA-512 and confirmed that an anonymous request returns HTTP 401.
+The tracked npm config scopes the `GITHUB_TOKEN` to GitHub Packages. Use a
+token with `read:packages` for local installs. The lockfile resolves all
+third-party packages from public npm and retains their versions and checksums.
+
+Both a clean `npm install --include=dev` and a fresh-cache `npm ci --include=dev`
+passed with AWS configuration absent. All 48 unit tests and the TypeScript
+and Vite production build passed. Grant this repository read access under the
+shared package’s **Manage Actions access** settings and verify the workflow
+token in hosted CI.
 
 For later rollbacks, restore the last verified exact GitHub Packages
 version and matching lockfile together. Verify the restored install and rebuild

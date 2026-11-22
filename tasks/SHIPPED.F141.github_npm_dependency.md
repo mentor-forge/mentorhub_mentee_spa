@@ -1,6 +1,6 @@
 # F141 – Migrate SPA npm source, exact package pin and lockfile
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -76,4 +76,15 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Pinned SPA Utils 1.0.7 exactly from GitHub Packages and verified the live
+tarball’s SHA-512 against the committed resolution. An anonymous request
+returned HTTP 401. Moved 413 third-party CodeArtifact URLs to public npm
+while preserving versions, integrity, and metadata. The tracked npm config
+takes a read-scoped credential from `GITHUB_TOKEN`.
+
+Clean `npm install --include=dev` and fresh-cache `npm ci --include=dev` passed
+with isolated npm configuration and no AWS environment. Both preserved the
+prepared lockfile. All 48 unit tests and the production build passed. The
+Cypress binary download was deferred to browser acceptance. npm reported 22
+locked dependency findings, and Vite warned about a large production chunk.
+Hosted workflow token access will be verified on the pull request.
