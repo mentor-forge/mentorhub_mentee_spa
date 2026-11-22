@@ -1,6 +1,6 @@
 # F143 – Update SPA GitHub Actions registry permissions and validation
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -73,4 +73,17 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Replaced AWS OIDC and CodeArtifact token setup in the publishing workflow with
+the built-in GitHub token passed as the `github_npm_token` BuildKit secret.
+Maintained main-only publishing, the existing GHCR tag, and AMD64/ARM64 targets.
+A separate PR workflow validates locked registry origins without package
+credentials. Same-repository, non-Dependabot PRs also install the locked
+dependencies, test, build, and build an unpublished image with package-read
+access. Both workflows disable checkout credential persistence.
+
+Parsed both workflows and verified triggers, permissions, registry and secret
+wiring, platforms, and publication boundaries. The credential-free lock
+check passed. In an AWS-free shell, clean `npm ci`, all 48 unit tests,
+TypeScript and Vite production build, and `npm run container` with an
+isolated ARM64 image tag passed. Hosted workflow-token package access remains
+to verify after opening a PR. No image was published.

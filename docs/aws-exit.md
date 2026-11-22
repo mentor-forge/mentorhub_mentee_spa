@@ -71,3 +71,18 @@ to build an isolated local tag.
 An ARM64 image built with AWS variables unset. Its final history and filesystem
 contained no npm credentials or secret config. The complete packaged Cypress
 suite passed against an isolated Mentee API and seeded MongoDB.
+## GitHub Actions
+
+Pull requests into main first verify that the lock agrees with the manifest
+and that tarballs resolve from the expected registries. Fork and Dependabot pull
+requests run only this credential-free check. Same-repository pull requests
+also use the built-in workflow token with package read access for a locked
+install, unit tests, type checking, production build, and an unpublished
+container build. In the SPA Utils package settings, grant this repository
+Actions read access if the workflow token cannot download the package.
+
+Pushes to main publish the AMD64 and ARM64 image under the existing GHCR tag.
+The publishing job reads repository contents and has package write access.
+Both container workflows pass package authentication through the BuildKit
+secret named `github_npm_token`. Hosted package access is verified on the PR
+after the branch is pushed.
