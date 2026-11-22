@@ -8,17 +8,17 @@ function injectRuntimeConfig(): Plugin {
   return {
     name: 'inject-runtime-config',
     configResolved(config) {
-      base = config.base
+      // Vite adds the configured base to root-relative script URLs in dev.
+      base = config.command === 'serve' ? '/' : config.base
     },
     transformIndexHtml: {
       order: 'pre' as const,
       handler(html: string) {
-        // vite-ignore keeps Vite 7 from rewriting the already-prefixed src to /mentee/mentee/...
         return html.replace(
           '<head>',
           `<head>
     <script>window.__MENTORHUB_RUNTIME__=window.__MENTORHUB_RUNTIME__||{};</script>
-    <script src="${base}runtime-config.js" vite-ignore></script>`
+    <script src="${base}runtime-config.js"></script>`
         )
       },
     },

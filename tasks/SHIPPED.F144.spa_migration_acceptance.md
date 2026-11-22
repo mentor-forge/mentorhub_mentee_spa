@@ -1,6 +1,6 @@
 # F144 – Document SPA setup and verify provider-neutral runtime behavior
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -72,4 +72,24 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Updated local setup and task guidance for the scoped GitHub Packages token,
+exact SPA Utils pin, lockfile updates, Docker secret, and rollback. Added
+Vite Cypress commands per the active migration scope. Fixed Vite's duplicate
+base prefix and kept all Nginx deployment checks active in the packaged suite.
+
+- `npm install --include=dev`, `npm ci`, `npm run test` (48 tests), and
+  `npm run build` passed. No separate lint script is declared. The build
+  includes TypeScript checking.
+- `npm run container` built a fresh ARM64 image without AWS credentials.
+- Ran `npm run cypress:run:dev` against Vite and disposable Mentee API and
+  seeded MongoDB. All 28 applicable tests passed. The eight deployment-spec
+  checks and one packaged runtime configuration check stay packaged.
+- Used the isolated equivalent of `npm run api` and `npm run service` to
+  exercise the fresh image without stopping the active Developer Edition
+  stack. All 37 `npm run cypress:run` cases passed, including login bootstrap,
+  role gates, token claims, logout, least-privileged API access, and the
+  prefixed runtime IdP/configuration checks.
+- A signed expired JWT returned HTTP 401 through Nginx. The client unit suite
+  confirmed session clearing and redirect on 401.
+- Local lock and workflow checks passed in F143. Hosted repository-token access
+  will be verified after opening the pull request.

@@ -3,6 +3,7 @@
  * Hamburger catalog role gates and collection hrefs are covered in spa_utils.
  */
 describe('Navigation (spa_utils PageFrame)', () => {
+  const isDev = Cypress.env('target') === 'dev'
   const APP_ORIGIN = Cypress.config('baseUrl') as string
   const JOURNEY_PATHNAME = '/mentee/journey'
   const CONFIG_PATHNAME = '/mentee/config'
@@ -67,6 +68,14 @@ describe('Navigation (spa_utils PageFrame)', () => {
 
   beforeEach(() => {
     cy.clearLocalStorage()
+    if (isDev) {
+      // Allow later cases to stub IdP configuration even after visiting Vite.
+      cy.intercept({ method: 'GET', url: '**/mentee/runtime-config.js', middleware: true }, (req) => {
+        req.on('before:response', (res) => {
+          res.headers['cache-control'] = 'no-store'
+        })
+      })
+    }
   })
 
   it('should serve the app shell and its assets under the /mentee/ prefix', () => {
@@ -80,7 +89,7 @@ describe('Navigation (spa_utils PageFrame)', () => {
         '/mentee/runtime-config.js'
       )
       expect(
-        sources.some((src) => src?.startsWith('/mentee/assets/')),
+        sources.some((src) => src?.startsWith(isDev ? '/mentee/src/' : '/mentee/assets/')),
         'app bundle is fetched under the prefix'
       ).to.equal(true)
     })
@@ -263,7 +272,8 @@ describe('Navigation (spa_utils PageFrame)', () => {
     })
   })
 
-  it('should serve the real container IdP config from the prefixed runtime-config.js', () => {
+  const packagedIt = isDev ? it.skip : it
+  packagedIt('should serve the real container IdP config from the prefixed runtime-config.js', () => {
     cy.request('/mentee/runtime-config.js').then((response) => {
       expect(response.status).to.equal(200)
       expect(response.headers['cache-control']).to.contain('no-store')

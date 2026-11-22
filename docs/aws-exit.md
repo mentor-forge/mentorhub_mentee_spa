@@ -86,3 +86,23 @@ The publishing job reads repository contents and has package write access.
 Both container workflows pass package authentication through the BuildKit
 secret named `github_npm_token`. Hosted package access is verified on the PR
 after the branch is pushed.
+
+## Local migration acceptance
+
+A dependency install and clean `npm ci` passed, along with all 48 unit
+tests, the TypeScript and Vite production build, and a fresh ARM64 container
+build with AWS credentials unset.
+
+The Vite Cypress commands exercise the SPA with its backing Mentee API. Vite
+loads runtime configuration under `/mentee/` without adding the base twice.
+All 28 applicable Cypress cases passed. Nine Nginx-only cases remain in the
+packaged suite. The Vite cases cover URL login bootstrap, role gating, token
+display names, and logout.
+
+All 37 packaged Cypress cases passed against a fresh SPA image, isolated
+Mentee API, and seeded MongoDB. The deployment checks covered the prefixed
+API, authenticated least-privileged access, unauthenticated rejection, route
+fallback, and the runtime IdP configuration. The packaged proxy also rejected
+a signed expired token with HTTP 401. Unit tests verified that a 401 clears
+the session and redirects to login. Hosted Actions package access remains
+to be verified on the pull request.
