@@ -1,6 +1,6 @@
 # F140 – Audit SPA dependency, build and runtime coupling
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -70,4 +70,9 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Audited tracked dependency, auth, build, workflow, and runtime paths and compared
+the shared package pin against the verified Customer SPA consumer. Mentee SPA
+currently pins SPA Utils 1.0.6 and all 414 resolved tarball URLs use CodeArtifact.
+No direct application Cognito, AWS SDK, or AWS endpoint references were found.
+Documented the cutover, local and hosted package-access checks, and rollback.
+No services were started and no package, build, or application code was changed.
