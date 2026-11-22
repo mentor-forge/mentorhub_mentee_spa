@@ -216,3 +216,16 @@ Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 - Runtime enumerators come from `GET /mentee/api/config` (or `/api/config` on the direct port), not from OpenAPI
 - Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration
 - Container listens on port 80 internally; map host port to container port 80 (e.g., `8394:80` in docker-compose)
+### Nginx runtime updates
+
+The Dockerfile pins the official stable Nginx 1.30.7 Alpine image by its
+multi-platform index digest. To update it, confirm the latest stable patch
+against the [Nginx security advisories](https://nginx.org/en/security_advisories.html)
+and use `docker buildx imagetools inspect` to verify the official tag and index
+for AMD64 and ARM64. Update the tag and digest together.
+
+Build both platforms with refreshed bases, check `nginx -v` and `nginx -V` in
+each application image, and scan both images. Run the full packaged Cypress
+suite and validate the generated config with `nginx -t -c /tmp/nginx.conf`.
+After main publishes, record and verify the published digest before promoting
+that same image between environments.

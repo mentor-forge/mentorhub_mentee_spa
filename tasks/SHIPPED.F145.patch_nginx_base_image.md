@@ -1,6 +1,6 @@
 # F145 — Patch the Nginx base image built by CI
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Defect  
 **Depends On**: F144  
 **Issue**: https://github.com/mentor-forge/mentorhub_mentee_spa/issues/39  
@@ -88,4 +88,71 @@ All other files remain outside this task's output scope. If verification reveals
 
 ## Execution Notes
 
-Reserved for the execution agent: selected release/tag/index digest, advisory applicability, commands and results, both architecture image identities, scan evidence, blockers, and post-merge publication verification. No implementation or packaging tests have been run during planning.
+### Base image and advisory review
+
+Reviewed on November 21, 2026 (Eastern time). The [official download
+page](https://nginx.org/en/download.html) identified 1.30.7 as stable. The
+[official image definitions](https://github.com/nginx/docker-nginx) and
+`docker buildx imagetools inspect nginx:1.30.7-alpine` confirmed the
+`nginx:1.30.7-alpine` official image and its Linux AMD64 and ARM64 manifests.
+Pinned OCI index
+`sha256:caf4e1e032a20f9c3c5e28fc7f25ffd768ad8677b4975c54193075997b3a97e3`.
+The migrated main-only GHCR workflow and local build helper already requested
+a refreshed base and kept GitHub Packages authentication scoped to BuildKit.
+
+The [upstream advisories](https://nginx.org/en/security_advisories.html) list
+CVE-2026-123634 (resolver) as fixed in stable 1.30.7. The effective SPA
+configuration uses Docker DNS via `resolver`, so this update directly matters.
+The HTTP/2, HTTP/3, TLS, mail, and stream advisory prerequisites are
+configuration-dependent. The binaries include relevant modules, but the
+effective SPA configuration uses plain HTTP on port 80 and has no HTTP/2,
+QUIC, TLS, mail, or stream listener. It has no `alias` or PROXY protocol
+listener either. The cited PROXY protocol issue affects only mainline
+1.31.4–1.31.8. The original report did not supply a CVE and the historical
+floating tag does not establish the old published binary or its exposure.
+
+### Local acceptance
+
+- Clean `npm ci --include=dev`, `npm run test` (48 tests),
+  and `npm run build` passed. The package has no lint script. The dependency
+  lock is unchanged.
+  Validated the YAML, main-only publishing trigger, target platforms, pull
+  flags, and existing scoped BuildKit secret.
+- Ran `npm run container` and used isolated equivalents of
+  `npm run api` and `npm run service` to avoid `mh down` against the
+  running Developer Edition stack. The fresh packaged ARM64 SPA used isolated
+  seeded MongoDB and Mentee API. The running container matched the built
+  image ID. The full unchanged `npm run cypress:run` at
+  `http://localhost:8394/mentee/` passed all 37 checks, including all eight
+  deployment checks. The generated configuration passed
+  `nginx -t -c /tmp/nginx.conf`.
+- The actual Developer Edition gateway configuration served the shared-origin
+  Mentee page and runtime configuration on isolated port 8080. The
+  prefixed API returned HTTP 200 with a valid local token and 401 without it.
+
+### Image and scan evidence
+
+Built ARM64 with `npm run container` and AMD64 with disposable Buildx
+(`--pull --platform linux/amd64 --load` and the scoped BuildKit npm secret).
+Verified both final binaries with `nginx -v` and `nginx -V`, running the AMD64
+binary under QEMU. Both report Nginx 1.30.7 with HTTP SSL, HTTP/2, HTTP/3,
+mail, stream, and stream SSL preread support.
+
+| Platform | Final local application image ID |
+| --- | --- |
+| ARM64 | `sha256:868baea57282fe0fd9b2f9fa676f2eaa18ad57ff6d33602561956b8e8c5705a0` |
+| AMD64 | `sha256:ca71d0d5761994e20d36c22ce9fc2b73565832b25bb4b5f12aca7a91f5cdb938` |
+
+Trivy 0.76.2 scanned the saved application images against vulnerability
+database schema 2, updated November 21 at 18:38 UTC and fetched November 22 at
+00:40 UTC. Both Alpine 3.24.4 images had zero Nginx package findings and 12
+Alpine dependency findings. Five each affect libcrypto3 and libssl3, one medium
+affects zlib, and one high affects libxml2. The unchanged npm dependency tree
+has 22 existing audit findings.
+
+### Post-merge publication
+
+After CI publishes from main, record the GHCR index and both platform manifest
+digests. Pull each by its immutable application digest and confirm the Nginx
+binary version, build options, and scan results before closing issue 39. Promote
+the verified immutable application image between environments.
